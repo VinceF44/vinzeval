@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Confort & Ergonomie</title>
+    <title>Console Admin — Master Control</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,28 +11,28 @@
 
     <div class="max-w-5xl mx-auto space-y-8">
         
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex justify-between items-center shadow-xl">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">👑 Panel Supérieur</span>
+                <span class="text-xs font-bold uppercase px-2.5 py-1 rounded border" style="background-color: rgba(28, 75, 132, 0.2); color: #efef89; border-color: rgba(28, 75, 132, 0.4);">⚙️ Panel Supérieur</span>
                 <h1 class="text-2xl font-black text-white mt-1">Générateur & Gestionnaire de Sessions</h1>
             </div>
         </div>
 
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-xl">
-            <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider border-b border-gray-800 pb-2">✨ Configurer et Générer une Session</h2>
+            <h2 class="text-sm font-bold uppercase tracking-wider border-b border-gray-800 pb-2" style="color: #efef89;">✨ Configurer et Générer une Session</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div class="flex flex-col justify-between space-y-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nom de la session :</label>
-                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-[rgba(28,75,132,0.8)]">
                     </div>
                     
                     <div class="flex-1 flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères d'évaluation (Un critère par ligne — Idéal pour textes longs) :</label>
-                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code et architecture&#10;Posture : Clarté orale et dynamisme&#10;Support : Visuels, pertinence des slides&#10;Gestion du temps" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-sans min-h-[160px]"></textarea>
-                        <p class="text-[10px] text-gray-500 mt-1">Plus besoin de virgules. Sautez simplement à la ligne pour chaque nouveau critère.</p>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères d'évaluation (Un critère par ligne) :</label>
+                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-sans min-h-[160px]"></textarea>
+                        <p class="text-[10px] text-gray-500 mt-1">Sautez simplement à la ligne pour chaque nouveau critère.</p>
                     </div>
                 </div>
 
@@ -49,25 +49,25 @@
                     </div>
                     
                     <div class="flex-1 flex flex-col">
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Liste des apprenants (Un prénom par ligne — Fenêtre agrandie) :</label>
-                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas&#10;Sarah&#10;...(Idéal pour les grandes classes)" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto"></textarea>
-                        <p class="text-[10px] text-gray-500 mt-1">Ils seront automatiquement mélangés et répartis équitablement entre les groupes.</p>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Liste des apprenants (Un prénom par ligne) :</label>
+                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto"></textarea>
+                        <p class="text-[10px] text-gray-500 mt-1">Ils seront automatiquement mélangés et répartis équitablement.</p>
                     </div>
                 </div>
             </div>
 
-            <button onclick="genererSessionComplete()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 rounded-xl transition shadow-lg shadow-blue-950/50 uppercase tracking-wider cursor-pointer">
+            <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3 rounded-xl transition uppercase tracking-wider cursor-pointer shadow-lg hover:brightness-110 active:scale-[0.99]" style="background-color: #1c4b84; color: #efef89; shadow-color: rgba(28, 75, 132, 0.4);">
                 🚀 Générer la session complète (Session, Critères, Groupes & Dispatch)
             </button>
         </div>
 
         <div class="space-y-3">
-            <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">🟢 Sessions en cours (Formulaires ouverts)</h2>
+            <h2 class="text-sm font-bold uppercase tracking-wider flex items-center gap-2" style="color: #efef89;">🟢 Sessions en cours (Formulaires ouverts)</h2>
             <div id="liste-sessions-actives" class="space-y-3"></div>
         </div>
 
         <div class="space-y-3 pt-4 border-t border-gray-900">
-            <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">🗃️ Archives & Historique (Formulaires clos)</h2>
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">🗃️ Archives & Historique (Formulaires clos)</h2>
             <div id="liste-sessions-terminees" class="space-y-3"></div>
         </div>
 
@@ -105,8 +105,8 @@
                                 <div class="text-[10px] text-gray-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition">🗳️ Lien Vote</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-black py-2 px-3 rounded-lg transition">📊 Dashboard</a>
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3 rounded-lg transition hover:brightness-110" style="background-color: #1c4b84;">🗳️ Lien Vote</a>
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="text-gray-950 text-xs font-black py-2 px-3 rounded-lg transition hover:brightness-110" style="background-color: #efef89;">📊 Dashboard</a>
                                 <button onclick="cloturerSession('${s.id}')" class="bg-red-950/40 hover:bg-red-900 text-red-400 hover:text-white text-xs font-bold py-2 px-3 rounded-lg border border-red-900/50 transition cursor-pointer">🔒 Clôturer</button>
                                 <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold py-2 px-3 rounded-lg border border-gray-700 transition cursor-pointer">👥 Dupliquer</button>
                             </div>
@@ -145,11 +145,9 @@
                 return;
             }
 
-            // ÉTAPE 1 : Créer la Session
             const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
             if (errSess) { alert("Échec création session: " + errSess.message); return; }
 
-            // ÉTAPE 2 : Créer les Critères (Correction : Séparation par saut de ligne)
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
@@ -158,7 +156,6 @@
                 }
             }
 
-            // ÉTAPE 3 : Créer les Groupes
             const listeNomsGroupes = [];
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
@@ -172,7 +169,6 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // ÉTAPE 4 : Mélange et distribution des Apprenants
             if (apprenantsRaw) {
                 let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
                 
