@@ -3,48 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Gestion des Sessions</title>
+    <title>Console Admin — Master Control</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto space-y-8">
+    <div class="max-w-5xl mx-auto space-y-8">
         
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex justify-between items-center shadow-xl">
             <div>
-                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">⚙️ Panel Contrôle</span>
-                <h1 class="text-2xl font-black text-white mt-1">Gestion des Évaluations</h1>
+                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">👑 Panel Supérieur</span>
+                <h1 class="text-2xl font-black text-white mt-1">Générateur & Gestionnaire de Sessions</h1>
             </div>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">✨ Initialiser une nouvelle session</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nom de la session :</label>
-                    <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Groupe A" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-xl">
+            <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider border-b border-gray-800 pb-2">✨ Configurer et Générer une Session</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nom de la session :</label>
+                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères d'évaluation (séparés par des virgules) :</label>
+                        <input type="text" id="criteres-session" placeholder="Ex: Technique, Posture, Support, Réponse questions" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères (séparés par des virgules) :</label>
-                    <input type="text" id="criteres-session" placeholder="Ex: Technique, Posture, Support" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre de Groupes :</label>
+                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Prefixe des Groupes :</label>
+                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Liste des apprenants (un prénom par ligne) :</label>
+                        <textarea id="liste-apprenants-brute" rows="3" placeholder="Thomas&#10;Julie&#10;Lucas&#10;Sarah" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none font-mono text-xs"></textarea>
+                        <p class="text-[10px] text-gray-500 mt-1">Ils seront automatiquement mélangés et répartis équitablement entre les groupes.</p>
+                    </div>
                 </div>
             </div>
-            <button onclick="creerSession()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition cursor-pointer">
-                ➕ Créer la session et ses critères
+
+            <button onclick="genererSessionComplete()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-3 rounded-xl transition shadow-lg shadow-blue-950/50 uppercase tracking-wider cursor-pointer">
+                🚀 Générer la session complète (Session, Critères, Groupes & Dispatch)
             </button>
         </div>
 
         <div class="space-y-3">
-            <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">🟢 Sessions en cours (Évaluations ouvertes)</h2>
-            <div id="liste-sessions-actives" class="space-y-3">
-                </div>
+            <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">🟢 Sessions en cours (Formulaires ouverts)</h2>
+            <div id="liste-sessions-actives" class="space-y-3"></div>
         </div>
 
         <div class="space-y-3 pt-4 border-t border-gray-900">
             <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">🗃️ Archives & Historique (Formulaires clos)</h2>
-            <div id="liste-sessions-terminees" class="space-y-3">
-                </div>
+            <div id="liste-sessions-terminees" class="space-y-3"></div>
         </div>
 
     </div>
@@ -61,11 +81,7 @@
 
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            
-            if (error) {
-                console.error("Erreur de chargement des sessions:", error);
-                return;
-            }
+            if (error) return;
 
             const conteneurActives = document.getElementById('liste-sessions-actives');
             const conteneurTerminees = document.getElementById('liste-sessions-terminees');
@@ -73,11 +89,9 @@
             conteneurActives.innerHTML = "";
             conteneurTerminees.innerHTML = "";
 
-            let countActives = 0;
-            let countTerminees = 0;
+            let countActives = 0, countTerminees = 0;
 
             sessions.forEach(s => {
-                // Remplacement dynamique du statut 'active' ou 'terminee'
                 if (s.statut !== 'terminee') {
                     countActives++;
                     conteneurActives.innerHTML += `
@@ -99,7 +113,7 @@
                     conteneurTerminees.innerHTML += `
                         <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800/60 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-75">
                             <div>
-                                <div class="font-bold text-gray-400 text-base line-through/none">🗃️ ${s.nom}</div>
+                                <div class="font-bold text-gray-400 text-base">🗃️ ${s.nom}</div>
                                 <span class="bg-gray-950 text-gray-500 text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border border-gray-800">Clos / Archivé</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
@@ -115,100 +129,102 @@
             if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-gray-500 italic p-2">L'historique des archives est vide.</p>`;
         }
 
-        async function creerSession() {
-            const nomInput = document.getElementById('nouveau-nom-session').value.trim();
-            const criteresInput = document.getElementById('criteres-session').value.trim();
+        async function genererSessionComplete() {
+            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const criteresRaw = document.getElementById('criteres-session').value.trim();
+            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
+            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
 
-            if (!nomInput) {
-                alert("Veuillez donner un nom à la session.");
+            if (!nomSession) {
+                alert("Erreur : Le nom de la session est obligatoire.");
                 return;
             }
 
-            // 1. Insertion de la session (le statut prend 'active' par défaut via Supabase, ou on le force ici)
-            const { data: nouvelleSession, error: errSess } = await db
-                .from('sessions')
-                .insert([{ nom: nomInput, statut: 'active' }])
-                .select()
-                .single();
+            // ÉTAPE 1 : Créer la Session
+            const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
+            if (errSess) { alert("Échec création session: " + errSess.message); return; }
 
-            if (errSess) {
-                alert("Erreur création session: " + errSess.message);
-                return;
-            }
-
-            // 2. Traitement et insertion des critères s'il y en a
-            if (criteresInput) {
-                const tableauCriteres = criteresInput.split(',').map(c => c.trim()).filter(c => c !== "");
-                if (tableauCriteres.length > 0) {
-                    const objetsCriteres = tableauCriteres.map(nomCritere => ({
-                        session_id: nouvelleSession.id,
-                        nom: nomCritere
-                    }));
-
-                    const { error: errCrit } = await db.from('criteres').insert(objetsCriteres);
-                    if (errCrit) alert("Session créée, mais échec de l'enregistrement des critères : " + errCrit.message);
+            // ÉTAPE 2 : Créer les Critères
+            if (criteresRaw) {
+                const arrCriteres = criteresRaw.split(',').map(c => c.trim()).filter(c => c !== "");
+                if (arrCriteres.length > 0) {
+                    const payloadCriteres = arrCriteres.map(nom => ({ session_id: session.id, nom: nom }));
+                    await db.from('criteres').insert(payloadCriteres);
                 }
             }
 
-            alert("🎉 Session créée avec succès !");
+            // ÉTAPE 3 : Créer les Groupes dans la base
+            const listeNomsGroupes = [];
+            const payloadGroupes = [];
+            for (let i = 1; i <= nbGroupes; i++) {
+                const nomDuGroupe = `${prefixe}${i}`;
+                listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
+            if (errGrp) { alert("Erreur lors de la génération des groupes : " + errGrp.message); return; }
+
+            // Map utile pour lier le NOM du groupe à son ID unique généré (uuid)
+            const mapNomVersIdGroupe = {};
+            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            // ÉTAPE 4 : Traitement et dispatching aléatoire des Apprenants
+            if (apprenantsRaw) {
+                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
+                
+                if (listeApprenants.length > 0) {
+                    // Algorithme de mélange aléatoire (Fisher-Yates)
+                    for (let i = listeApprenants.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
+                    }
+
+                    // Distribution équitable entre les groupes disponibles
+                    const payloadApprenants = listeApprenants.map((prenom, index) => {
+                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
+                        return {
+                            session_id: session.id,
+                            prenom: prenom,
+                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne] // Lien UUID strict de votre table
+                        };
+                    });
+
+                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
+                    if (errApp) alert("Attention : Échec de la répartition des apprenants : " + errApp.message);
+                }
+            }
+
+            alert("🎉 Session complète configurée et générée avec succès !");
+            // Réinitialisation des inputs
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
+            document.getElementById('liste-apprenants-brute').value = "";
             chargerSessions();
         }
 
         async function cloturerSession(idSession) {
-            if (!confirm("⚠️ Souhaitez-vous fermer cette session ?\n\nLe lien vers le formulaire de vote sera immédiatement désactivé pour les élèves, mais les notes et le dashboard resteront sauvegardés.")) return;
-
-            const { error } = await db
-                .from('sessions')
-                .update({ statut: 'terminee' })
-                .eq('id', idSession);
-
-            if (!error) {
-                alert("🔒 Session clôturée et déplacée dans l'historique.");
-                chargerSessions();
-            } else {
-                alert("Erreur lors de la clôture : " + error.message);
-            }
+            if (!confirm("⚠️ Fermer définitivement cette session ?\n\nLe lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique.")) return;
+            const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
+            if (!error) chargerSessions();
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
             const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
             if (!nouveauNom || nouveauNom.trim() === "") return;
 
-            // 1. Créer la nouvelle session clonée (active par défaut)
-            const { data: nouvelleSession, error: errSess } = await db
-                .from('sessions')
-                .insert([{ nom: nouveauNom.trim(), statut: 'active' }])
-                .select()
-                .single();
+            // 1. Cloner la Session
+            const { data: nouvelleSession, error: errSess } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active' }]).select().single();
+            if (errSess) return;
 
-            if (errSess) {
-                alert("Erreur lors de l'initialisation du clone : " + errSess.message);
-                return;
+            // 2. Cloner les critères associés
+            const { data: criteresSource } = await db.from('criteres').select('nom').eq('session_id', idSessionSource);
+            if (criteresSource && criteresSource.length > 0) {
+                const nouveauxCriteres = criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom }));
+                await db.from('criteres').insert(nouveauxCriteres);
             }
 
-            // 2. Extraire les critères liés à l'ancienne session
-            const { data: criteresSource, error: errCritFetch } = await db
-                .from('criteres')
-                .select('nom')
-                .eq('session_id', idSessionSource);
-
-            // 3. Injecter les critères copiés si la session d'origine en comportait
-            if (!errCritFetch && criteresSource && criteresSource.length > 0) {
-                const nouveauxCriteres = criteresSource.map(c => ({
-                    session_id: nouvelleSession.id,
-                    nom: c.nom
-                }));
-
-                const { error: errCritInsert } = await db.from('criteres').insert(nouveauxCriteres);
-                if (errCritInsert) {
-                    alert("⚠️ Session dupliquée mais échec du transfert des critères : " + errCritInsert.message);
-                    return;
-                }
-            }
-
-            alert("👥 Session et structure de critères dupliquées avec succès ! Vous pouvez y affecter vos élèves.");
+            alert("👥 Session et critères dupliqués ! (Pensez à recréer/réaffecter vos groupes d'élèves pour cette nouvelle session).");
             chargerSessions();
         }
 
