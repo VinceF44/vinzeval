@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master Pro — Évaluations Croisées 360°</title>
+    <title>Dashboard Master — Calcul Révolutionnaire 360°</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,7 +14,7 @@
         
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Analyses Multi-Critères</span>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Règles de Lucidité Strictes</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
             <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser le Live</button>
@@ -50,7 +50,8 @@
 
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
-                <h2 class="text-base font-black text-white">📊 Tableau de Synthèse Général & Impacts de Lucidité</h2>
+                <h2 class="text-base font-black text-white">📊 Tableau de Synthèse Général & Impacts (Seuil de Tolérance : 20%)</h2>
+                <p class="text-xs text-gray-400">Le bonus/malus total modifie directement la note finale du formateur sur une amplitude de -2.00 à +2.00 points.</p>
             </div>
             
             <div class="overflow-x-auto">
@@ -58,11 +59,12 @@
                     <thead>
                         <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
                             <th class="py-3 px-3">Équipe</th>
-                            <th class="py-3 px-3 text-center text-blue-400 bg-blue-950/20">Auto-Éval (/5)</th>
-                            <th class="py-3 px-3 text-center text-purple-400 bg-purple-950/20">Moyenne Pairs (/5)</th>
-                            <th class="py-3 px-3 text-center text-amber-400 bg-amber-950/20">Formateur (/5)</th>
-                            <th class="py-3 px-3 text-center text-gray-300">Écart Lucidité</th>
-                            <th class="py-3 px-3 text-center text-emerald-400">Impact (Bonus/Malus)</th>
+                            <th class="py-3 px-3 text-center bg-blue-950/20">Auto-Éval (/5)</th>
+                            <th class="py-3 px-3 text-center">Bonus/Malus Auto</th>
+                            <th class="py-3 px-3 text-center bg-purple-950/20">Moyenne Pairs (/5)</th>
+                            <th class="py-3 px-3 text-center">Bonus/Malus Pairs</th>
+                            <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total</th>
                             <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
                         </tr>
                     </thead>
@@ -84,7 +86,7 @@
         let groupesSession = [];
         let evaluationsSession = [];
         let listeCriteresProf = [];
-        let notesFormateurLocales = {}; 
+        let notesFormateurLocales = {}; // Stocke les notes sur 5 par groupe
         let monRadarChart = null;
 
         async function initDashboard() {
@@ -131,7 +133,7 @@
                 tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
             }
             notesFormateurLocales[groupeCible] = tableauNotes;
-            alert(`Note enregistrée ! 👨‍🏫`);
+            alert(`Note enregistrée pour le groupe ${groupeCible} !`);
             calculerEtAfficherTout();
         }
 
@@ -139,76 +141,112 @@
             const corpsTable = document.getElementById('table-corps-resultats');
             corpsTable.innerHTML = '';
 
-            const synthese = {};
-            const ecartsLucidite = {};
+            const structureDeBase = {};
+            const pointsVotantBruts = {}; // Stocke la somme des bonus/malus de notation d'un groupe sur les autres
 
             groupesSession.forEach(g => {
-                synthese[g.nom] = { pairs: [], auto: null };
-                ecartsLucidite[g.nom] = { somme: 0, count: 0 };
+                structureDeBase[g.nom] = { pairs: [], auto: null };
+                pointsVotantBruts[g.nom] = 0; 
             });
 
+            // 1. Organiser les votes (Auto-évaluation et liste des pairs)
             evaluationsSession.forEach(e => {
-                const noteSur5 = (e.note / 20) * 5; // 🌟 Lecture de la colonne 'note' harmonisée
+                const noteSur5 = (e.note / 20) * 5;
 
-                if (synthese[e.sujet]) {
-                    if (e.groupe_votant === e.sujet) { // 🌟 Lecture 'groupe_votant'
-                        synthese[e.sujet].auto = noteSur5;
+                if (structureDeBase[e.sujet]) {
+                    if (e.groupe_votant === e.sujet) {
+                        structureDeBase[e.sujet].auto = noteSur5;
                     } else {
-                        synthese[e.sujet].pairs.push(noteSur5);
+                        structureDeBase[e.sujet].pairs.push(noteSur5);
                     }
                 }
 
-                const profNotes = notesFormateurLocales[e.sujet];
-                if (profNotes && e.groupe_votant !== e.sujet) {
-                    const moyProfSur5 = profNotes.reduce((a,b)=>a+b,0) / profNotes.length;
-                    ecartsLucidite[e.groupe_votant].somme += Math.abs(noteSur5 - moyProfSur5);
-                    ecartsLucidite[e.groupe_votant].count += 1;
+                // 2. Calcul du rôle de VOTANT (Règles 3 & 4) : Comparer chaque vote à votre note prof
+                const profNotesDuSujet = notesFormateurLocales[e.sujet];
+                if (profNotesDuSujet && e.groupe_votant !== e.sujet) {
+                    const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
+                    
+                    const seuilSuperieur = moyProfSur5 * 1.20; // +20%
+                    const seuilInferieur = moyProfSur5 * 0.80; // -20%
+
+                    if (noteSur5 > seuilSuperieur) {
+                        pointsVotantBruts[e.groupe_votant] -= 1; // Trop généreux -> Malus
+                    } else if (noteSur5 < seuilInferieur) {
+                        pointsVotantBruts[e.groupe_votant] += 1; // Trop sévère -> Bonus
+                    }
                 }
             });
 
+            // 3. Construction et rendu visuel complet du tableau
             groupesSession.forEach(g => {
                 const nom = g.nom;
-                const autoEvalVal = synthese[nom].auto;
-                const tabPairs = synthese[nom].pairs;
+                
+                const autoEvalVal = structureDeBase[nom].auto;
+                const tabPairs = structureDeBase[nom].pairs;
                 const moyPairsVal = tabPairs.length > 0 ? (tabPairs.reduce((a,b)=>a+b,0) / tabPairs.length) : null;
 
                 const profNotes = notesFormateurLocales[nom];
                 const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
                 const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
-                const structureLucidite = ecartsLucidite[nom];
-                const indexLucidite = structureLucidite.count > 0 ? (structureLucidite.somme / structureLucidite.count) : null;
-
-                let modificateur = 0;
-                let badgeImpact = `<span class="text-gray-500">0.00 (Neutre)</span>`;
+                // --- RÈGLE 1 & 2 : BONUS / MALUS AUTO-ÉVALUATION ---
+                let pointsAuto = 0;
+                let badgeAuto = `<span class="text-gray-500">0</span>`;
                 
-                if(indexLucidite !== null) {
-                    if(indexLucidite <= 0.4) {
-                        modificateur = 1.0;
-                        badgeImpact = `<span class="bg-green-950/40 text-green-400 px-2.5 py-1 rounded border border-green-900/40 font-bold">+1.00 (Lucide)</span>`;
-                    } else if(indexLucidite >= 0.9) {
-                        modificateur = -1.0;
-                        badgeImpact = `<span class="bg-red-950/40 text-red-400 px-2.5 py-1 rounded border border-red-900/40 font-bold">-1.00 (Écart)</span>`;
+                if (autoEvalVal !== null && moyProfSur5 !== null) {
+                    if (autoEvalVal > (moyProfSur5 * 1.20)) {
+                        pointsAuto = -1;
+                        badgeAuto = `<span class="text-red-400 font-bold">-1 pt</span>`;
+                    } else if (autoEvalVal < (moyProfSur5 * 0.80)) {
+                        pointsAuto = 1;
+                        badgeAuto = `<span class="text-green-400 font-bold">+1 pt</span>`;
                     } else {
-                        badgeImpact = `<span class="text-gray-400">0.00 (Régulier)</span>`;
+                        badgeAuto = `<span class="text-gray-400">0 (Lucide)</span>`;
                     }
                 }
 
+                // --- RÈGLE 6 : PLAFONNAGE DU BONUS/MALUS DES PAIRS (-1 ou +1 max) ---
+                let pointsPairsCompiles = 0;
+                let badgePairs = `<span class="text-gray-500">0</span>`;
+                const totalBrutVotant = pointsVotantBruts[nom];
+
+                if (totalBrutVotant < 0) {
+                    pointsPairsCompiles = -1;
+                    badgePairs = `<span class="text-red-400 font-bold">-1 pt</span> <span class="text-[9px] text-gray-600">(${totalBrutVotant})</span>`;
+                } else if (totalBrutVotant > 0) {
+                    pointsPairsCompiles = 1;
+                    badgePairs = `<span class="text-green-400 font-bold">+1 pt</span> <span class="text-[9px] text-gray-600">(+${totalBrutVotant})</span>`;
+                } else {
+                    badgePairs = `<span class="text-gray-400">0 (Régulier)</span>`;
+                }
+
+                // --- RÈGLE 5 & 6 : IMPACT TOTAL ($\pm 2$ points max) ---
+                const impactTotal = pointsAuto + pointsPairsCompiles;
+                let badgeImpact = `<span class="text-gray-400 font-bold">0.00</span>`;
+                
+                if (impactTotal > 0) {
+                    badgeImpact = `<span class="bg-green-950/50 text-green-400 px-2.5 py-1 rounded border border-green-900/40 font-black">+${impactTotal}.00</span>`;
+                } else if (impactTotal < 0) {
+                    badgeImpact = `<span class="bg-red-950/50 text-red-400 px-2.5 py-1 rounded border border-red-900/40 font-black">${impactTotal}.00</span>`;
+                }
+
+                // --- RÈGLE 7 : NOTE FINALE ---
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
-                    const calculee = Math.min(20, Math.max(0, noteProfSur20 + modificateur));
-                    noteFinaleAffichage = `<span class="text-sm font-black">${calculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                    const calculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotal));
+                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${calculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
                 }
 
                 corpsTable.innerHTML += `
-                    <tr class="hover:bg-gray-900/50 transition">
+                    <tr class="hover:bg-gray-900/40 transition">
                         <td class="py-3 px-3 font-black text-white text-sm">${nom}</td>
-                        <td class="py-3 px-3 text-center text-blue-300 font-mono bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-purple-300 font-mono bg-purple-950/5">${moyPairsVal !== null ? moyPairsVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-amber-400 font-bold font-mono bg-amber-950/5">${moyProfSur5 !== null ? moyProfSur5.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-gray-300 font-mono">${indexLucidite !== null ? `± ${indexLucidite.toFixed(2)} pts` : 'En attente'}</td>
-                        <td class="py-3 px-3 text-center">${badgeImpact}</td>
-                        <td class="py-3 px-3 text-right text-indigo-400">${noteFinaleAffichage}</td>
+                        <td class="py-3 px-3 text-center font-mono text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center">${badgeAuto}</td>
+                        <td class="py-3 px-3 text-center font-mono text-purple-300 bg-purple-950/5">${moyPairsVal !== null ? moyPairsVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center">${badgePairs}</td>
+                        <td class="py-3 px-3 text-center font-bold font-mono text-amber-400 bg-amber-950/5">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900/40">${badgeImpact}</td>
+                        <td class="py-3 px-3 text-right">${noteFinaleAffichage}</td>
                     </tr>
                 `;
             });
@@ -223,9 +261,9 @@
                 data: {
                     labels: listeCriteresProf.map(c => c.nom),
                     datasets: [
-                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
-                        { label: 'Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.08)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
+                        { label: 'Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
                     ]
                 },
                 options: {
