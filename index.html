@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master — Règles Strictes Évaluateurs</title>
+    <title>Dashboard Master — Focus Évaluateurs sur 20</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,32 +12,32 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Règles Évaluateurs</span>
+                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">👑 Performance Évaluateurs (Échelle /20)</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser le Live</button>
+            <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser</button>
         </div>
 
+        <!-- NOTATION & RADAR -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
-                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1-5)</h2>
+                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Saisie /20)</h2>
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
                         <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
                     </div>
-                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2">
-                        <p class="text-xs text-gray-500 text-center py-2">Chargement des critères...</p>
-                    </div>
-                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider ma note</button>
+                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
+                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
                 </div>
             </div>
 
             <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
                 <div class="w-full border-b border-gray-800 pb-2 mb-2">
-                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Échelle 1-5)</h2>
+                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Aperçu Équipe Sélectionnée)</h2>
                 </div>
                 <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
                     <canvas id="radarChart"></canvas>
@@ -45,23 +45,24 @@
             </div>
         </div>
 
+        <!-- LE TABLEAU DE SYNTHÈSE DES COMPORTEMENTS DES GROUPES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
-                <h2 class="text-base font-black text-white">📊 Tableau de Synthèse — Focus Comportement Évaluateurs</h2>
-                <p class="text-xs text-gray-400">Les bonus et malus récompensent ou pénalisent la lucidité du groupe lorsqu'il s'évalue et lorsqu'il évalue ses camarades.</p>
+                <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur</h2>
+                <p class="text-xs text-gray-400">Toutes les notes de cette table sont ramenées sur 20. Chaque ligne montre ce que le groupe a saisi et l'impact sur sa note finale.</p>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
-                            <th class="py-3 px-3">Nom de l'Équipe</th>
-                            <th class="py-3 px-3 text-center bg-blue-950/20">Auto-Éval (/5)</th>
-                            <th class="py-3 px-3 text-center font-bold text-blue-400">Bonus/Malus Auto</th>
-                            <th class="py-3 px-3 text-center bg-purple-950/20">Moyenne Pairs (/5)</th>
-                            <th class="py-3 px-3 text-center font-bold text-purple-400">Bonus/Malus Notation Pairs</th>
+                            <th class="py-3 px-3">Groupe Évaluateur</th>
+                            <th class="py-3 px-3 text-center bg-blue-950/20">Son Auto-Éval (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-blue-400">Malus/Bonus Auto</th>
+                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
                             <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900 uppercase">Impact Total</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total</th>
                             <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
                         </tr>
                     </thead>
@@ -104,8 +105,8 @@
                 listeCriteresProf = critsProf;
                 document.getElementById('conteneur-formateur-criteres').innerHTML = critsProf.map((c, index) => `
                     <div>
-                        <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">🎯 ${c.nom}</span><span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span></div>
-                        <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" oninput="document.getElementById('v-f-${index}').innerText=this.value+' / 5'" class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">🎯 ${c.nom}</span><span id="v-f-${index}" class="text-amber-400 font-bold font-mono">12 / 20</span></div>
+                        <input type="range" id="prof-crit-${index}" min="4" max="20" step="1" value="12" oninput="document.getElementById('v-f-${index}').innerText=this.value+' / 20'" class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                     </div>
                 `).join('');
             }
@@ -130,7 +131,7 @@
                 tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
             }
             notesFormateurLocales[groupeCible] = tableauNotes;
-            alert(`Note enregistrée !`);
+            alert(`Note enregistrée pour ${groupeCible} !`);
             calculerEtAfficherTout();
         }
 
@@ -138,88 +139,86 @@
             const corpsTable = document.getElementById('table-corps-resultats');
             corpsTable.innerHTML = '';
 
-            const syntheseVisuelle = {};
-            const accumulateurPointsVotant = {}; // Cumul des écarts provoqués par le groupe en tant qu'ÉVALUATEUR
+            const structureParGroupe = {};
 
             groupesSession.forEach(g => {
-                syntheseVisuelle[g.nom] = { pairs: [], auto: null };
-                accumulateurPointsVotant[g.nom] = 0; 
+                structureParGroupe[g.nom] = {
+                    autoEval: null,
+                    notesDonneesAuxAutres: [],
+                    accumulateurPointsCamarades: 0
+                };
             });
 
-            // 1. Analyse des votes
+            // Parcours des données par rapport à l'évaluateur (groupe_votant)
             evaluationsSession.forEach(e => {
-                const noteSur5 = (e.note / 20) * 5;
+                const noteSur20 = e.note; // La note brute de la bdd est déjà sur 20
 
-                if (syntheseVisuelle[e.sujet]) {
+                if (structureParGroupe[e.groupe_votant]) {
                     if (e.groupe_votant === e.sujet) {
-                        syntheseVisuelle[e.sujet].auto = noteSur5;
+                        // Cas de l'auto-évaluation
+                        structureParGroupe[e.groupe_votant].autoEval = noteSur20;
                     } else {
-                        syntheseVisuelle[e.sujet].pairs.push(noteSur5);
-                    }
-                }
+                        // Cas où il évalue une autre équipe
+                        structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
 
-                // ANALYSE DU RÔLE D'ÉVALUATEUR SUR LES AUTRES GROUPES
-                const profNotesDuSujet = notesFormateurLocales[e.sujet];
-                if (profNotesDuSujet && e.groupe_votant !== e.sujet) {
-                    const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
-                    
-                    const seuilPlus20 = moyProfSur5 * 1.20;
-                    const seuilMoins20 = moyProfSur5 * 0.80;
-
-                    if (noteSur5 > seuilPlus20) {
-                        accumulateurPointsVotant[e.groupe_votant] -= 1; // Trop généreux sur un groupe camarade
-                    } else if (noteSur5 < seuilMoins20) {
-                        accumulateurPointsVotant[e.groupe_votant] += 1; // Sévère / Modeste par rapport au prof
+                        // Calcul de la sévérité / générosité par rapport au prof sur le groupe ciblé (e.sujet)
+                        const profNotesDuSujet = notesFormateurLocales[e.sujet];
+                        if (profNotesDuSujet) {
+                            const moyProfSur20 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
+                            
+                            if (noteSur20 > (moyProfSur20 * 1.20)) {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1; // Trop gentil
+                            } else if (noteSur20 < (moyProfSur20 * 0.80)) {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1; // Sévère
+                            }
+                        }
                     }
                 }
             });
 
-            // 2. Calcul des impacts réels par ligne (Ligne = Groupe Évaluateur)
+            // Construction du tableau
             groupesSession.forEach(g => {
                 const nom = g.nom;
-                
-                const autoEvalVal = syntheseVisuelle[nom].auto;
-                const tabPairs = syntheseVisuelle[nom].pairs;
-                const moyPairsVal = tabPairs.length > 0 ? (tabPairs.reduce((a,b)=>a+b,0) / tabPairs.length) : null;
+                const donnees = structureParGroupe[nom];
+
+                const autoEvalVal = donnees.autoEval;
+                const totalDonnees = donnees.notesDonneesAuxAutres.length;
+                const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
 
                 const profNotes = notesFormateurLocales[nom];
-                const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
-                const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
+                const noteProfSur20 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
 
-                // --- CALCUL DU POINT AUTO (Chiffre entier strict) ---
+                // --- 1. CALCUL BONUS AUTO ---
                 let ptAuto = 0;
                 let textAuto = "0";
-                
-                if (autoEvalVal !== null && moyProfSur5 !== null) {
-                    if (autoEvalVal > (moyProfSur5 * 1.20)) {
+                if (autoEvalVal !== null && noteProfSur20 !== null) {
+                    if (autoEvalVal > (noteProfSur20 * 1.20)) {
                         ptAuto = -1;
                         textAuto = "-1";
-                    } else if (autoEvalVal < (moyProfSur5 * 0.80)) {
+                    } else if (autoEvalVal < (noteProfSur20 * 0.80)) {
                         ptAuto = 1;
                         textAuto = "+1";
                     }
                 }
 
-                // --- CALCUL DU POINT EVALUATION PAIRS AVEC PLAFOND STRICT (-1 ou +1) ---
-                let ptPairsFinaL = 0;
+                // --- 2. CALCUL BONUS PAIRS PLAFONNÉ ---
+                let ptPairsFinal = 0;
                 let textPairs = "0";
-                const scoreBrutCumule = accumulateurPointsVotant[nom];
-
-                if (scoreBrutCumule < 0) {
-                    ptPairsFinaL = -1;
+                if (donnees.accumulateurPointsCamarades < 0) {
+                    ptPairsFinal = -1;
                     textPairs = "-1";
-                } else if (scoreBrutCumule > 0) {
-                    ptPairsFinaL = 1;
+                } else if (donnees.accumulateurPointsCamarades > 0) {
+                    ptPairsFinal = 1;
                     textPairs = "+1";
                 }
 
-                // --- IMPACT TOTAL ENTIER STRICT (-2, -1, 0, 1, 2) ---
-                const impactTotalEntier = ptAuto + ptPairsFinaL;
+                // --- 3. IMPACT TOTAL ---
+                const impactTotalEntier = ptAuto + ptPairsFinal;
                 let textImpact = "0";
                 if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
                 if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
 
-                // --- NOTE FINALE ---
+                // --- 4. NOTE FINALE ---
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
                     const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
@@ -231,8 +230,8 @@
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
                         <td class="py-3 px-3 text-center text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
-                        <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyPairsVal !== null ? moyPairsVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsFinaL < 0 ? 'text-red-400' : ptPairsFinaL > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
+                        <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsFinal < 0 ? 'text-red-400' : ptPairsFinal > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
                         <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
                         <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
@@ -248,16 +247,16 @@
             monRadarChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: listeCriteresProf.map(c => c.nom),
+                    labels: [],
                     datasets: [
-                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
-                        { label: 'Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
+                        { label: 'Moyenne Donnée Aux Autres 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
                     ]
                 },
                 options: {
-                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
-                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10, font: { size: 10 } } } },
+                    scales: { r: { min: 4, max: 20, ticks: { stepSize: 4, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
+                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10 } } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
@@ -270,29 +269,25 @@
             if(!groupeAffiche) return;
 
             const notesProf = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-            const listeAutoEval = Array(listeCriteresProf.length).fill(null);
-            const listePairsEval = Array(listeCriteresProf.length).fill(null);
+            let autoEval = null;
+            let notesDonnees = [];
 
             evaluationsSession.forEach(e => {
-                if(e.sujet === groupeAffiche) {
-                    const noteSur5 = (e.note / 20) * 5;
-                    for(let i=0; i<listeCriteresProf.length; i++) {
-                        if(e.groupe_votant === e.sujet) {
-                            listeAutoEval[i] = noteSur5;
-                        } else {
-                            if(!listePairsEval[i]) listePairsEval[i] = [];
-                            listePairsEval[i].push(noteSur5);
-                        }
+                if(e.groupe_votant === groupeAffiche) {
+                    if(e.sujet === groupeAffiche) {
+                        autoEval = e.note;
+                    } else {
+                        notesDonnees.push(e.note);
                     }
                 }
             });
 
-            const dataPairsFinal = listePairsEval.map(val => Array.isArray(val) ? (val.reduce((a,b)=>a+b,0)/val.length) : null);
+            const moyDonnee = notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null;
 
             monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
             monRadarChart.data.datasets[0].data = notesProf;
-            monRadarChart.data.datasets[1].data = listeAutoEval;
-            monRadarChart.data.datasets[2].data = dataPairsFinal;
+            monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
+            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(moyDonnee);
             monRadarChart.update();
         }
 
