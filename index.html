@@ -48,7 +48,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
                 <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
-                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
+                <p class="text-xs text-gray-400">Si l'écart avec le formateur is &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
             </div>
             
             <div class="overflow-x-auto">
@@ -93,10 +93,35 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
+            // 1. Récupération des groupes
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
+            
+            // 2. Récupération des apprenants associés à la session (comme dans vote.html)
+            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
+
             if(g) {
                 groupesSession = g;
-                document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+
+                // On mappe les prénoms par ID unique de groupe
+                const membresParIdGroupe = {};
+                g.forEach(grp => {
+                    membresParIdGroupe[grp.id] = [];
+                });
+
+                if (apps) {
+                    apps.forEach(student => {
+                        if (membresParIdGroupe[student.groupe_id]) {
+                            membresParIdGroupe[student.groupe_id].push(student.prenom);
+                        }
+                    });
+                }
+
+                // Génération des options avec les prénoms entre parenthèses
+                document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => {
+                    const listePrenoms = membresParIdGroupe[grp.id];
+                    const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
+                    return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
+                }).join('');
             }
 
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
