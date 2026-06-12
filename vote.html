@@ -188,12 +188,12 @@
                 const noteSur20 = (moyenneSur5 / 5) * 20;
 
                 tableauPayloadsEnvoi.push({
-                    session_id: idSessionEnCours,
-                    evaluateur: monGroupe,
-                    sujet: nomDuSujet,
-                    note_structure: noteSur20, // Sauvegarde globale harmonisée
-                    note_analyse: noteSur20,
-                    note_posture: noteSur20
+                session_id: idSessionEnCours,
+                groupe_votant: monGroupe, // 👈 C'est cette ligne qui coince !
+                sujet: nomDuSujet,
+                note_structure: noteSur20, 
+                note_analyse: noteSur20,
+                note_posture: noteSur20
                 });
             });
 
