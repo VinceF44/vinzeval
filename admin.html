@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Design Lumineux</title>
+    <title>Console Admin — Ambiance Feutrée</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -12,24 +12,27 @@
             --brand-blue: #1c4b84;
             --brand-yellow: #efef89;
 
-            /* Déclinaisons pastels et claires */
-            --bg-creme: #f8fafc; /* Un blanc-gris très doux, pas agressif pour les yeux */
-            --card-white: #ffffff;
-            --text-dark: #334155; /* Gris ardoise foncé pour une lecture parfaite sans le noir pur */
-            --blue-pastel-bg: #e0e9f4; /* Version très claire et laiteuse de votre bleu */
-            --yellow-pastel-bg: #fdfded; /* Version crème/pastel de votre jaune */
+            /* Nuances adoucies pour briser le blanc agressif */
+            --bg-feutre: #eef2f7;        /* Un fond gris-bleu très doux qui absorbe la lumière */
+            --card-soft: #ffffff;         /* Blocs blancs pour le contraste */
+            --input-bg: #f4f7fa;          /* Fonds de saisie teintés pour ne pas être blancs */
+            --text-main: #27374d;         /* Texte bleu-gris foncé, très lisible et doux */
+            
+            /* Boutons pastels */
+            --btn-vote-bg: #d4e2f0;
+            --btn-dash-bg: #f9f9db;       /* Déclinaison pastel de votre jaune */
         }
     </style>
 </head>
-<!-- Fond clair, reposant et lumineux -->
-<body class="bg-[var(--bg-creme)] text-[var(--text-dark)] font-sans min-h-screen p-4 md:p-8">
+<!-- Fond teinté gris-bleu reposant -->
+<body class="bg-[var(--bg-feutre)] text-[var(--text-main)] font-sans min-h-screen p-4 md:p-8">
 
     <div class="max-w-5xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE LUMINEUX -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xs">
+        <!-- EN-TÊTE CONFIGURÉ -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-300/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xs">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border text-slate-500 bg-slate-50 border-slate-200">
+                <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border text-slate-600 bg-slate-100 border-slate-300/70">
                     ⚙️ Espace Gestion
                 </span>
                 <h1 class="text-2xl font-extrabold mt-2 tracking-tight" style="color: var(--brand-blue);">
@@ -39,9 +42,9 @@
         </div>
 
         <!-- BLOC DE CRÉATION DE SESSION COMPLET -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 space-y-6 shadow-xs">
+        <div class="bg-white p-6 rounded-2xl border border-slate-300/60 space-y-6 shadow-xs">
             <h2 class="text-xs font-bold uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2" style="color: var(--brand-blue);">
-                <span class="w-2 h-2 rounded-full" style="background-color: var(--brand-yellow);"></span> 
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--brand-yellow); border: 1px solid #d0d060;"></span> 
                 Configurer et Générer une Session
             </h2>
             
@@ -51,12 +54,12 @@
                 <div class="flex flex-col justify-between space-y-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nom de la session :</label>
-                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-slate-50/50 rounded-xl p-3 text-sm border border-slate-200 text-slate-800 focus:outline-none focus:border-slate-400 transition-colors focus:bg-white">
+                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-[var(--input-bg)] rounded-xl p-3 text-sm border border-slate-300/70 text-slate-800 focus:outline-none focus:border-slate-400 focus:bg-white transition-all">
                     </div>
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Critères d'évaluation (Un critère par ligne) :</label>
-                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-slate-50/50 rounded-xl p-3 text-sm border border-slate-200 text-slate-800 focus:outline-none font-sans min-h-[160px] focus:border-slate-400 transition-colors focus:bg-white"></textarea>
+                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[var(--input-bg)] rounded-xl p-3 text-sm border border-slate-300/70 text-slate-800 focus:outline-none font-sans min-h-[160px] focus:border-slate-400 focus:bg-white transition-all"></textarea>
                         <p class="text-[10px] text-slate-400 mt-1">Sautez simplement à la ligne pour chaque critère.</p>
                     </div>
                 </div>
@@ -66,38 +69,38 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nombre de Groupes :</label>
-                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-slate-50/50 rounded-xl p-3 text-sm border border-slate-200 text-slate-800 focus:outline-none focus:bg-white">
+                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-[var(--input-bg)] rounded-xl p-3 text-sm border border-slate-300/70 text-slate-800 focus:outline-none focus:bg-white transition-all">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Préfixe des Groupes :</label>
-                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-slate-50/50 rounded-xl p-3 text-sm border border-slate-200 text-slate-800 focus:outline-none focus:bg-white">
+                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[var(--input-bg)] rounded-xl p-3 text-sm border border-slate-300/70 text-slate-800 focus:outline-none focus:bg-white transition-all">
                         </div>
                     </div>
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Liste des apprenants (Un prénom par ligne) :</label>
-                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full flex-1 bg-slate-50/50 rounded-xl p-3 text-sm border border-slate-200 text-slate-800 focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto focus:border-slate-400 transition-colors focus:bg-white"></textarea>
+                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full flex-1 bg-[var(--input-bg)] rounded-xl p-3 text-sm border border-slate-300/70 text-slate-800 focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto focus:border-slate-400 focus:bg-white transition-all"></textarea>
                         <p class="text-[10px] text-slate-400 mt-1">Ils seront mélangés et répartis équitablement.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- BOUTON PRINCIPAL PASTEL ET PRO (Votre bleu adouci en fond, texte blanc) -->
-            <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition uppercase tracking-wider cursor-pointer shadow-xs hover:opacity-90 active:scale-[0.99] text-white" style="background-color: var(--brand-blue);">
+            <!-- BOUTON PRINCIPAL (Votre bleu de marque, solide et pro) -->
+            <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition uppercase tracking-wider cursor-pointer shadow-xs hover:brightness-110 active:scale-[0.99] text-white" style="background-color: var(--brand-blue);">
                 🚀 Générer la session complète
             </button>
         </div>
 
         <!-- LISTE DES SESSIONS ACTIVES -->
         <div class="space-y-3">
-            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 pl-1">🟢 Sessions en cours</h2>
-            <div id="liste-sessions-actives" class="space-y-2"></div>
+            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🟢 Sessions en cours</h2>
+            <div id="liste-sessions-actives" class="space-y-2.5"></div>
         </div>
 
         <!-- HISTORIQUE DES SESSIONS TERMINÉES -->
-        <div class="space-y-3 pt-4 border-t border-slate-200">
+        <div class="space-y-3 pt-4 border-t border-slate-300">
             <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique</h2>
-            <div id="liste-sessions-terminees" class="space-y-2"></div>
+            <div id="liste-sessions-terminees" class="space-y-2.5"></div>
         </div>
 
     </div>
@@ -128,15 +131,15 @@
                 if (s.statut !== 'terminee') {
                     countActives++;
                     conteneurActives.innerHTML += `
-                        <div class="bg-white p-4 rounded-xl border border-slate-200/70 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition hover:shadow-xs hover:border-slate-300">
+                        <div class="bg-white p-4 rounded-xl border border-slate-300/60 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition hover:shadow-md hover:border-slate-400/80">
                             <div>
-                                <div class="font-bold text-slate-800 text-base">${s.nom}</div>
+                                <div class="font-extrabold text-slate-800 text-base tracking-tight">${s.nom}</div>
                                 <div class="text-[10px] text-slate-400 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-xs font-bold py-2 px-3 rounded-lg transition hover:opacity-90 flex items-center gap-1.5" style="background-color: var(--blue-pastel-bg); color: var(--brand-blue);">🗳️ Lien Vote</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="text-xs font-bold py-2 px-3 rounded-lg transition hover:opacity-90 flex items-center gap-1.5" style="background-color: var(--yellow-pastel-bg); color: #71711c;">📊 Dashboard</a>
-                                <button onclick="cloturerSession('${s.id}')" class="bg-slate-50 text-slate-500 hover:bg-red-50 hover:text-red-600 text-xs py-2 px-3 rounded-lg border border-slate-200 transition cursor-pointer">🔒 Clôturer</button>
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-xs font-bold py-2 px-3.5 rounded-lg transition hover:brightness-95 border border-blue-300/30 shadow-xs" style="background-color: var(--btn-vote-bg); color: var(--brand-blue);">🗳️ Lien Vote</a>
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="text-xs font-bold py-2 px-3.5 rounded-lg transition hover:brightness-95 border border-yellow-300/20 shadow-xs" style="background-color: var(--btn-dash-bg); color: #616113;">📊 Dashboard</a>
+                                <button onclick="cloturerSession('${s.id}')" class="bg-slate-50 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-xs py-2 px-3 rounded-lg border border-slate-200 transition cursor-pointer">🔒 Clôturer</button>
                                 <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 text-xs py-2 px-3 rounded-lg border border-slate-200 transition cursor-pointer">👥 Dupliquer</button>
                             </div>
                         </div>
@@ -144,10 +147,10 @@
                 } else {
                     countTerminees++;
                     conteneurTerminees.innerHTML += `
-                        <div class="bg-slate-50/60 p-4 rounded-xl border border-slate-200/40 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-70">
+                        <div class="bg-slate-100/70 p-4 rounded-xl border border-slate-300/40 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-70">
                             <div>
                                 <div class="font-medium text-slate-500 text-base">🗃️ ${s.nom}</div>
-                                <span class="bg-slate-200/50 text-slate-500 text-[9px] font-medium uppercase px-1.5 py-0.5 rounded border border-slate-300/30">Clos</span>
+                                <span class="bg-slate-200/60 text-slate-600 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded border border-slate-300/50">Clos</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="bg-white text-slate-500 hover:text-slate-800 text-xs py-2 px-4 rounded-lg border border-slate-200 transition">👁️ Consulter</a>
@@ -229,7 +232,7 @@
         }
 
         async function cloturerSession(idSession) {
-            if (!confirm("⚠️ Fermer définitivement cette session ?\n\ Le lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique.")) return;
+            if (!confirm("⚠️ Fermer définitivement cette session ?\n\nLe lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique."));
             const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
             if (!error) chargerSessions();
         }
