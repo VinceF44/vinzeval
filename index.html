@@ -8,35 +8,38 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-[#1e2640] text-[#e2e8f0] font-sans min-h-screen p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+        <!-- HEADER -->
+        <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Règle des Écarts Strictes</span>
+                <span class="bg-amber-400/10 text-amber-300 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-400/20">👑 Console Master — Règle des Écarts Strictes</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
+            <button onclick="chargerDonneesDashboard()" class="bg-[#4f73a1] hover:bg-[#5f84b3] text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-[#6d94c7]/30 shadow-md transition cursor-pointer">
                 🔄 Récupérer les votes des élèves
             </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
-                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1 - 5)</h2>
+            <!-- ÉVALUATION FORMATEUR -->
+            <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] space-y-4 h-fit shadow-lg">
+                <h2 class="text-sm font-bold text-amber-300 border-b border-[#37466f] pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1 - 5)</h2>
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
-                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
+                        <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Sélectionner l'équipe évaluée :</label>
+                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-[#182035] rounded-xl p-2.5 text-sm border border-[#37466f] text-white focus:outline-none focus:border-indigo-400 transition"></select>
                     </div>
                     <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
-                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
+                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-400 hover:bg-amber-500 text-[#1e2640] font-black py-2.5 rounded-xl text-xs uppercase transition shadow-md cursor-pointer tracking-wider">💾 Valider la note</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
-                <div class="w-full border-b border-gray-800 pb-2 mb-2">
+            <!-- GRAPHIQUE RADAR -->
+            <div class="lg:col-span-2 bg-[#293556] p-6 rounded-2xl border border-[#37466f] flex flex-col justify-between items-center min-h-[350px] shadow-lg">
+                <div class="w-full border-b border-[#37466f] pb-2 mb-2">
                     <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Repères de 1 à 5)</h2>
                 </div>
                 <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
@@ -45,27 +48,28 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <div class="border-b border-gray-800 pb-2">
+        <!-- TABLEAU DE BORD -->
+        <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] space-y-4 shadow-lg">
+            <div class="border-b border-[#37466f] pb-2">
                 <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
-                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
+                <p class="text-xs text-slate-300">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
             </div>
             
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-[#37466f]/60 bg-[#182035]">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
-                            <th class="py-3 px-3">Groupe Évaluateur</th>
-                            <th class="py-3 px-3 text-center bg-blue-950/20">Son Auto-Éval (/20)</th>
-                            <th class="py-3 px-3 text-center font-bold text-blue-400">Malus/Bonus Auto</th>
-                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
-                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
-                            <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total (Max ±2)</th>
-                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
+                        <tr class="border-b border-[#37466f] text-slate-300 uppercase font-mono text-[11px] bg-[#1d2742]">
+                            <th class="py-3 px-4 font-bold">Groupe Évaluateur</th>
+                            <th class="py-3 px-3 text-center bg-cyan-950/20 font-bold">Son Auto-Éval (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-[#67e8f9]">Malus/Bonus Auto</th>
+                            <th class="py-3 px-3 text-center bg-indigo-950/20 font-bold">Moy. Notes aux autres (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-[#c7d2fe]">Malus/Bonus Camarades</th>
+                            <th class="py-3 px-3 text-center bg-amber-950/20 font-bold">Note Formateur (/20)</th>
+                            <th class="py-3 px-3 text-center text-emerald-300 font-bold bg-[#151e33]">Impact Total (Max ±2)</th>
+                            <th class="py-3 px-4 text-right text-indigo-300 font-bold text-sm">Note Finale (/20)</th>
                         </tr>
                     </thead>
-                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60"></tbody>
+                    <tbody id="table-corps-resultats" class="divide-y divide-[#37466f]/40"></tbody>
                 </table>
             </div>
         </div>
@@ -74,7 +78,7 @@
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3IDEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -113,12 +117,12 @@
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
                 <div>
                     <div class="flex justify-between text-xs mb-1">
-                        <span class="text-gray-400">🎯 ${c.nom}</span>
-                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
+                        <span class="text-slate-300">🎯 ${c.nom}</span>
+                        <span id="v-f-${index}" class="text-amber-300 font-bold font-mono">3 / 5</span>
                     </div>
                     <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
                         oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'" 
-                        class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                        class="w-full accent-amber-400 h-1 bg-[#182035] rounded-lg appearance-none cursor-pointer">
                 </div>
             `).join('');
         }
@@ -155,7 +159,6 @@
                 };
             });
 
-            // Étape 1 : On traite chaque évaluation soumise par un évaluateur (e.groupe_votant)
             evaluationsSession.forEach(e => {
                 const noteSur20 = e.note;
 
@@ -165,7 +168,6 @@
                     } else {
                         structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
 
-                        // Comparaison avec la note du formateur sur l'équipe qu'il vient de noter
                         const profNotesDuSujet = notesFormateurLocales[e.sujet];
                         if (profNotesDuSujet) {
                             const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
@@ -174,7 +176,6 @@
                             const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
                             const seuilTolerance = moyProfSur20 * 0.20;
 
-                            // LOGIQUE STRICTE : Écart >= 20% -> Malus -1 | Écart < 20% -> Bonus +1
                             if (ecartAbsolu >= seuilTolerance) {
                                 structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
                             } else {
@@ -185,7 +186,6 @@
                 }
             });
 
-            // Étape 2 : Construction visuelle des lignes
             groupesSession.forEach(g => {
                 const nom = g.nom;
                 const donnees = structureParGroupe[nom];
@@ -198,7 +198,6 @@
                 const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
                 const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
-                // --- 1. CALCUL DU POINT AUTO (Écart < 20% = +1 | Écart >= 20% = -1) ---
                 let ptAuto = 0;
                 let textAuto = "--";
                 if (autoEvalVal !== null && noteProfSur20 !== null) {
@@ -214,36 +213,32 @@
                     }
                 }
 
-                // --- 2. POINTS COMPORTEMENT CAMARADES (Cumul brut non bridé ici) ---
                 let ptPairsCumule = donnees.accumulateurPointsCamarades;
                 let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
 
-                // --- 3. IMPACT TOTAL BRUT PUIS PLAFOND GLOBAL À [-2, +2] ---
                 let impactBrut = ptAuto + ptPairsCumule;
-                // Application stricte de la contrainte max +2 / min -2
                 const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
                 
                 let textImpact = "0";
                 if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
                 if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
 
-                // --- 4. CALCUL DE LA NOTE FINALE ---
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
                     const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
-                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${noteCalculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                    noteFinaleAffichage = `<span class="text-sm font-black text-[#c7d2fe]">${noteCalculee.toFixed(2)}</span> <span class="text-[10px] text-slate-400">/20</span>`;
                 }
 
                 corpsTable.innerHTML += `
-                    <tr class="hover:bg-gray-900/40 transition font-mono">
-                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
-                        <td class="py-3 px-3 text-center text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
-                        <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
-                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
-                        <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
+                    <tr class="hover:bg-[#1d2742]/50 transition font-mono">
+                        <td class="py-3 px-4 font-bold text-white text-sm font-sans">${nom}</td>
+                        <td class="py-3 px-3 text-center text-[#67e8f9] bg-cyan-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-rose-300' : ptAuto > 0 ? 'text-emerald-300' : 'text-slate-400'}">${textAuto}</td>
+                        <td class="py-3 px-3 text-center text-[#c7d2fe] bg-indigo-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-rose-300' : ptPairsCumule > 0 ? 'text-emerald-300' : 'text-slate-400'}">${textPairs}</td>
+                        <td class="py-3 px-3 text-center font-bold text-amber-300 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center bg-[#151e33] text-sm font-black ${impactTotalEntier < 0 ? 'text-rose-400' : impactTotalEntier > 0 ? 'text-emerald-400' : 'text-slate-400'}">${textImpact}</td>
+                        <td class="py-3 px-4 text-right font-sans">${noteFinaleAffichage}</td>
                     </tr>
                 `;
             });
@@ -258,14 +253,23 @@
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
-                        { label: 'Moyenne Donnée Aux Autres 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2.5 },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#22d3ee', backgroundColor: 'rgba(34, 211, 238, 0.05)', borderWidth: 2 },
+                        { label: 'Moyenne Camarades 🟪', data: [], borderColor: '#818cf8', backgroundColor: 'rgba(129, 140, 248, 0.05)', borderWidth: 2 }
                     ]
                 },
                 options: {
-                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
-                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10 } } },
+                    scales: { 
+                        r: { 
+                            min: 1, 
+                            max: 5, 
+                            ticks: { stepSize: 1, color: '#94a3b8', backdropColor: 'transparent' }, 
+                            grid: { color: '#37466f' }, 
+                            angleLines: { color: '#37466f' }, 
+                            pointLabels: { color: '#e2e8f0', font: { size: 10, weight: 'bold' } } 
+                        } 
+                    },
+                    plugins: { legend: { labels: { color: '#e2e8f0', boxWidth: 10, font: { size: 11 } } } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
