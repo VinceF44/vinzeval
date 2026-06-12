@@ -3,323 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Formateur — Gestion des Sessions</title>
+    <title>Console Admin — Gestion des Sessions</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto space-y-8">
         
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-md flex justify-between items-center">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex justify-between items-center shadow-xl">
             <div>
-                <h1 class="text-2xl font-black text-indigo-400">🛠️ Console Administration Formateur</h1>
-                <p class="text-xs text-gray-400 mt-1">Configurez, répartissez et lancez vos évaluations live.</p>
+                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">⚙️ Panel Contrôle</span>
+                <h1 class="text-2xl font-black text-white mt-1">Gestion des Évaluations</h1>
             </div>
-            <span id="cloud-status" class="text-xs font-bold text-amber-400 bg-amber-950/30 px-3 py-1 rounded border border-amber-900/30">Vérification du Cloud...</span>
         </div>
 
-        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-sm space-y-4">
-            <h2 class="text-lg font-bold text-white border-b border-gray-700 pb-2">1. Gestion de la Session</h2>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+            <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">✨ Initialiser une nouvelle session</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Créer une nouvelle session :</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="nouvelle-session-nom" placeholder="Ex: Soutenance Master 2" class="flex-1 bg-gray-900 rounded p-2 border border-gray-700 focus:outline-none focus:border-indigo-500 text-white">
-                        <button onclick="creerSession()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded transition cursor-pointer">Créer</button>
-                    </div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nom de la session :</label>
+                    <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Groupe A" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Session active / Sélectionnée :</label>
-                    <select id="select-session" onchange="chargerDonneesSession()" class="w-full bg-gray-900 rounded p-2 border border-gray-700 focus:outline-none focus:border-indigo-500 font-bold text-indigo-400">
-                        <option value="">-- Choisir ou créer une session --</option>
-                    </select>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères (séparés par des virgules) :</label>
+                    <input type="text" id="criteres-session" placeholder="Ex: Technique, Posture, Support" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
                 </div>
             </div>
+            <button onclick="creerSession()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition cursor-pointer">
+                ➕ Créer la session et ses critères
+            </button>
         </div>
 
-        <div id="zone-configuration" class="hidden space-y-8">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-sm space-y-4">
-                    <h3 class="text-base font-bold text-white border-b border-gray-700 pb-1">2. Vos Critères d'Évaluation</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="nouveau-critere" placeholder="Ex: Posture pro, Diaporama..." class="flex-1 bg-gray-900 rounded p-2 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 text-white">
-                        <button onclick="ajouterCritere()" class="bg-gray-700 hover:bg-gray-600 font-bold px-3 text-sm rounded transition cursor-pointer">+</button>
-                    </div>
-                    <ul id="liste-criteres" class="space-y-1 text-sm text-gray-300 list-disc pl-5"></ul>
+        <div class="space-y-3">
+            <h2 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">🟢 Sessions en cours (Évaluations ouvertes)</h2>
+            <div id="liste-sessions-actives" class="space-y-3">
                 </div>
-
-                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-sm space-y-4">
-                    <h3 class="text-base font-bold text-white border-b border-gray-700 pb-1">3. Création des Groupes</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="nouveau-groupe" placeholder="Ex: Groupe A, Team Alpha..." class="flex-1 bg-gray-900 rounded p-2 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 text-white">
-                        <button onclick="ajouterGroupe()" class="bg-gray-700 hover:bg-gray-600 font-bold px-3 text-sm rounded transition cursor-pointer">+</button>
-                    </div>
-                    <ul id="liste-groupes" class="space-y-1 text-sm text-gray-300 list-disc pl-5"></ul>
-                </div>
-            </div>
-
-            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-sm space-y-4">
-                <h3 class="text-base font-bold text-white border-b border-gray-700 pb-2">4. Liste des Apprenants & Dispatch Aléatoire</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="space-y-2">
-                        <label class="block text-xs uppercase font-bold text-gray-400">Insérer les Prénoms (un par ligne) :</label>
-                        <textarea id="textarea-apprenants" rows="6" class="w-full bg-gray-900 rounded p-2 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 font-mono text-white" placeholder="Julien&#10;Sophie&#10;Thomas"></textarea>
-                        <button onclick="enregistrerApprenants()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 text-xs uppercase rounded transition cursor-pointer">Enregistrer la liste</button>
-                    </div>
-                    
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-xs uppercase font-bold text-gray-400">Composition des équipes :</label>
-                            <button onclick="repartirAleatoirement()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-4 text-xs uppercase rounded transition cursor-pointer shadow">🎲 Brasser et affecter aléatoirement</button>
-                        </div>
-                        <div id="affichage-repartition" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-sm space-y-3">
-                <h3 class="text-base font-bold text-white border-b border-gray-700 pb-2">🔗 Liens de la Session (Partage)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Espace de Vote (Pour les Apprenants) :</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="lien-vote" readonly class="flex-1 bg-gray-900 rounded p-2 text-xs text-indigo-300 border border-gray-700 font-mono focus:outline-none">
-                            <button onclick="copierLien('lien-vote')" class="bg-gray-700 hover:bg-gray-600 text-xs font-bold px-3 rounded transition cursor-pointer">Copier</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Dashboard Live (Projection Tableau) :</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="lien-dashboard" readonly class="flex-1 bg-gray-900 rounded p-2 text-xs text-amber-300 border border-gray-700 font-mono focus:outline-none">
-                            <button onclick="copierLien('lien-dashboard')" class="bg-gray-700 hover:bg-gray-600 text-xs font-bold px-3 rounded transition cursor-pointer">Copier</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6 bg-indigo-950/30 rounded-xl border-2 border-indigo-500/30 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                    <h3 class="text-lg font-black text-white">🚀 Prêt à lancer les évaluations ?</h3>
-                    <p class="text-xs text-gray-400 mt-0.5">En activant la session, les élèves pourront s'y connecter depuis leur espace de vote.</p>
-                </div>
-                <button id="btn-statut-session" onclick="basculerStatutSession()" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-black px-6 py-3 rounded-lg text-sm transition uppercase shadow-md cursor-pointer">
-                    Ouvrir et Activer la Session
-                </button>
-            </div>
-
         </div>
+
+        <div class="space-y-3 pt-4 border-t border-gray-900">
+            <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">🗃️ Archives & Historique (Formulaires clos)</h2>
+            <div id="liste-sessions-terminees" class="space-y-3">
+                </div>
+        </div>
+
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+        let db;
 
-        let supabaseClientInstance = null; 
-        let idSessionActive = null;
-        let listeCriteresLocaux = [];
-        let listeGroupesLocaux = [];
-        let listeApprenantsLocaux = [];
-
-        function init() {
-            const statusBadge = document.getElementById('cloud-status');
-            if (SUPABASE_URL === "VOTRE_SUPABASE_URL" || SUPABASE_URL === "") {
-                statusBadge.innerText = "Clés non configurées ❌";
-                statusBadge.className = "text-xs font-bold text-red-400 bg-red-950/30 px-3 py-1 rounded border border-red-900/30";
-                return;
-            }
-            try {
-                supabaseClientInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                statusBadge.innerText = "Connecté au Cloud ✅";
-                statusBadge.className = "text-xs font-bold text-green-400 bg-green-950/30 px-3 py-1 rounded border border-green-900/30";
-                chargerToutesLesSessions();
-            } catch (error) {
-                console.error(error);
-                statusBadge.innerText = "Erreur de connexion ❌";
-                statusBadge.className = "text-xs font-bold text-red-400 bg-red-950/30 px-3 py-1 rounded border border-red-900/30";
-            }
+        async function initAdmin() {
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            chargerSessions();
         }
 
-        async function fermerSession(idSession) {
-    if (!confirm("Voulez-vous vraiment clôturer cette session ? Le formulaire de vote sera désactivé.")) return;
+        async function chargerSessions() {
+            const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Erreur de chargement des sessions:", error);
+                return;
+            }
 
-    const { error } = await db
-        .from('sessions')
-        .update({ statut: 'terminee' })
-        .eq('id', idSession);
+            const conteneurActives = document.getElementById('liste-sessions-actives');
+            const conteneurTerminees = document.getElementById('liste-sessions-terminees');
+            
+            conteneurActives.innerHTML = "";
+            conteneurTerminees.innerHTML = "";
 
-    if (!error) {
-        alert("🔒 Session clôturée avec succès !");
-        window.location.reload(); // Recharge la page pour actualiser l'affichage
-    } else {
-        alert("❌ Erreur : " + error.message);
-    }
-}
-        async function chargerToutesLesSessions() {
-            try {
-                const { data, error } = await supabaseClientInstance.from('sessions').select('*').order('created_at', { ascending: false });
-                if (data && !error) {
-                    const select = document.getElementById('select-session');
-                    select.innerHTML = '<option value="">-- Choisir ou créer une session --</option>';
-                    data.forEach(s => {
-                        select.innerHTML += `<option value="${s.id}">${s.nom} (${s.statut})</option>`;
-                    });
+            let countActives = 0;
+            let countTerminees = 0;
+
+            sessions.forEach(s => {
+                // Remplacement dynamique du statut 'active' ou 'terminee'
+                if (s.statut !== 'terminee') {
+                    countActives++;
+                    conteneurActives.innerHTML += `
+                        <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition hover:border-gray-700">
+                            <div>
+                                <div class="font-bold text-white text-base">${s.nom}</div>
+                                <div class="text-[10px] text-gray-500 font-mono mt-0.5">ID: ${s.id}</div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition">🗳️ Lien Vote</a>
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-black py-2 px-3 rounded-lg transition">📊 Dashboard</a>
+                                <button onclick="cloturerSession('${s.id}')" class="bg-red-950/40 hover:bg-red-900 text-red-400 hover:text-white text-xs font-bold py-2 px-3 rounded-lg border border-red-900/50 transition cursor-pointer">🔒 Clôturer</button>
+                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold py-2 px-3 rounded-lg border border-gray-700 transition cursor-pointer">👥 Dupliquer</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    countTerminees++;
+                    conteneurTerminees.innerHTML += `
+                        <div class="bg-gray-900/40 p-4 rounded-xl border border-gray-800/60 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-75">
+                            <div>
+                                <div class="font-bold text-gray-400 text-base line-through/none">🗃️ ${s.nom}</div>
+                                <span class="bg-gray-950 text-gray-500 text-[9px] font-mono uppercase px-1.5 py-0.5 rounded border border-gray-800">Clos / Archivé</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition">👁️ Consulter Dashboard</a>
+                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-gray-800 hover:bg-gray-700 text-gray-400 text-xs font-bold py-2 px-3 rounded-lg border border-gray-700 transition cursor-pointer">👥 Dupliquer</button>
+                            </div>
+                        </div>
+                    `;
                 }
-            } catch(e) { console.error(e); }
+            });
+
+            if (countActives === 0) conteneurActives.innerHTML = `<p class="text-xs text-gray-500 italic p-2">Aucune session active en cours.</p>`;
+            if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-gray-500 italic p-2">L'historique des archives est vide.</p>`;
         }
 
         async function creerSession() {
-            const nom = document.getElementById('nouvelle-session-nom').value.trim();
-            if (!nom) return alert("Veuillez entrer un nom de session !");
-            
-            try {
-                const { data, error } = await supabaseClientInstance
-                    .from('sessions')
-                    .insert([{ nom: nom, statut: 'creation' }])
-                    .select();
+            const nomInput = document.getElementById('nouveau-nom-session').value.trim();
+            const criteresInput = document.getElementById('criteres-session').value.trim();
 
-                if (error) return alert("Erreur : " + error.message);
-
-                if (data && data.length > 0) {
-                    document.getElementById('nouvelle-session-nom').value = '';
-                    await chargerToutesLesSessions();
-                    document.getElementById('select-session').value = data[0].id;
-                    chargerDonneesSession();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        async function chargerDonneesSession() {
-            idSessionActive = document.getElementById('select-session').value;
-            const zone = document.getElementById('zone-configuration');
-            
-            if (!idSessionActive) {
-                zone.classList.add('hidden');
+            if (!nomInput) {
+                alert("Veuillez donner un nom à la session.");
                 return;
             }
-            zone.classList.remove('hidden');
 
-            const { data: sData } = await supabaseClientInstance.from('sessions').select('statut').eq('id', idSessionActive).single();
-            const btn = document.getElementById('btn-statut-session');
-            if(sData && sData.statut === 'active') {
-                btn.innerText = "Fermer / Terminer la Session";
-                btn.className = "bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 rounded-lg text-sm transition uppercase shadow-md cursor-pointer";
+            // 1. Insertion de la session (le statut prend 'active' par défaut via Supabase, ou on le force ici)
+            const { data: nouvelleSession, error: errSess } = await db
+                .from('sessions')
+                .insert([{ nom: nomInput, statut: 'active' }])
+                .select()
+                .single();
+
+            if (errSess) {
+                alert("Erreur création session: " + errSess.message);
+                return;
+            }
+
+            // 2. Traitement et insertion des critères s'il y en a
+            if (criteresInput) {
+                const tableauCriteres = criteresInput.split(',').map(c => c.trim()).filter(c => c !== "");
+                if (tableauCriteres.length > 0) {
+                    const objetsCriteres = tableauCriteres.map(nomCritere => ({
+                        session_id: nouvelleSession.id,
+                        nom: nomCritere
+                    }));
+
+                    const { error: errCrit } = await db.from('criteres').insert(objetsCriteres);
+                    if (errCrit) alert("Session créée, mais échec de l'enregistrement des critères : " + errCrit.message);
+                }
+            }
+
+            alert("🎉 Session créée avec succès !");
+            document.getElementById('nouveau-nom-session').value = "";
+            document.getElementById('criteres-session').value = "";
+            chargerSessions();
+        }
+
+        async function cloturerSession(idSession) {
+            if (!confirm("⚠️ Souhaitez-vous fermer cette session ?\n\nLe lien vers le formulaire de vote sera immédiatement désactivé pour les élèves, mais les notes et le dashboard resteront sauvegardés.")) return;
+
+            const { error } = await db
+                .from('sessions')
+                .update({ statut: 'terminee' })
+                .eq('id', idSession);
+
+            if (!error) {
+                alert("🔒 Session clôturée et déplacée dans l'historique.");
+                chargerSessions();
             } else {
-                btn.innerText = "Ouvrir et Activer la Session";
-                btn.className = "bg-green-600 hover:bg-green-700 text-white font-black px-6 py-3 rounded-lg text-sm transition uppercase shadow-md cursor-pointer";
+                alert("Erreur lors de la clôture : " + error.message);
+            }
+        }
+
+        async function dupliquerSession(idSessionSource, nomActuel) {
+            const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
+            if (!nouveauNom || nouveauNom.trim() === "") return;
+
+            // 1. Créer la nouvelle session clonée (active par défaut)
+            const { data: nouvelleSession, error: errSess } = await db
+                .from('sessions')
+                .insert([{ nom: nouveauNom.trim(), statut: 'active' }])
+                .select()
+                .single();
+
+            if (errSess) {
+                alert("Erreur lors de l'initialisation du clone : " + errSess.message);
+                return;
             }
 
-            const { data: crits } = await supabaseClientInstance.from('criteres').select('*').eq('session_id', idSessionActive);
-            const { data: grps } = await supabaseClientInstance.from('groupes').select('*').eq('session_id', idSessionActive);
-            const { data: apps } = await supabaseClientInstance.from('apprenants').select('*').eq('session_id', idSessionActive);
+            // 2. Extraire les critères liés à l'ancienne session
+            const { data: criteresSource, error: errCritFetch } = await db
+                .from('criteres')
+                .select('nom')
+                .eq('session_id', idSessionSource);
 
-            listeCriteresLocaux = crits || [];
-            listeGroupesLocaux = grps || [];
-            listeApprenantsLocaux = apps || [];
+            // 3. Injecter les critères copiés si la session d'origine en comportait
+            if (!errCritFetch && criteresSource && criteresSource.length > 0) {
+                const nouveauxCriteres = criteresSource.map(c => ({
+                    session_id: nouvelleSession.id,
+                    nom: c.nom
+                }));
 
-            rafraichirInterface();
-            genererLiensPartage();
-        }
-
-        function rafraichirInterface() {
-            document.getElementById('liste-criteres').innerHTML = listeCriteresLocaux.map(c => `<li>${c.nom}</li>`).join('');
-            document.getElementById('liste-groupes').innerHTML = listeGroupesLocaux.map(g => `<li>${g.nom}</li>`).join('');
-
-            const textA = document.getElementById('textarea-apprenants');
-            textA.value = listeApprenantsLocaux.map(a => a.prenom).join('\n');
-
-            const divRep = document.getElementById('affichage-repartition');
-            divRep.innerHTML = '';
-            
-            listeGroupesLocaux.forEach(g => {
-                const membres = listeApprenantsLocaux.filter(a => a.groupe_id === g.id).map(a => a.prenom).join(', ');
-                divRep.innerHTML += `
-                    <div class="bg-gray-900 p-2 rounded border border-gray-700 text-xs">
-                        <span class="font-bold text-indigo-400 block mb-0.5">${g.nom}</span>
-                        <span class="text-gray-300">${membres || 'Aucun étudiant affecté'}</span>
-                    </div>
-                `;
-            });
-        }
-
-        async function ajouterCritere() {
-            const nom = document.getElementById('nouveau-critere').value.trim();
-            if (!nom) return;
-            await supabaseClientInstance.from('criteres').insert([{ session_id: idSessionActive, nom: nom }]);
-            document.getElementById('nouveau-critere').value = '';
-            chargerDonneesSession();
-        }
-
-        async function ajouterGroupe() {
-            const nom = document.getElementById('nouveau-groupe').value.trim();
-            if (!nom) return;
-            await supabaseClientInstance.from('groupes').insert([{ session_id: idSessionActive, nom: nom }]);
-            document.getElementById('nouveau-groupe').value = '';
-            chargerDonneesSession();
-        }
-
-        async function enregistrerApprenants() {
-            const lignes = document.getElementById('textarea-apprenants').value.split('\n').map(l => l.trim()).filter(l => l !== "");
-            if (lignes.length === 0) return alert("Entrez au moins un prénom.");
-
-            await supabaseClientInstance.from('apprenants').delete().eq('session_id', idSessionActive);
-            const payload = lignes.map(p => ({ session_id: idSessionActive, prenom: p }));
-            await supabaseClientInstance.from('apprenants').insert(payload);
-            
-            alert("Liste enregistrée !");
-            chargerDonneesSession();
-        }
-
-        async function repartirAleatoirement() {
-            if (listeGroupesLocaux.length === 0 || listeApprenantsLocaux.length === 0) {
-                return alert("Créez d'abord des groupes et enregistrez vos prénoms.");
-            }
-            let apprenantsMelanges = [...listeApprenantsLocaux];
-            for (let i = apprenantsMelanges.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [apprenantsMelanges[i], apprenantsMelanges[j]] = [apprenantsMelanges[j], apprenantsMelanges[i]];
-            }
-            for (let i = 0; i < apprenantsMelanges.length; i++) {
-                const gIndex = i % listeGroupesLocaux.length;
-                await supabaseClientInstance.from('apprenants').update({ groupe_id: listeGroupesLocaux[gIndex].id }).eq('id', apprenantsMelanges[i].id);
-            }
-            alert("Distribution aléatoire terminée ! 🎲");
-            chargerDonneesSession();
-        }
-
-        function genererLiensPartage() {
-            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-            document.getElementById('lien-vote').value = `${baseUrl}/vote.html?session_id=${idSessionActive}`;
-            document.getElementById('lien-dashboard').value = `${baseUrl}/index.html?session_id=${idSessionActive}`;
-        }
-
-        function copierLien(idElement) {
-            const input = document.getElementById(idElement);
-            input.select();
-            navigator.clipboard.writeText(input.value);
-            alert("Lien copié ! 📋");
-        }
-
-        async function basculerStatutSession() {
-            if (!idSessionActive) return;
-            const btn = document.getElementById('btn-statut-session');
-            
-            let nouveauStatut = 'creation';
-            if (btn.innerText.includes("Ouvrir")) {
-                nouveauStatut = 'active';
-            } else if (btn.innerText.includes("Fermer") || btn.innerText.includes("Terminer")) {
-                nouveauStatut = 'terminee';
+                const { error: errCritInsert } = await db.from('criteres').insert(nouveauxCriteres);
+                if (errCritInsert) {
+                    alert("⚠️ Session dupliquée mais échec du transfert des critères : " + errCritInsert.message);
+                    return;
+                }
             }
 
-            await supabaseClientInstance.from('sessions').update({ statut: nouveauStatut }).eq('id', idSessionActive);
-            alert(`Session passée en mode : ${nouveauStatut}`);
-            await chargerToutesLesSessions();
-            document.getElementById('select-session').value = idSessionActive;
-            chargerDonneesSession();
+            alert("👥 Session et structure de critères dupliquées avec succès ! Vous pouvez y affecter vos élèves.");
+            chargerSessions();
         }
 
-        window.onload = init;
+        window.onload = initAdmin;
     </script>
 </body>
 </html>
