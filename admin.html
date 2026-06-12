@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Master Control</title>
+    <title>Console Admin — Confort & Ergonomie</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -22,18 +22,21 @@
             <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider border-b border-gray-800 pb-2">✨ Configurer et Générer une Session</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
+                
+                <div class="flex flex-col justify-between space-y-4">
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nom de la session :</label>
                         <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères d'évaluation (séparés par des virgules) :</label>
-                        <input type="text" id="criteres-session" placeholder="Ex: Technique, Posture, Support, Réponse questions" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
+                    
+                    <div class="flex-1 flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Critères d'évaluation (Un critère par ligne — Idéal pour textes longs) :</label>
+                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code et architecture&#10;Posture : Clarté orale et dynamisme&#10;Support : Visuels, pertinence des slides&#10;Gestion du temps" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-sans min-h-[160px]"></textarea>
+                        <p class="text-[10px] text-gray-500 mt-1">Plus besoin de virgules. Sautez simplement à la ligne pour chaque nouveau critère.</p>
                     </div>
                 </div>
 
-                <div class="space-y-4">
+                <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Nombre de Groupes :</label>
@@ -44,9 +47,10 @@
                             <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Liste des apprenants (un prénom par ligne) :</label>
-                        <textarea id="liste-apprenants-brute" rows="3" placeholder="Thomas&#10;Julie&#10;Lucas&#10;Sarah" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none font-mono text-xs"></textarea>
+                    
+                    <div class="flex-1 flex flex-col">
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Liste des apprenants (Un prénom par ligne — Fenêtre agrandie) :</label>
+                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas&#10;Sarah&#10;...(Idéal pour les grandes classes)" class="w-full flex-1 bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto"></textarea>
                         <p class="text-[10px] text-gray-500 mt-1">Ils seront automatiquement mélangés et répartis équitablement entre les groupes.</p>
                     </div>
                 </div>
@@ -145,16 +149,16 @@
             const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
             if (errSess) { alert("Échec création session: " + errSess.message); return; }
 
-            // ÉTAPE 2 : Créer les Critères
+            // ÉTAPE 2 : Créer les Critères (Correction : Séparation par saut de ligne)
             if (criteresRaw) {
-                const arrCriteres = criteresRaw.split(',').map(c => c.trim()).filter(c => c !== "");
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
                     const payloadCriteres = arrCriteres.map(nom => ({ session_id: session.id, nom: nom }));
                     await db.from('criteres').insert(payloadCriteres);
                 }
             }
 
-            // ÉTAPE 3 : Créer les Groupes dans la base
+            // ÉTAPE 3 : Créer les Groupes
             const listeNomsGroupes = [];
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
@@ -165,28 +169,25 @@
             const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
             if (errGrp) { alert("Erreur lors de la génération des groupes : " + errGrp.message); return; }
 
-            // Map utile pour lier le NOM du groupe à son ID unique généré (uuid)
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // ÉTAPE 4 : Traitement et dispatching aléatoire des Apprenants
+            // ÉTAPE 4 : Mélange et distribution des Apprenants
             if (apprenantsRaw) {
                 let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
                 
                 if (listeApprenants.length > 0) {
-                    // Algorithme de mélange aléatoire (Fisher-Yates)
                     for (let i = listeApprenants.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
                     }
 
-                    // Distribution équitable entre les groupes disponibles
                     const payloadApprenants = listeApprenants.map((prenom, index) => {
                         const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
                         return {
                             session_id: session.id,
                             prenom: prenom,
-                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne] // Lien UUID strict de votre table
+                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
                         };
                     });
 
@@ -196,7 +197,6 @@
             }
 
             alert("🎉 Session complète configurée et générée avec succès !");
-            // Réinitialisation des inputs
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
             document.getElementById('liste-apprenants-brute').value = "";
@@ -213,11 +213,9 @@
             const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
             if (!nouveauNom || nouveauNom.trim() === "") return;
 
-            // 1. Cloner la Session
             const { data: nouvelleSession, error: errSess } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active' }]).select().single();
             if (errSess) return;
 
-            // 2. Cloner les critères associés
             const { data: criteresSource } = await db.from('criteres').select('nom').eq('session_id', idSessionSource);
             if (criteresSource && criteresSource.length > 0) {
                 const nouveauxCriteres = criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom }));
