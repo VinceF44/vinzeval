@@ -3,171 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace de Vote Évaluation (Formulaire Global)</title>
+    <title>Vote Session — Évaluation Croisée</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <div id="ecran-vote" class="max-w-xl w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
-        <div class="text-center border-b border-slate-700 pb-3">
-            <h1 class="text-xl font-black text-indigo-400">🗳️ Évaluation Session Live</h1>
-            <p class="text-xs text-slate-400 mt-1">Évaluez toutes les équipes (échelle 1 à 5). Vos notes sont conservées en mémoire lorsque vous changez d'équipe.</p>
+    <div class="w-full max-w-lg bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl">
+        
+        <div class="border-b border-gray-800 pb-4">
+            <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">🗳️ Espace Évaluation</span>
+            <h1 id="titre-session-vote" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
         </div>
 
         <div class="space-y-4">
-            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Votre Équipe :</label>
-                    <select id="mon-groupe" class="w-full bg-slate-900 rounded p-2 text-sm border border-slate-700 text-white focus:outline-none"></select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-indigo-400 mb-1">Équipe à noter :</label>
-                    <select id="groupe-scene" onchange="changerEquipeScene(this.value)" class="w-full bg-slate-950 font-bold rounded p-2 text-sm border border-indigo-500 text-white focus:outline-none"></select>
-                </div>
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Votant) :</label>
+                <select id="select-groupe-votant" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
             </div>
 
-            <div class="bg-slate-900/30 p-4 rounded-xl border border-slate-700/50 space-y-5">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-1">
-                    <span id="titre-equipe-encours" class="text-xs font-bold text-amber-400 uppercase">Notes pour : --</span>
-                    <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Sauvegarde locale auto</span>
-                </div>
-                <div id="conteneur-criteres-dynamiques" class="space-y-4">
-                    <p class="text-xs text-slate-500 text-center py-2">Chargement des critères de la session...</p>
-                </div>
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Équipe à évaluer :</label>
+                <select id="select-sujet-evalue" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
             </div>
 
-            <div class="pt-2">
-                <button onclick="soumettreFormulaireFinal()" class="w-full bg-indigo-600 hover:bg-indigo-700 font-black py-3.5 rounded-xl transition cursor-pointer text-xs uppercase shadow-lg tracking-wider">
-                    🚀 Clôturer et envoyer toutes mes évaluations
+            <div id="conteneur-criteres-vote" class="space-y-4 pt-2 border-t border-gray-800/60">
+                </div>
+
+            <div class="pt-4">
+                <button onclick="soumettreEvaluation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider">
+                    🚀 Envoyer mon évaluation
                 </button>
             </div>
         </div>
-    </div>
 
-    <div id="ecran-verrouille" class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-emerald-800 shadow-2xl space-y-6 hidden text-center">
-        <div class="space-y-2">
-            <span class="text-4xl">🎉</span>
-            <h1 class="text-2xl font-black text-emerald-400">Évaluations Envoyées !</h1>
-            <p class="text-xs text-slate-300">Votre participation est enregistrée. Votre session est désormais verrouillée.</p>
-        </div>
-        
-        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-left space-y-3">
-            <h3 class="text-xs font-bold uppercase text-slate-400 border-b border-slate-700 pb-1">📈 Récapitulatif :</h3>
-            <div class="flex justify-between text-xs">
-                <span>Équipes évaluées :</span>
-                <span id="recap-nb-groupes" class="font-bold text-indigo-400">0 / 0</span>
-            </div>
-            <div class="flex justify-between text-xs">
-                <span>Auto-évaluation :</span>
-                <span id="recap-auto" class="font-bold text-emerald-400">Validée ✅</span>
-            </div>
-        </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        let dbSupabase;
+        let db;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const idSessionEnCours = urlParams.get('session_id');
-        
-        let listeCriteresSession = [];
-        let listeGroupesNoms = [];
-        let memoireNotesLocales = {}; 
-        let ancienneEquipeSelectionnee = "";
+        const idSessionVote = urlParams.get('session_id');
 
-        async function initVote() {
-            if (!idSessionEnCours) {
-                alert("⚠️ Lien de vote invalide (id session manquant).");
+        let listeCriteres = [];
+
+        async function initVotePage() {
+            if (!idSessionVote) {
+                document.getElementById('titre-session-vote').innerText = "❌ Aucune session spécifiée";
                 return;
             }
-            dbSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            const { data: groupes } = await dbSupabase.from('groupes').select('*').eq('session_id', idSessionEnCours);
-            if (groupes && groupes.length > 0) {
-                listeGroupesNoms = groupes.map(g => g.nom);
-                document.getElementById('mon-groupe').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
-                document.getElementById('groupe-scene').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
-                
-                ancienneEquipeSelectionnee = document.getElementById('groupe-scene').value;
-                document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${ancienneEquipeSelectionnee}`;
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // 1. Récupération du nom de la session pour le titre
+            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionVote).single();
+            if (s) {
+                document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
             }
 
-            const { data: criteres } = await dbSupabase.from('criteres').select('*').eq('session_id', idSessionEnCours);
-            if (criteres && criteres.length > 0) {
-                listeCriteresSession = criteres;
-                listeGroupesNoms.forEach(nomG => {
-                    memoireNotesLocales[nomG] = Array(listeCriteresSession.length).fill(3);
-                });
-                genererSlidersHtml();
+            // 2. Récupération des groupes avec leurs membres
+            // Remplacer 'membres' par le nom exact de votre colonne dans Supabase si nécessaire
+            const { data: g } = await db.from('groupes').select('id, nom, membres').eq('session_id', idSessionVote);
+            if (g) {
+                // Construction des options textuelles : "Groupe X (Prénom1, Prénom2, ...)"
+                const optionsHtml = g.map(grp => {
+                    const prénoms = grp.membres ? ` (${grp.membres})` : '';
+                    return `<option value="${grp.nom}">${grp.nom}${prénoms}</option>`;
+                }).join('');
+
+                document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
+                document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
             }
-        }
 
-        function genererSlidersHtml() {
-            const conteneur = document.getElementById('conteneur-criteres-dynamiques');
-            const notesDeLEquipe = memoireNotesLocales[ancienneEquipeSelectionnee];
-
-            conteneur.innerHTML = listeCriteresSession.map((c, index) => {
-                const noteSauvegardee = notesDeLEquipe[index];
-                return `
+            // 3. Récupération des critères pour la notation de 1 à 5
+            const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionVote);
+            if (crits && crits.length > 0) {
+                listeCriteres = crits;
+                document.getElementById('conteneur-criteres-vote').innerHTML = crits.map((c, index) => `
                     <div>
-                        <div class="flex justify-between text-xs font-bold mb-1">
-                            <span class="text-slate-300">🎯 ${c.nom}</span>
-                            <span id="val-c-${index}" class="text-indigo-400 bg-slate-950 px-2 py-0.5 rounded font-mono">${noteSauvegardee} / 5</span>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">🎯 ${c.nom}</span>
+                            <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
                         </div>
-                        <input type="range" id="crit-${index}" min="1" max="5" step="0.5" value="${noteSauvegardee}" 
-                            oninput="sauvegarderNoteEnDirect(${index}, this.value)" 
-                            class="w-full accent-indigo-500 h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer">
+                        <input type="range" id="vote-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                            oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'" 
+                            class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                     </div>
-                `;
-            }).join('');
-        }
-
-        function sauvegarderNoteEnDirect(indexCritere, valeur) {
-            document.getElementById(`val-c-${indexCritere}`).innerText = valeur + " / 5";
-            memoireNotesLocales[ancienneEquipeSelectionnee][indexCritere] = parseFloat(valeur);
-        }
-
-        function changerEquipeScene(nouvelleEquipe) {
-            ancienneEquipeSelectionnee = nouvelleEquipe;
-            document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${nouvelleEquipe}`;
-            genererSlidersHtml();
-        }
-
-        async function soumettreFormulaireFinal() {
-            const monGroupe = document.getElementById('mon-groupe').value;
-            const confirmation = confirm("Êtes-vous sûr de vouloir envoyer vos notes ?");
-            if(!confirmation) return;
-
-            const tableauPayloadsEnvoi = [];
-
-            listeGroupesNoms.forEach(nomDuSujet => {
-                const notesDuSujet = memoireNotesLocales[nomDuSujet];
-                const moyenneSur5 = notesDuSujet.reduce((a,b) => a+b, 0) / listeCriteresSession.length;
-                const noteSur20 = (moyenneSur5 / 5) * 20;
-
-                tableauPayloadsEnvoi.push({
-                    session_id: idSessionEnCours,
-                    groupe_votant: monGroupe, // 🌟 Correspondance parfaite Supabase
-                    sujet: nomDuSujet,
-                    note: noteSur20          // 🌟 Correspondance parfaite Supabase
-                });
-            });
-
-            const { error } = await dbSupabase.from('evaluations').insert(tableauPayloadsEnvoi);
-
-            if (error) {
-                alert("Erreur Supabase : " + error.message);
-            } else {
-                document.getElementById('ecran-vote').classList.add('hidden');
-                document.getElementById('recap-nb-groupes').innerText = `${listeGroupesNoms.length} / ${listeGroupesNoms.length}`;
-                document.getElementById('ecran-verrouille').classList.remove('hidden');
+                `).join('');
             }
         }
 
-        window.onload = initVote;
+        async function soumettreEvaluation() {
+            const votant = document.getElementById('select-groupe-votant').value;
+            const sujet = document.getElementById('select-sujet-evalue').value;
+
+            // Calcul de la note moyenne saisie sur 5
+            let totalNotes = 0;
+            for (let i = 0; i < listeCriteres.length; i++) {
+                totalNotes += parseFloat(document.getElementById(`vote-crit-${i}`).value);
+            }
+            const moySur5 = totalNotes / listeCriteres.length;
+            
+            // Conversion automatique pour la base de données qui attend une note globale sur 20
+            const noteFinaleSur20 = (moySur5 / 5) * 20;
+
+            const { error } = await db.from('evaluations').insert([{
+                session_id: idSessionVote,
+                groupe_votant: votant,
+                sujet: sujet,
+                note: noteFinaleSur20
+            }]);
+
+            if (!error) {
+                alert("🎉 Évaluation envoyée avec succès ! Merci.");
+                // Optionnel : Réinitialiser les sliders à 3
+                for (let i = 0; i < listeCriteres.length; i++) {
+                    document.getElementById(`vote-crit-${i}`).value = 3;
+                    document.getElementById(`v-v-${i}`).innerText = "3 / 5";
+                }
+            } else {
+                alert("❌ Erreur lors de l'envoi : " + error.message);
+            }
+        }
+
+        window.onload = initVotePage;
     </script>
 </body>
 </html>
