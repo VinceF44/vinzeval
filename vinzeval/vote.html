@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace de Vote Évaluation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 flex items-center justify-center">
+
+    <div class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+        <div class="text-center">
+            <h1 class="text-xl font-black text-indigo-400">🗳️ Évaluation Session Live</h1>
+            <p class="text-xs text-slate-400 mt-1">Attribuez vos notes de manière équitable.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre Équipe :</label>
+                    <select id="mon-groupe" class="w-full bg-slate-900 rounded p-2 text-sm border border-slate-700 focus:outline-none focus:border-indigo-500 text-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Équipe Évaluée :</label>
+                    <select id="groupe-scene" class="w-full bg-slate-900 rounded p-2 text-sm border border-slate-700 focus:outline-none focus:border-indigo-500 text-white"></select>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div>
+                    <div class="flex justify-between text-xs font-bold"><span class="text-slate-300">Structure & Contenu</span><span id="val-c1" class="text-indigo-400">10/20</span></div>
+                    <input type="range" id="c1" min="0" max="20" value="10" oninput="document.getElementById('val-c1').innerText=this.value+'/20'" class="w-full accent-indigo-500 h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold"><span class="text-slate-300">Analyse & Clarté</span><span id="val-c2" class="text-indigo-400">10/20</span></div>
+                    <input type="range" id="c2" min="0" max="20" value="10" oninput="document.getElementById('val-c2').innerText=this.value+'/20'" class="w-full accent-indigo-500 h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold"><span class="text-slate-300">Posture & Oratoire</span><span id="val-c3" class="text-indigo-400">10/20</span></div>
+                    <input type="range" id="c3" min="0" max="20" value="10" oninput="document.getElementById('val-c3').innerText=this.value+'/20'" class="w-full accent-indigo-500 h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer">
+                </div>
+            </div>
+
+            <button onclick="envoyerVote()" class="w-full bg-indigo-600 hover:bg-indigo-700 font-bold py-3 rounded-xl transition cursor-pointer text-sm uppercase mt-4">Soumettre mon évaluation</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+        let dbSupabase;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idSessionEnCours = urlParams.get('session_id');
+
+        async function initVote() {
+            if (!idSessionEnCours) {
+                alert("⚠️ Lien de vote invalide. Il manque l'identifiant de la session.");
+                return;
+            }
+            dbSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            // Chargement ciblé des groupes de cette session
+            const { data: groupes } = await supabase.from('groupes').select('*').eq('session_id', idSessionEnCours);
+            
+            if (groupes) {
+                const selectMonGroupe = document.getElementById('mon-groupe');
+                const selectGroupeScene = document.getElementById('groupe-scene');
+                selectMonGroupe.innerHTML = '';
+                selectGroupeScene.innerHTML = '';
+                
+                groupes.forEach(g => {
+                    selectMonGroupe.innerHTML += `<option value="${g.nom}">${g.nom}</option>`;
+                    selectGroupeScene.innerHTML += `<option value="${g.nom}">${g.nom}</option>`;
+                });
+            }
+        }
+
+        async function envoyerVote() {
+            const monGroupe = document.getElementById('mon-groupe').value;
+            const groupeScene = document.getElementById('groupe-scene').value;
+            
+            if (monGroupe === groupeScene) {
+                return alert("Vous ne pouvez pas évaluer votre propre équipe !");
+            }
+
+            const n1 = parseFloat(document.getElementById('c1').value);
+            const n2 = parseFloat(document.getElementById('c2').value);
+            const n3 = parseFloat(document.getElementById('c3').value);
+
+            const payload = {
+                session_id: idSessionEnCours, 
+                evaluateur: monGroupe,
+                sujet: groupeScene,
+                note_structure: n1,
+                note_analyse: n2,
+                note_posture: n3
+            };
+
+            const { error } = await supabase.from('evaluations').insert([payload]);
+
+            if (error) {
+                alert("Erreur lors de l'envoi : " + error.message);
+            } else {
+                alert("Votre vote a bien été enregistré ! 🎉");
+            }
+        }
+
+        window.onload = initVote;
+    </script>
+</body>
+</html>
