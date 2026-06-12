@@ -113,6 +113,7 @@
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="text-slate-900 text-xs font-bold py-2 px-3.5 rounded-lg transition-all hover:brightness-110 active:scale-[0.97] bg-[#fe9a00]">📊 Dashboard</a>
                                 <button onclick="cloturerSession('${s.id}')" class="bg-[#030712] text-red-400 hover:text-white hover:bg-red-950/40 text-xs py-2 px-3.5 rounded-lg border border-red-900/30 transition-all cursor-pointer active:scale-[0.97]">🔒 Clôturer</button>
                                 <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#030712] text-slate-400 hover:text-slate-200 text-xs py-2 px-3.5 rounded-lg border border-slate-800 transition-all cursor-pointer active:scale-[0.97]">👥 Dupliquer</button>
+                                <button onclick="supprimerSession('${s.id}')" class="bg-[#030712] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3.5 rounded-lg border border-red-900/40 transition-all cursor-pointer active:scale-[0.97]">🗑️ Supprimer</button>
                             </div>
                         </div>
                     `;
@@ -127,6 +128,7 @@
                             <div class="flex flex-wrap gap-2">
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="bg-[#101828] text-slate-400 hover:text-slate-200 text-xs py-2 px-4 rounded-lg border border-slate-800 transition-all">👁️ Consulter Dashboard</a>
                                 <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#101828] text-slate-500 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">👥 Dupliquer</button>
+                                <button onclick="supprimerSession('${s.id}')" class="bg-[#101828] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">🗑️ Supprimer</button>
                             </div>
                         </div>
                     `;
@@ -224,6 +226,20 @@
 
             alert("👥 Session et critères dupliqués ! (Pensez à recréer/réaffecter vos groupes d'élèves pour cette nouvelle session).");
             chargerSessions();
+        }
+
+        async function supprimerSession(idSession) {
+            if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
+
+            // Supabase gère normalement la suppression en cascade (ON DELETE CASCADE) si les clés étrangères sont configurées ainsi.
+            // Par sécurité maximale, on supprime directement la session de la table principale.
+            const { error } = await db.from('sessions').delete().eq('id', idSession);
+            
+            if (error) {
+                alert("Erreur lors de la suppression : " + error.message);
+            } else {
+                chargerSessions();
+            }
         }
 
         window.onload = initAdmin;
