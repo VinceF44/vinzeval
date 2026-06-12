@@ -3,221 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Espace Zen Pro</title>
+    <title>Dashboard Master — Logique Strict Cumul & Plafond</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --color-pastel-sand: #e2c98a;
-            --color-deep-blue: #1c4b84;
-            --color-soft-blue: #3b6b9e; 
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-slate-700">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DASHBOARD -->
-        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border" style="background-color: rgba(226, 201, 138, 0.05); color: var(--color-pastel-sand); border-color: rgba(226, 201, 138, 0.15);">
-                    📊 Résultats Live
-                </span>
-                <h1 id="titre-session" class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Chargement du dashboard...</h1>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Règle des Écarts Strictes</span>
+                <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="calculerMoyennes()" class="text-xs font-bold py-2.5 px-4 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md hover:brightness-110 active:scale-[0.98] text-white flex items-center gap-2" style="background-color: var(--color-soft-blue);">
-                🔄 Actualiser
+            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
+                🔄 Récupérer les votes des élèves
             </button>
         </div>
 
-        <!-- GRILLE PRINCIPALE -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Colonne gauche : Sélecteur de Groupe -->
-            <div class="lg:col-span-1 bg-slate-800/50 p-5 rounded-2xl border border-slate-700/40 space-y-4 shadow-md h-fit">
-                <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--color-pastel-sand);">
-                    👥 Groupes Évalués
-                </h2>
-                <div id="liste-groupes-onglets" class="space-y-2">
-                    <!-- Généré dynamiquement -->
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
+                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1 - 5)</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
+                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
+                    </div>
+                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
+                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
                 </div>
             </div>
 
-            <!-- Colonne Droite : Visualisation des Scores -->
-            <div class="lg:col-span-2 space-y-6">
-                
-                <!-- Vue d'ensemble du groupe sélectionné -->
-                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/40 space-y-6 shadow-md backdrop-blur-md">
-                    <div class="flex justify-between items-center border-b border-slate-700/40 pb-4">
-                        <div>
-                            <h3 id="nom-groupe-selectionne" class="text-lg font-bold text-slate-100">Sélectionnez un groupe</h3>
-                            <p id="membres-groupe" class="text-xs text-slate-400 mt-0.5 italic">Aucun groupe sélectionné</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Note Globale</span>
-                            <span id="note-generale-groupe" class="text-3xl font-black" style="color: var(--color-pastel-sand);">-</span>
-                        </div>
-                    </div>
-
-                    <!-- Grille des critères -->
-                    <div id="scores-criteres-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Les cartes de critères s'afficheront ici -->
-                    </div>
+            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
+                <div class="w-full border-b border-gray-800 pb-2 mb-2">
+                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Repères de 1 à 5)</h2>
                 </div>
-
-                <!-- Section Commentaires -->
-                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700/40 space-y-4 shadow-md">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                        💬 Retours & Feedbacks de la classe
-                    </h3>
-                    <div id="liste-commentaires" class="space-y-3 max-h-[350px] overflow-y-auto pr-2 font-sans text-sm">
-                        <p class="text-xs text-slate-500 italic">Sélectionnez un groupe pour voir les retours.</p>
-                    </div>
+                <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
+                    <canvas id="radarChart"></canvas>
                 </div>
-
             </div>
         </div>
+
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+            <div class="border-b border-gray-800 pb-2">
+                <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
+                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
+                            <th class="py-3 px-3">Groupe Évaluateur</th>
+                            <th class="py-3 px-3 text-center bg-blue-950/20">Son Auto-Éval (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-blue-400">Malus/Bonus Auto</th>
+                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
+                            <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total (Max ±2)</th>
+                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let db;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session_id');
+        const idSessionDashboard = urlParams.get('session_id');
 
-        let tous LesGroupes = [];
-        let groupeSelectionneId = null;
+        let groupesSession = [];
+        let evaluationsSession = [];
+        let listeCriteresProf = [];
+        let notesFormateurLocales = {}; 
+        let monRadarChart = null;
 
         async function initDashboard() {
-            if (!sessionId) {
-                document.getElementById('titre-session').innerText = "Erreur : ID de session manquant dans l'URL";
-                return;
-            }
-
-            const { data: session } = await db.from('sessions').select('nom').eq('id', sessionId).single();
-            if (session) document.getElementById('titre-session').innerText = session.nom;
-
-            const { data: groupes } = await db.from('groupes').select('*').eq('session_id', sessionId).order('nom');
-            tousLesGroupes = groupes || [];
-
-            afficherOngletsGroupes();
-        }
-
-        async function afficherOngletsGroupes() {
-            const conteneur = document.getElementById('liste-groupes-onglets');
-            conteneur.innerHTML = "";
-
-            for (let g of tousLesGroupes) {
-                const { data: apps } = await db.from('apprenants').select('prenom').eq('groupe_id', g.id);
-                const listePrenoms = apps ? apps.map(a => a.prenom).join(', ') : 'Aucun membre';
-                g.membresStr = listePrenoms;
-
-                conteneur.innerHTML += `
-                    <button onclick="selectionnerGroupe('${g.id}')" id="btn-grp-${g.id}" class="w-full text-left p-3.5 rounded-xl border border-slate-700/40 bg-slate-900/40 hover:bg-slate-800/60 transition-all cursor-pointer block active:scale-[0.99]">
-                        <div class="font-bold text-sm text-slate-200 transition-colors">${g.nom}</div>
-                        <div class="text-[11px] text-slate-400 truncate mt-0.5">${listePrenoms}</div>
-                    </button>
-                `;
-            }
-
-            if (tousLesGroupes.length > 0) {
-                selectionnerGroupe(tousLesGroupes[0].id);
-            }
-        }
-
-        async function selectionnerGroupe(idGroupe) {
-            groupeSelectionneId = idGroupe;
+            if (!idSessionDashboard) return;
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            tousLesGroupes.forEach(g => {
-                const btn = document.getElementById(`btn-grp-${g.id}`);
-                if(btn) {
-                    if(g.id === idGroupe) {
-                        btn.style.borderColor = "var(--color-pastel-sand)";
-                        btn.style.backgroundColor = "rgba(226, 201, 138, 0.04)";
+            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
+            if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
+
+            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
+            if(g) {
+                groupesSession = g;
+                document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+            }
+
+            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+            if(critsProf && critsProf.length > 0) {
+                listeCriteresProf = critsProf;
+                genererSlidersHtml();
+            }
+
+            creerGraphiqueRadarVide();
+            chargerDonneesDashboard();
+        }
+
+        function genererSlidersHtml() {
+            document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-400">🎯 ${c.nom}</span>
+                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
+                    </div>
+                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'" 
+                        class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                </div>
+            `).join('');
+        }
+
+        async function chargerDonneesDashboard() {
+            const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
+            if (!error && evals) {
+                evaluationsSession = evals;
+                calculerEtAfficherTout();
+            }
+        }
+
+        function enregistrerNoteFormateur() {
+            const groupeCible = document.getElementById('select-groupe-formateur').value;
+            const tableauNotes = [];
+            for(let i=0; i < listeCriteresProf.length; i++) {
+                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
+            }
+            notesFormateurLocales[groupeCible] = tableauNotes;
+            calculerEtAfficherTout();
+        }
+
+        function calculerEtAfficherTout() {
+            const corpsTable = document.getElementById('table-corps-resultats');
+            corpsTable.innerHTML = '';
+
+            const structureParGroupe = {};
+
+            groupesSession.forEach(g => {
+                structureParGroupe[g.nom] = {
+                    autoEval: null,
+                    notesDonneesAuxAutres: [],
+                    accumulateurPointsCamarades: 0
+                };
+            });
+
+            // Étape 1 : On traite chaque évaluation soumise par un évaluateur (e.groupe_votant)
+            evaluationsSession.forEach(e => {
+                const noteSur20 = e.note;
+
+                if (structureParGroupe[e.groupe_votant]) {
+                    if (e.groupe_votant === e.sujet) {
+                        structureParGroupe[e.groupe_votant].autoEval = noteSur20;
                     } else {
-                        btn.style.borderColor = "rgba(51, 65, 85, 0.4)";
-                        btn.style.backgroundColor = "rgba(15, 23, 42, 0.4)";
+                        structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
+
+                        // Comparaison avec la note du formateur sur l'équipe qu'il vient de noter
+                        const profNotesDuSujet = notesFormateurLocales[e.sujet];
+                        if (profNotesDuSujet) {
+                            const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
+                            const moyProfSur20 = (moyProfSur5 / 5) * 20;
+                            
+                            const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
+                            const seuilTolerance = moyProfSur20 * 0.20;
+
+                            // LOGIQUE STRICTE : Écart >= 20% -> Malus -1 | Écart < 20% -> Bonus +1
+                            if (ecartAbsolu >= seuilTolerance) {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
+                            } else {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
+                            }
+                        }
                     }
                 }
             });
 
-            const grp = tousLesGroupes.find(g => g.id === idGroupe);
-            document.getElementById('nom-groupe-selectionne').innerText = grp.nom;
-            document.getElementById('membres-groupe').innerText = grp.membresStr;
+            // Étape 2 : Construction visuelle des lignes
+            groupesSession.forEach(g => {
+                const nom = g.nom;
+                const donnees = structureParGroupe[nom];
 
-            calculerMoyennes();
-        }
+                const autoEvalVal = donnees.autoEval;
+                const totalDonnees = donnees.notesDonneesAuxAutres.length;
+                const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
 
-        async function calculerMoyennes() {
-            if (!groupeSelectionneId) return;
+                const profNotes = notesFormateurLocales[nom];
+                const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
+                const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
-            const { data: votes } = await db.from('votes').select('*').eq('groupe_evalue_id', groupeSelectionneId);
-            const { data: criteres } = await db.from('criteres').select('*').eq('session_id', sessionId);
+                // --- 1. CALCUL DU POINT AUTO (Écart < 20% = +1 | Écart >= 20% = -1) ---
+                let ptAuto = 0;
+                let textAuto = "--";
+                if (autoEvalVal !== null && noteProfSur20 !== null) {
+                    const ecartAuto = Math.abs(autoEvalVal - noteProfSur20);
+                    const seuilAuto = noteProfSur20 * 0.20;
 
-            const conteneurScores = document.getElementById('scores-criteres-container');
-            const conteneurCommentaires = document.getElementById('liste-commentaires');
-            
-            conteneurScores.innerHTML = "";
-            conteneurCommentaires.innerHTML = "";
-
-            if (!votes || votes.length === 0) {
-                document.getElementById('note-generale-groupe').innerText = "-";
-                conteneurScores.innerHTML = `<p class="text-xs text-slate-500 italic col-span-2 p-2">Aucun vote enregistré pour le moment.</p>`;
-                conteneurCommentaires.innerHTML = `<p class="text-xs text-slate-500 italic">Aucun feedback rédigé.</p>`;
-                return;
-            }
-
-            let sommeTotale = 0;
-            let nbNotesTotale = 0;
-
-            criteres.forEach(critere => {
-                const notesCritere = votes.filter(v => v.critere_id === critere.id && v.note !== null);
-                let moyenneCritere = "-";
-                
-                if (notesCritere.length > 0) {
-                    const somme = notesCritere.reduce((acc, v) => acc + v.note, 0);
-                    const moy = somme / notesCritere.length;
-                    moyenneCritere = moy.toFixed(1) + " / 5";
-                    sommeTotale += moy;
-                    nbNotesTotale++;
+                    if (ecartAuto >= seuilAuto) {
+                        ptAuto = -1;
+                        textAuto = "-1";
+                    } else {
+                        ptAuto = 1;
+                        textAuto = "+1";
+                    }
                 }
 
-                conteneurScores.innerHTML += `
-                    <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/30 flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-300 tracking-wide">${critere.nom}</span>
-                        <span class="text-sm font-black font-mono px-2.5 py-1 rounded-md bg-slate-950 text-slate-200 border border-slate-800">${moyenneCritere}</span>
-                    </div>
+                // --- 2. POINTS COMPORTEMENT CAMARADES (Cumul brut non bridé ici) ---
+                let ptPairsCumule = donnees.accumulateurPointsCamarades;
+                let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
+
+                // --- 3. IMPACT TOTAL BRUT PUIS PLAFOND GLOBAL À [-2, +2] ---
+                let impactBrut = ptAuto + ptPairsCumule;
+                // Application stricte de la contrainte max +2 / min -2
+                const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
+                
+                let textImpact = "0";
+                if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
+                if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
+
+                // --- 4. CALCUL DE LA NOTE FINALE ---
+                let noteFinaleAffichage = "--";
+                if (noteProfSur20 !== null) {
+                    const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
+                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${noteCalculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                }
+
+                corpsTable.innerHTML += `
+                    <tr class="hover:bg-gray-900/40 transition font-mono">
+                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
+                        <td class="py-3 px-3 text-center text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
+                        <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
+                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
+                        <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
+                    </tr>
                 `;
             });
 
-            if (nbNotesTotale > 0) {
-                document.getElementById('note-generale-groupe').innerText = `${(sommeTotale / nbNotesTotale).toFixed(1)} / 5`;
-            } else {
-                document.getElementById('note-generale-groupe').innerText = "-";
-            }
+            mettreAjourGraphiqueRadar_SansResetCurseurs();
+        }
 
-            const unifComms = {};
-            votes.forEach(v => {
-                if (v.commentaire && v.commentaire.trim() !== "") {
-                    unifComms[v.commentaire.trim()] = true;
+        function creerGraphiqueRadarVide() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            monRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
+                        { label: 'Moyenne Donnée Aux Autres 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
+                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10 } } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function mettreAjourGraphiqueRadar() {
+            if(!monRadarChart) return;
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
+
+            const notesProfExistantes = notesFormateurLocales[groupeAffiche];
+            for (let i = 0; i < listeCriteresProf.length; i++) {
+                const inputCurseur = document.getElementById(`prof-crit-${i}`);
+                const labelValeur = document.getElementById(`v-f-${i}`);
+                if (inputCurseur && labelValeur) {
+                    if (notesProfExistantes && notesProfExistantes[i] !== undefined) {
+                        inputCurseur.value = notesProfExistantes[i];
+                        labelValeur.innerText = notesProfExistantes[i] + " / 5";
+                    } else {
+                        inputCurseur.value = 3;
+                        labelValeur.innerText = "3 / 5";
+                    }
+                }
+            }
+            renduGraphiqueUniquement(groupeAffiche);
+        }
+
+        function mettreAjourGraphiqueRadar_SansResetCurseurs() {
+            if(!monRadarChart) return;
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
+            renduGraphiqueUniquement(groupeAffiche);
+        }
+
+        function renduGraphiqueUniquement(groupeAffiche) {
+            const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
+            let autoEval = null;
+            let notesDonnees = [];
+
+            evaluationsSession.forEach(e => {
+                if(e.groupe_votant === groupeAffiche) {
+                    if(e.sujet === groupeAffiche) {
+                        autoEval = (e.note / 20) * 5; 
+                    } else {
+                        notesDonnees.push((e.note / 20) * 5); 
+                    }
                 }
             });
 
-            const hacksComms = Object.keys(unifComms);
-            if (hacksComms.length > 0) {
-                hacksComms.forEach(c => {
-                    conteneurCommentaires.innerHTML += `
-                        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 text-slate-300 pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:bottom-3 before:w-1" style="before:background-color: var(--color-soft-blue);">
-                            "${c}"
-                        </div>
-                    `;
-                });
-            } else {
-                conteneurCommentaires.innerHTML = `<p class="text-xs text-slate-500 italic">Aucun feedback écrit pour l'instant.</p>`;
-            }
+            const moyDonnee = notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null;
+
+            monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
+            monRadarChart.data.datasets[0].data = notesProfDonneesChart;
+            monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
+            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(moyDonnee);
+            monRadarChart.update();
         }
 
         window.onload = initDashboard;
