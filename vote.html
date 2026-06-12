@@ -188,13 +188,11 @@
                 const noteSur20 = (moyenneSur5 / 5) * 20;
 
                 tableauPayloadsEnvoi.push({
-                session_id: idSessionEnCours,
-                groupe_votant: monGroupe, // 👈 C'est cette ligne qui coince !
-                sujet: nomDuSujet,
-                note_structure: noteSur20, 
-                note_analyse: noteSur20,
-                note_posture: noteSur20
-                });
+    session_id: idSessionEnCours,
+    groupe_votant: monGroupe,
+    sujet: nomDuSujet,
+    note_globale: noteSur20 // 👈 On envoie juste la note convertie dans l'unique colonne 'note'
+});
             });
 
             // Envoi massif en un seul appel réseau dans Supabase
