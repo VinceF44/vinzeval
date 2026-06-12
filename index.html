@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master — Graphique Radar 360°</title>
+    <title>Dashboard Master Pro — Évaluations Croisées 360°</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,7 +14,7 @@
         
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Radar 360°</span>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Analyses Multi-Critères</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
             <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser le Live</button>
@@ -23,7 +23,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
-                <h2 class="text-base font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1-5)</h2>
+                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1-5)</h2>
                 
                 <div class="space-y-3">
                     <div>
@@ -39,36 +39,41 @@
                 </div>
             </div>
 
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[400px]">
-                <div class="w-full border-b border-gray-800 pb-2 mb-4">
-                    <h2 class="text-base font-bold text-white">🎯 Graphique Radar d'Évaluation Croisée</h2>
-                    <p class="text-[10px] text-gray-400">Visualisation comparative des curseurs (Échelle 1-5).</p>
+            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
+                <div class="w-full border-b border-gray-800 pb-2 mb-2">
+                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Échelle 1-5)</h2>
+                    <p class="text-[10px] text-gray-400">Courbes comparatives du groupe actuellement sélectionné à gauche.</p>
                 </div>
-                <div class="w-full max-w-[320px] aspect-square flex items-center justify-center">
+                <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 flex flex-col justify-between">
-                <div>
-                    <h2 class="text-base font-bold text-white border-b border-gray-800 pb-2">📈 Recapitulatif Général & Note Finale (/20)</h2>
-                    <div class="overflow-x-auto mt-2">
-                        <table class="w-full text-left text-xs">
-                            <thead>
-                                <tr class="border-b border-gray-800 text-gray-400 font-mono text-[10px] uppercase">
-                                    <th class="py-2">Équipe</th>
-                                    <th class="py-2 text-center">Lucidité</th>
-                                    <th class="py-2 text-center text-green-400">Modif</th>
-                                    <th class="py-2 text-right text-indigo-400">Finale</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-corps-resultats" class="divide-y divide-gray-800/50">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        </div>
 
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+            <div class="border-b border-gray-800 pb-2">
+                <h2 class="text-base font-black text-white">📊 Tableau de Synthèse Général & Impacts de Lucidité</h2>
+                <p class="text-xs text-gray-400">Calcul en temps réel des moyennes converties, des indices d'écarts et de la note finale ajustée sur 20.</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
+                            <th class="py-3 px-3">Équipe</th>
+                            <th class="py-3 px-3 text-center text-blue-400 bg-blue-950/20">Auto-Éval (/5)</th>
+                            <th class="py-3 px-3 text-center text-purple-400 bg-purple-950/20">Moyenne Pairs (/5)</th>
+                            <th class="py-3 px-3 text-center text-amber-400 bg-amber-950/20">Formateur (/5)</th>
+                            <th class="py-3 px-3 text-center text-gray-300">Écart Lucidité</th>
+                            <th class="py-3 px-3 text-center text-emerald-400">Impact (Bonus/Malus)</th>
+                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60">
+                        </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -84,18 +89,18 @@
         let groupesSession = [];
         let evaluationsSession = [];
         let listeCriteresProf = [];
-        let notesFormateurLocales = {}; // Stockage format : { 'Groupe A': [3, 4, 5] } (Notes sur 5 par critère)
+        let notesFormateurLocales = {}; // Format : { 'Groupe A': [3, 4.5, 2] } -> Notes sur 5 par critère
         let monRadarChart = null;
 
         async function initDashboard() {
             if (!idSessionDashboard) {
-                document.getElementById('nom-session').innerText = "⚠️ Erreur : ID session manquant.";
+                document.getElementById('nom-session').innerText = "⚠️ Erreur : ID session manquant dans l'URL.";
                 return;
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
-            if(s) document.getElementById('nom-session').innerText = `📊 Session : ${s.nom}`;
+            if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
             if(g) {
@@ -103,7 +108,7 @@
                 document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
             }
 
-            // Chargement des critères dynamiques de la session
+            // Chargement dynamique des critères de notation
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
             const conteneurProf = document.getElementById('conteneur-formateur-criteres');
             if(critsProf && critsProf.length > 0) {
@@ -116,11 +121,9 @@
                 `).join('');
             }
 
-            // Initialiser le graphique radar avec des données vides
             creerGraphiqueRadarVide();
-
             chargerDonneesDashboard();
-            setInterval(chargerDonneesDashboard, 5000);
+            setInterval(chargerDonneesDashboard, 5000); // Rafraîchissement automatique toutes les 5s
         }
 
         async function chargerDonneesDashboard() {
@@ -140,7 +143,7 @@
             }
 
             notesFormateurLocales[groupeCible] = tableauNotes;
-            alert(`Note enregistrée à l'échelle pour l'équipe ${groupeCible} ! 👨‍🏫`);
+            alert(`Note enregistrée sur l'échelle de 1-5 pour ${groupeCible} ! 👨‍🏫`);
             calculerEtAfficherTout();
         }
 
@@ -156,8 +159,8 @@
                 ecartsLucidite[g.nom] = { somme: 0, count: 0 };
             });
 
+            // Tri et conversion des données stockées (Sur 20 en base) vers l'échelle 1 à 5
             evaluationsSession.forEach(e => {
-                // Conversion de la note stockée (sur 20) vers l'échelle 1-5 pour l'affichage radar
                 const noteSur5 = (e.note_structure / 20) * 5;
 
                 if (synthese[e.sujet]) {
@@ -168,7 +171,7 @@
                     }
                 }
 
-                // Calcul Lucidité : Écart par rapport à la moyenne du prof sur 5
+                // Système de calcul de lucidité : Écart absolu entre le vote d'un groupe et la moyenne du prof
                 const profNotes = notesFormateurLocales[e.sujet];
                 if (profNotes && e.evaluateur !== e.sujet) {
                     const moyProfSur5 = profNotes.reduce((a,b)=>a+b,0) / profNotes.length;
@@ -177,34 +180,57 @@
                 }
             });
 
+            // Construction complète du grand tableau
             groupesSession.forEach(g => {
                 const nom = g.nom;
+                
+                // 1. Récupération Auto-Évaluation et Évaluation des pairs (sur 5)
+                const autoEvalVal = synthese[nom].auto;
+                const tabPairs = synthese[nom].pairs;
+                const moyPairsVal = tabPairs.length > 0 ? (tabPairs.reduce((a,b)=>a+b,0) / tabPairs.length) : null;
+
+                // 2. Récupération note Formateur (sur 5 et sur 20)
                 const profNotes = notesFormateurLocales[nom];
                 const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
                 const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
+                // 3. Calcul de l'écart moyen de lucidité pour ce groupe
                 const structureLucidite = ecartsLucidite[nom];
                 const indexLucidite = structureLucidite.count > 0 ? (structureLucidite.somme / structureLucidite.count) : null;
 
-                // Application Bonus/Malus sur l'échelle 1-5 adaptif (Seuil d'écart : < 0.4 = bonus, > 0.9 = malus)
+                // 4. Application des conditions de Bonus/Malus sur l'échelle 1-5 (Seuils équivalents proportionnels)
                 let modificateur = 0;
-                let badge = `<span class="text-gray-500">0.00</span>`;
+                let badgeImpact = `<span class="text-gray-500">0.00 (Neutre)</span>`;
+                
                 if(indexLucidite !== null) {
-                    if(indexLucidite <= 0.4) { modificateur = 1; badge = `<span class="text-green-400 font-bold">+1.00</span>`; }
-                    else if(indexLucidite >= 0.9) { modificateur = -1; badge = `<span class="text-red-400 font-bold">-1.00</span>`; }
+                    if(indexLucidite <= 0.4) { // Écart très faible = Équipe Lucide
+                        modificateur = 1.0;
+                        badgeImpact = `<span class="bg-green-950/40 text-green-400 px-2.5 py-1 rounded border border-green-900/40 font-bold">+1.00 (Lucide)</span>`;
+                    } else if(indexLucidite >= 0.9) { // Écart trop grand
+                        modificateur = -1.0;
+                        badgeImpact = `<span class="bg-red-950/40 text-red-400 px-2.5 py-1 rounded border border-red-900/40 font-bold">-1.00 (Écart)</span>`;
+                    } else {
+                        badgeImpact = `<span class="text-gray-400">0.00 (Régulier)</span>`;
+                    }
                 }
 
-                let noteFinale = "--";
+                // 5. Calcul Final sur 20
+                let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
-                    noteFinale = Math.min(20, Math.max(0, noteProfSur20 + modificateur)).toFixed(2);
+                    const calculee = Math.min(20, Math.max(0, noteProfSur20 + modificateur));
+                    noteFinaleAffichage = `<span class="text-sm font-black">${calculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
                 }
 
+                // Injection de la ligne complète, aérée et ultra-lisible
                 corpsTable.innerHTML += `
-                    <tr class="border-b border-gray-800/40">
-                        <td class="py-2.5 font-bold text-white">${nom}</td>
-                        <td class="py-2.5 text-center font-mono text-gray-400">${indexLucidite !== null ? `±${indexLucidite.toFixed(2)}` : '--'}</td>
-                        <td class="py-2.5 text-center">${badge}</td>
-                        <td class="py-2.5 text-right text-indigo-400 font-black">${noteFinale}</td>
+                    <tr class="hover:bg-gray-900/50 transition">
+                        <td class="py-3 px-3 font-black text-white text-sm">${nom}</td>
+                        <td class="py-3 px-3 text-center text-blue-300 font-mono bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center text-purple-300 font-mono bg-purple-950/5">${moyPairsVal !== null ? moyPairsVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center text-amber-400 font-bold font-mono bg-amber-950/5">${moyProfSur5 !== null ? moyProfSur5.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center text-gray-300 font-mono">${indexLucidite !== null ? `± ${indexLucidite.toFixed(2)} pts` : 'En attente'}</td>
+                        <td class="py-3 px-3 text-center">${badgeImpact}</td>
+                        <td class="py-3 px-3 text-right text-indigo-400">${noteFinaleAffichage}</td>
                     </tr>
                 `;
             });
@@ -219,14 +245,14 @@
                 data: {
                     labels: listeCriteresProf.map(c => c.nom),
                     datasets: [
-                        { label: 'Formateur', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2 },
-                        { label: 'Auto-Éval', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2 },
-                        { label: 'Pairs', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', borderWidth: 2 }
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
+                        { label: 'Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.08)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
                     ]
                 },
                 options: {
-                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10 } } } },
-                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 12, font: { size: 10 } } } },
+                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
+                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10, font: { size: 10 } } } },
                     responsive: true,
                     maintainAspectRatio: false
                 }
@@ -238,14 +264,10 @@
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
             if(!groupeAffiche) return;
 
-            // 1. Notes Formateur
             const notesProf = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-
-            // 2. Calcul Auto-Éval et Évaluation Pairs par critère (Sur l'échelle 1-5)
             const listeAutoEval = Array(listeCriteresProf.length).fill(null);
             const listePairsEval = Array(listeCriteresProf.length).fill(null);
 
-            // Pour alimenter le radar par critère de manière équitable, on utilise la moyenne générale calculée
             evaluationsSession.forEach(e => {
                 if(e.sujet === groupeAffiche) {
                     const noteSur5 = (e.note_structure / 20) * 5;
@@ -260,10 +282,8 @@
                 }
             });
 
-            // Compilation des moyennes pour les pairs
             const dataPairsFinal = listePairsEval.map(val => Array.isArray(val) ? (val.reduce((a,b)=>a+b,0)/val.length) : null);
 
-            // Injection des axes dans Chart.js
             monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
             monRadarChart.data.datasets[0].data = notesProf;
             monRadarChart.data.datasets[1].data = listeAutoEval;
