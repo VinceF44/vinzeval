@@ -62,21 +62,42 @@
                 document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
             }
 
-            // 2. Récupération des groupes avec leurs membres
-            // Remplacer 'membres' par le nom exact de votre colonne dans Supabase si nécessaire
-            const { data: g } = await db.from('groupes').select('id, nom, membres').eq('session_id', idSessionVote);
+            // 2. Récupération des groupes de la session
+            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionVote);
+            
+            // 3. Récupération des apprenants liés à cette session
+            const { data: apps } = await db.from('apprenants').select('*').eq('session_id', idSessionVote);
+
             if (g) {
-                // Construction des options textuelles : "Groupe X (Prénom1, Prénom2, ...)"
+                // Création d'un dictionnaire pour associer les prénoms à chaque groupe
+                const membresParGroupe = {};
+                g.forEach(grp => {
+                    membresParGroupe[grp.nom] = [];
+                });
+
+                // On remplit le dictionnaire avec les prénoms trouvés dans la table apprenants
+                if (apps) {
+                    apps.forEach(student => {
+                        // ⚠️ AJUSTEMENT : changez 'groupe' par le nom exact de votre colonne si nécessaire (ex: student.groupe_id)
+                        const nomDuGroupe = student.groupe; 
+                        if (membresParGroupe[nomDuGroupe]) {
+                            membresParGroupe[nomDuGroupe].push(student.prenom);
+                        }
+                    });
+                }
+
+                // Construction dynamique des options de la liste déroulante
                 const optionsHtml = g.map(grp => {
-                    const prénoms = grp.membres ? ` (${grp.membres})` : '';
-                    return `<option value="${grp.nom}">${grp.nom}${prénoms}</option>`;
+                    const listePrenoms = membresParGroupe[grp.nom];
+                    const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
+                    return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
                 }).join('');
 
                 document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
                 document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
             }
 
-            // 3. Récupération des critères pour la notation de 1 à 5
+            // 4. Récupération des critères pour la notation de 1 à 5
             const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionVote);
             if (crits && crits.length > 0) {
                 listeCriteres = crits;
@@ -98,14 +119,11 @@
             const votant = document.getElementById('select-groupe-votant').value;
             const sujet = document.getElementById('select-sujet-evalue').value;
 
-            // Calcul de la note moyenne saisie sur 5
             let totalNotes = 0;
             for (let i = 0; i < listeCriteres.length; i++) {
                 totalNotes += parseFloat(document.getElementById(`vote-crit-${i}`).value);
             }
             const moySur5 = totalNotes / listeCriteres.length;
-            
-            // Conversion automatique pour la base de données qui attend une note globale sur 20
             const noteFinaleSur20 = (moySur5 / 5) * 20;
 
             const { error } = await db.from('evaluations').insert([{
@@ -117,7 +135,6 @@
 
             if (!error) {
                 alert("🎉 Évaluation envoyée avec succès ! Merci.");
-                // Optionnel : Réinitialiser les sliders à 3
                 for (let i = 0; i < listeCriteres.length; i++) {
                     document.getElementById(`vote-crit-${i}`).value = 3;
                     document.getElementById(`v-v-${i}`).innerText = "3 / 5";
