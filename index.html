@@ -3,70 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur de Sessions — Console Master</title>
+    <title>Dashboard Master — Logique Strict Cumul & Plafond</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-[#1e2640] text-[#e2e8f0] font-sans min-h-screen p-4 md:p-8">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] shadow-lg">
-            <span class="bg-amber-400/10 text-amber-300 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-400/20">⚙️ ESPACE GESTION</span>
-            <h1 class="text-3xl font-black text-white mt-2 tracking-tight">Générateur de Sessions</h1>
-        </div>
-
-        <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] space-y-6 shadow-lg">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2 border-b border-[#37466f] pb-3">
-                ✨ CONFIGURER ET GÉNÉRER UNE SESSION
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">
-                    <label class="block text-xs uppercase text-slate-300 mb-1.5 font-bold tracking-wide">Nom de la session :</label>
-                    <input type="text" id="input-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" 
-                        class="w-full bg-[#182035] rounded-xl p-3 text-sm border border-[#37466f] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-300 mb-1.5 font-bold tracking-wide">Nombre de groupes :</label>
-                    <input type="number" id="input-nb-groupes" placeholder="3" min="1"
-                        class="w-full bg-[#182035] rounded-xl p-3 text-sm border border-[#37466f] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-300 mb-1.5 font-bold tracking-wide">Préfixe des groupes :</label>
-                    <input type="text" id="input-prefixe-groupes" placeholder="Groupe"
-                        class="w-full bg-[#182035] rounded-xl p-3 text-sm border border-[#37466f] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition">
-                </div>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Règle des Écarts Strictes</span>
+                <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs uppercase text-slate-300 mb-1.5 font-bold tracking-wide">Critères d'évaluation (un critère par ligne) :</label>
-                    <textarea id="txt-criteres" rows="5" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides"
-                        class="w-full bg-[#182035] rounded-xl p-3 text-sm border border-[#37466f] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition font-mono"></textarea>
-                    <p class="text-[11px] text-slate-400 mt-1">Sautez à la ligne pour chaque nouveau critère.</p>
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-300 mb-1.5 font-bold tracking-wide">Liste des apprenants (un prénom par ligne) :</label>
-                    <textarea id="txt-apprenants" rows="5" placeholder="Thomas&#10;Julie&#10;Lucas"
-                        class="w-full bg-[#182035] rounded-xl p-3 text-sm border border-[#37466f] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 transition font-mono"></textarea>
-                    <p class="text-[11px] text-slate-400 mt-1">Ils seront automatiquement répartis équitablement.</p>
-                </div>
-            </div>
-
-            <button onclick="genererSessionComplete()" 
-                class="w-full bg-[#4f73a1] hover:bg-[#5f84b3] text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 border border-[#6d94c7]/30">
-                🚀 Générer la session complète
+            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
+                🔄 Récupérer les votes des élèves
             </button>
         </div>
 
-        <div class="bg-[#293556] p-6 rounded-2xl border border-[#37466f] space-y-4 shadow-lg">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-2 border-b border-[#37466f] pb-3">
-                🟢 Sessions en cours
-            </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
+                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1 - 5)</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
+                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
+                    </div>
+                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
+                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
+                <div class="w-full border-b border-gray-800 pb-2 mb-2">
+                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Repères de 1 à 5)</h2>
+                </div>
+                <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+            <div class="border-b border-gray-800 pb-2">
+                <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
+                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
+            </div>
             
-            <div id="liste-sessions" class="space-y-3">
-                <p class="text-xs text-slate-400 italic">Chargement des sessions...</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
+                            <th class="py-3 px-3">Groupe Évaluateur</th>
+                            <th class="py-3 px-3 text-center bg-blue-950/20">Son Auto-Éval (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-blue-400">Malus/Bonus Auto</th>
+                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
+                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
+                            <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total (Max ±2)</th>
+                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60"></tbody>
+                </table>
             </div>
         </div>
 
@@ -77,109 +77,255 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
 
-        async function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idSessionDashboard = urlParams.get('session_id');
+
+        let groupesSession = [];
+        let evaluationsSession = [];
+        let listeCriteresProf = [];
+        let notesFormateurLocales = {}; 
+        let monRadarChart = null;
+
+        async function initDashboard() {
+            if (!idSessionDashboard) return;
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            chargerSessions();
-        }
+            
+            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
+            if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
-        async function chargerSessions() {
-            const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            if (error) return;
-
-            const conteneur = document.getElementById('liste-sessions');
-            if (sessions.length === 0) {
-                conteneur.innerHTML = `<p class="text-xs text-slate-400 italic py-2">Aucune session active.</p>`;
-                return;
+            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
+            if(g) {
+                groupesSession = g;
+                document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
             }
 
-            // Version aux éclats pastel clairs et doux sur fond bleu nuit intermédiaire
-            conteneur.innerHTML = sessions.map(s => `
-                <div class="bg-[#182035] p-4 rounded-xl border border-[#37466f]/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-[#485b8f] transition shadow-inner">
-                    <div>
-                        <h3 class="text-base font-bold text-white tracking-tight">${s.nom}</h3>
-                        <p class="text-[10px] font-mono text-slate-400 mt-0.5">ID: ${s.id}</p>
+            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+            if(critsProf && critsProf.length > 0) {
+                listeCriteresProf = critsProf;
+                genererSlidersHtml();
+            }
+
+            creerGraphiqueRadarVide();
+            chargerDonneesDashboard();
+        }
+
+        function genererSlidersHtml() {
+            document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-400">🎯 ${c.nom}</span>
+                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <a href="vote.html?session_id=${s.id}" target="_blank" class="flex-1 sm:flex-initial text-center bg-[#a5f3fc]/10 hover:bg-[#a5f3fc]/20 text-[#67e8f9] text-xs font-bold py-2 px-4 rounded-lg border border-[#22d3ee]/30 transition">
-                            🗳️ Lien Vote
-                        </a>
-                        <a href="dashboard.html?session_id=${s.id}" target="_blank" class="flex-1 sm:flex-initial text-center bg-[#fef08a]/10 hover:bg-[#fef08a]/20 text-[#fde047] text-xs font-bold py-2 px-4 rounded-lg border border-[#facc15]/30 transition">
-                            📊 Dashboard
-                        </a>
-                        <button onclick="cloturerSession('${s.id}')" class="flex-1 sm:flex-initial bg-[#fca5a5]/10 hover:bg-[#fca5a5]/20 text-[#fca5a5] text-xs font-bold py-2 px-4 rounded-lg border border-[#f87171]/30 transition cursor-pointer">
-                            🔒 Clôturer
-                        </button>
-                        <button onclick="dupliquerSession('${s.id}')" class="flex-1 sm:flex-initial bg-[#c7d2fe]/10 hover:bg-[#c7d2fe]/20 text-[#c7d2fe] text-xs font-bold py-2 px-4 rounded-lg border border-[#818cf8]/30 transition cursor-pointer">
-                            👥 Dupliquer
-                        </button>
-                    </div>
+                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'" 
+                        class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                 </div>
             `).join('');
         }
 
-        async function genererSessionComplete() {
-            const nom = document.getElementById('input-nom-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('input-nb-groupes').value) || 3;
-            const prefixe = document.getElementById('input-prefixe-groupes').value.trim() || "Groupe";
-            const critsRaw = document.getElementById('txt-criteres').value.split('\n').filter(l => l.trim() !== '');
-            const elevesRaw = document.getElementById('txt-apprenants').value.split('\n').filter(l => l.trim() !== '');
-
-            if (!nom) { alert("Veuillez donner un nom à la session."); return; }
-            if (critsRaw.length === 0) { alert("Veuillez entrer au moins un critère."); return; }
-
-            const { data: sessionData, error: sErr } = await db.from('sessions').insert([{ nom }]).select().single();
-            if (sErr || !sessionData) return;
-            const sessionId = sessionData.id;
-
-            const listeCriteres = critsRaw.map(c => ({ session_id: sessionId, nom: c.trim() }));
-            await db.from('criteres').insert(listeCriteres);
-
-            const listeGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                listeGroupes.push({ session_id: sessionId, nom: `${prefixe} ${i}`, membres: [] });
+        async function chargerDonneesDashboard() {
+            const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
+            if (!error && evals) {
+                evaluationsSession = evals;
+                calculerEtAfficherTout();
             }
+        }
 
-            elevesRaw.forEach((eleve, idx) => {
-                const targetGroupIndex = idx % nbGroupes;
-                listeGroupes[targetGroupIndex].membres.push(eleve.trim());
+        function enregistrerNoteFormateur() {
+            const groupeCible = document.getElementById('select-groupe-formateur').value;
+            const tableauNotes = [];
+            for(let i=0; i < listeCriteresProf.length; i++) {
+                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
+            }
+            notesFormateurLocales[groupeCible] = tableauNotes;
+            calculerEtAfficherTout();
+        }
+
+        function calculerEtAfficherTout() {
+            const corpsTable = document.getElementById('table-corps-resultats');
+            corpsTable.innerHTML = '';
+
+            const structureParGroupe = {};
+
+            groupesSession.forEach(g => {
+                structureParGroupe[g.nom] = {
+                    autoEval: null,
+                    notesDonneesAuxAutres: [],
+                    accumulateurPointsCamarades: 0
+                };
             });
 
-            await db.from('groupes').insert(listeGroupes);
+            // Étape 1 : On traite chaque évaluation soumise par un évaluateur (e.groupe_votant)
+            evaluationsSession.forEach(e => {
+                const noteSur20 = e.note;
 
-            document.getElementById('input-nom-session').value = '';
-            document.getElementById('txt-criteres').value = '';
-            document.getElementById('txt-apprenants').value = '';
-            chargerSessions();
+                if (structureParGroupe[e.groupe_votant]) {
+                    if (e.groupe_votant === e.sujet) {
+                        structureParGroupe[e.groupe_votant].autoEval = noteSur20;
+                    } else {
+                        structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
+
+                        // Comparaison avec la note du formateur sur l'équipe qu'il vient de noter
+                        const profNotesDuSujet = notesFormateurLocales[e.sujet];
+                        if (profNotesDuSujet) {
+                            const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
+                            const moyProfSur20 = (moyProfSur5 / 5) * 20;
+                            
+                            const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
+                            const seuilTolerance = moyProfSur20 * 0.20;
+
+                            // LOGIQUE STRICTE : Écart >= 20% -> Malus -1 | Écart < 20% -> Bonus +1
+                            if (ecartAbsolu >= seuilTolerance) {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
+                            } else {
+                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Étape 2 : Construction visuelle des lignes
+            groupesSession.forEach(g => {
+                const nom = g.nom;
+                const donnees = structureParGroupe[nom];
+
+                const autoEvalVal = donnees.autoEval;
+                const totalDonnees = donnees.notesDonneesAuxAutres.length;
+                const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
+
+                const profNotes = notesFormateurLocales[nom];
+                const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
+                const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
+
+                // --- 1. CALCUL DU POINT AUTO (Écart < 20% = +1 | Écart >= 20% = -1) ---
+                let ptAuto = 0;
+                let textAuto = "--";
+                if (autoEvalVal !== null && noteProfSur20 !== null) {
+                    const ecartAuto = Math.abs(autoEvalVal - noteProfSur20);
+                    const seuilAuto = noteProfSur20 * 0.20;
+
+                    if (ecartAuto >= seuilAuto) {
+                        ptAuto = -1;
+                        textAuto = "-1";
+                    } else {
+                        ptAuto = 1;
+                        textAuto = "+1";
+                    }
+                }
+
+                // --- 2. POINTS COMPORTEMENT CAMARADES (Cumul brut non bridé ici) ---
+                let ptPairsCumule = donnees.accumulateurPointsCamarades;
+                let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
+
+                // --- 3. IMPACT TOTAL BRUT PUIS PLAFOND GLOBAL À [-2, +2] ---
+                let impactBrut = ptAuto + ptPairsCumule;
+                // Application stricte de la contrainte max +2 / min -2
+                const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
+                
+                let textImpact = "0";
+                if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
+                if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
+
+                // --- 4. CALCUL DE LA NOTE FINALE ---
+                let noteFinaleAffichage = "--";
+                if (noteProfSur20 !== null) {
+                    const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
+                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${noteCalculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                }
+
+                corpsTable.innerHTML += `
+                    <tr class="hover:bg-gray-900/40 transition font-mono">
+                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
+                        <td class="py-3 px-3 text-center text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
+                        <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
+                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
+                        <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
+                    </tr>
+                `;
+            });
+
+            mettreAjourGraphiqueRadar_SansResetCurseurs();
         }
 
-        async function cloturerSession(id) {
-            if(confirm("Voulez-vous vraiment clore (supprimer) cette session ?")) {
-                await db.from('sessions').delete().eq('id', id);
-                chargerSessions();
-            }
+        function creerGraphiqueRadarVide() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            monRadarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
+                        { label: 'Moyenne Donnée Aux Autres 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
+                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10 } } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
 
-        async function dupliquerSession(id) {
-            const { data: s } = await db.from('sessions').select('*').eq('id', id).single();
-            if(!s) return;
-            
-            const { data: nouvelleSession } = await db.from('sessions').insert([{ nom: `${s.nom} (Copie)` }]).select().single();
-            if(!nouvelleSession) return;
+        function mettreAjourGraphiqueRadar() {
+            if(!monRadarChart) return;
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
 
-            const { data: crits } = await db.from('criteres').select('*').eq('session_id', id);
-            if(crits) {
-                await db.from('criteres').insert(crits.map(c => ({ session_id: nouvelleSession.id, nom: c.nom })));
+            const notesProfExistantes = notesFormateurLocales[groupeAffiche];
+            for (let i = 0; i < listeCriteresProf.length; i++) {
+                const inputCurseur = document.getElementById(`prof-crit-${i}`);
+                const labelValeur = document.getElementById(`v-f-${i}`);
+                if (inputCurseur && labelValeur) {
+                    if (notesProfExistantes && notesProfExistantes[i] !== undefined) {
+                        inputCurseur.value = notesProfExistantes[i];
+                        labelValeur.innerText = notesProfExistantes[i] + " / 5";
+                    } else {
+                        inputCurseur.value = 3;
+                        labelValeur.innerText = "3 / 5";
+                    }
+                }
             }
-
-            const { data: grps } = await db.from('groupes').select('*').eq('session_id', id);
-            if(grps) {
-                await db.from('groupes').insert(grps.map(g => ({ session_id: nouvelleSession.id, nom: g.nom, membres: g.membres })));
-            }
-
-            chargerSessions();
+            renduGraphiqueUniquement(groupeAffiche);
         }
 
-        window.onload = init;
+        function mettreAjourGraphiqueRadar_SansResetCurseurs() {
+            if(!monRadarChart) return;
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
+            renduGraphiqueUniquement(groupeAffiche);
+        }
+
+        function renduGraphiqueUniquement(groupeAffiche) {
+            const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
+            let autoEval = null;
+            let notesDonnees = [];
+
+            evaluationsSession.forEach(e => {
+                if(e.groupe_votant === groupeAffiche) {
+                    if(e.sujet === groupeAffiche) {
+                        autoEval = (e.note / 20) * 5; 
+                    } else {
+                        notesDonnees.push((e.note / 20) * 5); 
+                    }
+                }
+            });
+
+            const moyDonnee = notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null;
+
+            monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
+            monRadarChart.data.datasets[0].data = notesProfDonneesChart;
+            monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
+            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(moyDonnee);
+            monRadarChart.update();
+        }
+
+        window.onload = initDashboard;
     </script>
 </body>
 </html>
