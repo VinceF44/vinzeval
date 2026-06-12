@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master — Version Stable Pro</title>
+    <title>Dashboard Master — Logique Strict Cumul & Plafond</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,10 +14,10 @@
         
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">👑 Performance Évaluateurs (Échelle Saisie 1-5 → Calcul /20)</span>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Règle des Écarts Strictes</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg shadow-blue-950/50 transition cursor-pointer flex items-center gap-2">
+            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
                 🔄 Récupérer les votes des élèves
             </button>
         </div>
@@ -48,7 +48,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
                 <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
-                <p class="text-xs text-gray-400">Toutes les notes de cette table sont ramenées automatiquement sur 20 pour le rendu officiel.</p>
+                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
             </div>
             
             <div class="overflow-x-auto">
@@ -61,7 +61,7 @@
                             <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
                             <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
                             <th class="py-3 px-3 text-center bg-amber-950/20">Note Formateur (/20)</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total (Max ±2)</th>
                             <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
                         </tr>
                     </thead>
@@ -107,8 +107,6 @@
 
             creerGraphiqueRadarVide();
             chargerDonneesDashboard();
-            
-            // 🚨 SUPPRESSION DU SETINTERVAL QUI FAISAIT TOUT SAUTER TOUTES LES 5 SECONDES 🚨
         }
 
         function genererSlidersHtml() {
@@ -157,8 +155,9 @@
                 };
             });
 
+            // Étape 1 : On traite chaque évaluation soumise par un évaluateur (e.groupe_votant)
             evaluationsSession.forEach(e => {
-                const noteSur20 = e.note; 
+                const noteSur20 = e.note;
 
                 if (structureParGroupe[e.groupe_votant]) {
                     if (e.groupe_votant === e.sujet) {
@@ -166,14 +165,19 @@
                     } else {
                         structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
 
+                        // Comparaison avec la note du formateur sur l'équipe qu'il vient de noter
                         const profNotesDuSujet = notesFormateurLocales[e.sujet];
                         if (profNotesDuSujet) {
                             const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
                             const moyProfSur20 = (moyProfSur5 / 5) * 20;
                             
-                            if (noteSur20 > (moyProfSur20 * 1.20)) {
+                            const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
+                            const seuilTolerance = moyProfSur20 * 0.20;
+
+                            // LOGIQUE STRICTE : Écart >= 20% -> Malus -1 | Écart < 20% -> Bonus +1
+                            if (ecartAbsolu >= seuilTolerance) {
                                 structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
-                            } else if (noteSur20 < (moyProfSur20 * 0.80)) {
+                            } else {
                                 structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
                             }
                         }
@@ -181,6 +185,7 @@
                 }
             });
 
+            // Étape 2 : Construction visuelle des lignes
             groupesSession.forEach(g => {
                 const nom = g.nom;
                 const donnees = structureParGroupe[nom];
@@ -193,33 +198,36 @@
                 const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
                 const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
+                // --- 1. CALCUL DU POINT AUTO (Écart < 20% = +1 | Écart >= 20% = -1) ---
                 let ptAuto = 0;
-                let textAuto = "0";
+                let textAuto = "--";
                 if (autoEvalVal !== null && noteProfSur20 !== null) {
-                    if (autoEvalVal > (noteProfSur20 * 1.20)) {
+                    const ecartAuto = Math.abs(autoEvalVal - noteProfSur20);
+                    const seuilAuto = noteProfSur20 * 0.20;
+
+                    if (ecartAuto >= seuilAuto) {
                         ptAuto = -1;
                         textAuto = "-1";
-                    } else if (autoEvalVal < (noteProfSur20 * 0.80)) {
+                    } else {
                         ptAuto = 1;
                         textAuto = "+1";
                     }
                 }
 
-                let ptPairsFinal = 0;
-                let textPairs = "0";
-                if (donnees.accumulateurPointsCamarades < 0) {
-                    ptPairsFinal = -1;
-                    textPairs = "-1";
-                } else if (donnees.accumulateurPointsCamarades > 0) {
-                    ptPairsFinal = 1;
-                    textPairs = "+1";
-                }
+                // --- 2. POINTS COMPORTEMENT CAMARADES (Cumul brut non bridé ici) ---
+                let ptPairsCumule = donnees.accumulateurPointsCamarades;
+                let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
 
-                const impactTotalEntier = ptAuto + ptPairsFinal;
+                // --- 3. IMPACT TOTAL BRUT PUIS PLAFOND GLOBAL À [-2, +2] ---
+                let impactBrut = ptAuto + ptPairsCumule;
+                // Application stricte de la contrainte max +2 / min -2
+                const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
+                
                 let textImpact = "0";
                 if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
                 if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
 
+                // --- 4. CALCUL DE LA NOTE FINALE ---
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
                     const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
@@ -232,7 +240,7 @@
                         <td class="py-3 px-3 text-center text-blue-300 bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
                         <td class="py-3 px-3 text-center text-purple-300 bg-purple-950/5">${moyNotesDonnees !== null ? moyNotesDonnees.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsFinal < 0 ? 'text-red-400' : ptPairsFinal > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
                         <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
                         <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
@@ -264,7 +272,6 @@
             });
         }
 
-        // Cette fonction s'exécute QUAND ON CHANGE de groupe dans la liste déroulante (on synchronise les sliders à ce moment-là)
         function mettreAjourGraphiqueRadar() {
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
@@ -287,7 +294,6 @@
             renduGraphiqueUniquement(groupeAffiche);
         }
 
-        // Évite de toucher aux curseurs pendant qu'on recalcule le tableau en tâche de fond
         function mettreAjourGraphiqueRadar_SansResetCurseurs() {
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
