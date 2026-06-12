@@ -3,295 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master Pro — Évaluations Croisées 360°</title>
+    <title>Espace de Vote Évaluation (Formulaire Global)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div id="ecran-vote" class="max-w-xl w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+        <div class="text-center border-b border-slate-700 pb-3">
+            <h1 class="text-xl font-black text-indigo-400">🗳️ Évaluation Session Live</h1>
+            <p class="text-xs text-slate-400 mt-1">Évaluez toutes les équipes (échelle 1 à 5). Vos notes sont conservées en mémoire lorsque vous changez d'équipe.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Votre Équipe :</label>
+                    <select id="mon-groupe" class="w-full bg-slate-900 rounded p-2 text-sm border border-slate-700 text-white focus:outline-none"></select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-indigo-400 mb-1">Équipe à noter :</label>
+                    <select id="groupe-scene" onchange="changerEquipeScene(this.value)" class="w-full bg-slate-950 font-bold rounded p-2 text-sm border border-indigo-500 text-white focus:outline-none"></select>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/30 p-4 rounded-xl border border-slate-700/50 space-y-5">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-1">
+                    <span id="titre-equipe-encours" class="text-xs font-bold text-amber-400 uppercase">Notes pour : --</span>
+                    <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">Sauvegarde locale auto</span>
+                </div>
+                <div id="conteneur-criteres-dynamiques" class="space-y-4">
+                    <p class="text-xs text-slate-500 text-center py-2">Chargement des critères de la session...</p>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="soumettreFormulaireFinal()" class="w-full bg-indigo-600 hover:bg-indigo-700 font-black py-3.5 rounded-xl transition cursor-pointer text-xs uppercase shadow-lg tracking-wider">
+                    🚀 Clôturer et envoyer toutes mes évaluations
+                </button>
+                <p class="text-[10px] text-center text-slate-400 mt-2">⚠️ Attention : Une fois cliqué, vous ne pourrez plus modifier vos notes.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="ecran-verrouille" class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-emerald-800 shadow-2xl space-y-6 hidden text-center">
+        <div class="space-y-2">
+            <span class="text-4xl">🎉</span>
+            <h1 class="text-2xl font-black text-emerald-400">Évaluations Envoyées !</h1>
+            <p class="text-xs text-slate-300">Votre participation est enregistrée. Votre session est désormais verrouillée.</p>
+        </div>
         
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master & Analyses Multi-Critères</span>
-                <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
+        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-left space-y-3">
+            <h3 class="text-xs font-bold uppercase text-slate-400 border-b border-slate-700 pb-1">📈 Récapitulatif :</h3>
+            <div class="flex justify-between text-xs">
+                <span>Équipes évaluées :</span>
+                <span id="recap-nb-groupes" class="font-bold text-indigo-400">0 / 0</span>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser le Live</button>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
-                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1-5)</h2>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
-                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
-                    </div>
-
-                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2">
-                        <p class="text-xs text-gray-500 text-center py-2">Chargement des critères...</p>
-                    </div>
-
-                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider ma note</button>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
-                <div class="w-full border-b border-gray-800 pb-2 mb-2">
-                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Échelle 1-5)</h2>
-                    <p class="text-[10px] text-gray-400">Courbes comparatives du groupe actuellement sélectionné à gauche.</p>
-                </div>
-                <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
-                    <canvas id="radarChart"></canvas>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <div class="border-b border-gray-800 pb-2">
-                <h2 class="text-base font-black text-white">📊 Tableau de Synthèse Général & Impacts de Lucidité</h2>
-                <p class="text-xs text-gray-400">Calcul en temps réel des moyennes converties, des indices d'écarts et de la note finale ajustée sur 20.</p>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
-                            <th class="py-3 px-3">Équipe</th>
-                            <th class="py-3 px-3 text-center text-blue-400 bg-blue-950/20">Auto-Éval (/5)</th>
-                            <th class="py-3 px-3 text-center text-purple-400 bg-purple-950/20">Moyenne Pairs (/5)</th>
-                            <th class="py-3 px-3 text-center text-amber-400 bg-amber-950/20">Formateur (/5)</th>
-                            <th class="py-3 px-3 text-center text-gray-300">Écart Lucidité</th>
-                            <th class="py-3 px-3 text-center text-emerald-400">Impact (Bonus/Malus)</th>
-                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60">
-                        </tbody>
-                </table>
+            <div class="flex justify-between text-xs">
+                <span>Auto-évaluation :</span>
+                <span id="recap-auto" class="font-bold text-emerald-400">Validée ✅</span>
             </div>
         </div>
-
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        let db;
+        let dbSupabase;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const idSessionDashboard = urlParams.get('session_id');
+        const idSessionEnCours = urlParams.get('session_id');
+        
+        let listeCriteresSession = [];
+        let listeGroupesNoms = [];
+        let memoireNotesLocales = {}; 
+        let ancienneEquipeSelectionnee = "";
 
-        let groupesSession = [];
-        let evaluationsSession = [];
-        let listeCriteresProf = [];
-        let notesFormateurLocales = {}; // Format : { 'Groupe A': [3, 4.5, 2] } -> Notes sur 5 par critère
-        let monRadarChart = null;
-
-        async function initDashboard() {
-            if (!idSessionDashboard) {
-                document.getElementById('nom-session').innerText = "⚠️ Erreur : ID session manquant dans l'URL.";
+        async function initVote() {
+            if (!idSessionEnCours) {
+                alert("⚠️ Lien de vote invalide (id session manquant).");
                 return;
             }
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            dbSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
-            if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
-
-            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
-            if(g) {
-                groupesSession = g;
-                document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+            const { data: groupes } = await dbSupabase.from('groupes').select('*').eq('session_id', idSessionEnCours);
+            if (groupes && groupes.length > 0) {
+                listeGroupesNoms = groupes.map(g => g.nom);
+                document.getElementById('mon-groupe').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
+                document.getElementById('groupe-scene').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
+                
+                ancienneEquipeSelectionnee = document.getElementById('groupe-scene').value;
+                document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${ancienneEquipeSelectionnee}`;
             }
 
-            // Chargement dynamique des critères de notation
-            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
-            const conteneurProf = document.getElementById('conteneur-formateur-criteres');
-            if(critsProf && critsProf.length > 0) {
-                listeCriteresProf = critsProf;
-                conteneurProf.innerHTML = critsProf.map((c, index) => `
+            const { data: criteres } = await dbSupabase.from('criteres').select('*').eq('session_id', idSessionEnCours);
+            if (criteres && criteres.length > 0) {
+                listeCriteresSession = criteres;
+                listeGroupesNoms.forEach(nomG => {
+                    memoireNotesLocales[nomG] = Array(listeCriteresSession.length).fill(3);
+                });
+                genererSlidersHtml();
+            }
+        }
+
+        function genererSlidersHtml() {
+            const conteneur = document.getElementById('conteneur-criteres-dynamiques');
+            const notesDeLEquipe = memoireNotesLocales[ancienneEquipeSelectionnee];
+
+            conteneur.innerHTML = listeCriteresSession.map((c, index) => {
+                const noteSauvegardee = notesDeLEquipe[index];
+                return `
                     <div>
-                        <div class="flex justify-between text-xs mb-1"><span class="text-gray-400">🎯 ${c.nom}</span><span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span></div>
-                        <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" oninput="document.getElementById('v-f-${index}').innerText=this.value+' / 5'" class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-slate-300">🎯 ${c.nom}</span>
+                            <span id="val-c-${index}" class="text-indigo-400 bg-slate-950 px-2 py-0.5 rounded font-mono">${noteSauvegardee} / 5</span>
+                        </div>
+                        <input type="range" id="crit-${index}" min="1" max="5" step="0.5" value="${noteSauvegardee}" 
+                            oninput="sauvegarderNoteEnDirect(${index}, this.value)" 
+                            class="w-full accent-indigo-500 h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer">
                     </div>
-                `).join('');
-            }
-
-            creerGraphiqueRadarVide();
-            chargerDonneesDashboard();
-            setInterval(chargerDonneesDashboard, 5000); // Rafraîchissement automatique toutes les 5s
-        }
-
-        async function chargerDonneesDashboard() {
-            const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
-            if (!error && evals) {
-                evaluationsSession = evals;
-                calculerEtAfficherTout();
-            }
-        }
-
-        function enregistrerNoteFormateur() {
-            const groupeCible = document.getElementById('select-groupe-formateur').value;
-            const tableauNotes = [];
-            
-            for(let i=0; i < listeCriteresProf.length; i++) {
-                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
-            }
-
-            notesFormateurLocales[groupeCible] = tableauNotes;
-            alert(`Note enregistrée sur l'échelle de 1-5 pour ${groupeCible} ! 👨‍🏫`);
-            calculerEtAfficherTout();
-        }
-
-        function calculerEtAfficherTout() {
-            const corpsTable = document.getElementById('table-corps-resultats');
-            corpsTable.innerHTML = '';
-
-            const synthese = {};
-            const ecartsLucidite = {};
-
-            groupesSession.forEach(g => {
-                synthese[g.nom] = { pairs: [], auto: null };
-                ecartsLucidite[g.nom] = { somme: 0, count: 0 };
-            });
-
-            // Tri et conversion des données stockées (Sur 20 en base) vers l'échelle 1 à 5
-            evaluationsSession.forEach(e => {
-                const noteSur5 = (e.note_globale / 20) * 5;
-
-                if (synthese[e.sujet]) {
-                    if (e.groupe_votant === e.sujet) {
-                        synthese[e.sujet].auto = noteSur5;
-                    } else {
-                        synthese[e.sujet].pairs.push(noteSur5);
-                    }
-                }
-
-                // Système de calcul de lucidité : Écart absolu entre le vote d'un groupe et la moyenne du prof
-                const profNotes = notesFormateurLocales[e.sujet];
-                if (profNotes && e.groupe_votant !== e.sujet) {
-                    const moyProfSur5 = profNotes.reduce((a,b)=>a+b,0) / profNotes.length;
-                    ecartsLucidite[e.groupe_votant].somme += Math.abs(noteSur5 - moyProfSur5);
-                    ecartsLucidite[e.groupe_votant].count += 1;
-                }
-            });
-
-            // Construction complète du grand tableau
-            groupesSession.forEach(g => {
-                const nom = g.nom;
-                
-                // 1. Récupération Auto-Évaluation et Évaluation des pairs (sur 5)
-                const autoEvalVal = synthese[nom].auto;
-                const tabPairs = synthese[nom].pairs;
-                const moyPairsVal = tabPairs.length > 0 ? (tabPairs.reduce((a,b)=>a+b,0) / tabPairs.length) : null;
-
-                // 2. Récupération note Formateur (sur 5 et sur 20)
-                const profNotes = notesFormateurLocales[nom];
-                const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
-                const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
-
-                // 3. Calcul de l'écart moyen de lucidité pour ce groupe
-                const structureLucidite = ecartsLucidite[nom];
-                const indexLucidite = structureLucidite.count > 0 ? (structureLucidite.somme / structureLucidite.count) : null;
-
-                // 4. Application des conditions de Bonus/Malus sur l'échelle 1-5 (Seuils équivalents proportionnels)
-                let modificateur = 0;
-                let badgeImpact = `<span class="text-gray-500">0.00 (Neutre)</span>`;
-                
-                if(indexLucidite !== null) {
-                    if(indexLucidite <= 0.4) { // Écart très faible = Équipe Lucide
-                        modificateur = 1.0;
-                        badgeImpact = `<span class="bg-green-950/40 text-green-400 px-2.5 py-1 rounded border border-green-900/40 font-bold">+1.00 (Lucide)</span>`;
-                    } else if(indexLucidite >= 0.9) { // Écart trop grand
-                        modificateur = -1.0;
-                        badgeImpact = `<span class="bg-red-950/40 text-red-400 px-2.5 py-1 rounded border border-red-900/40 font-bold">-1.00 (Écart)</span>`;
-                    } else {
-                        badgeImpact = `<span class="text-gray-400">0.00 (Régulier)</span>`;
-                    }
-                }
-
-                // 5. Calcul Final sur 20
-                let noteFinaleAffichage = "--";
-                if (noteProfSur20 !== null) {
-                    const calculee = Math.min(20, Math.max(0, noteProfSur20 + modificateur));
-                    noteFinaleAffichage = `<span class="text-sm font-black">${calculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
-                }
-
-                // Injection de la ligne complète, aérée et ultra-lisible
-                corpsTable.innerHTML += `
-                    <tr class="hover:bg-gray-900/50 transition">
-                        <td class="py-3 px-3 font-black text-white text-sm">${nom}</td>
-                        <td class="py-3 px-3 text-center text-blue-300 font-mono bg-blue-950/5">${autoEvalVal !== null ? autoEvalVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-purple-300 font-mono bg-purple-950/5">${moyPairsVal !== null ? moyPairsVal.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-amber-400 font-bold font-mono bg-amber-950/5">${moyProfSur5 !== null ? moyProfSur5.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center text-gray-300 font-mono">${indexLucidite !== null ? `± ${indexLucidite.toFixed(2)} pts` : 'En attente'}</td>
-                        <td class="py-3 px-3 text-center">${badgeImpact}</td>
-                        <td class="py-3 px-3 text-right text-indigo-400">${noteFinaleAffichage}</td>
-                    </tr>
                 `;
-            });
-
-            mettreAjourGraphiqueRadar();
+            }).join('');
         }
 
-        function creerGraphiqueRadarVide() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            monRadarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: listeCriteresProf.map(c => c.nom),
-                    datasets: [
-                        { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
-                        { label: 'Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.08)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
-                    ]
-                },
-                options: {
-                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
-                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10, font: { size: 10 } } } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+        function sauvegarderNoteEnDirect(indexCritere, valeur) {
+            document.getElementById(`val-c-${indexCritere}`).innerText = valeur + " / 5";
+            memoireNotesLocales[ancienneEquipeSelectionnee][indexCritere] = parseFloat(valeur);
         }
 
-        function mettreAjourGraphiqueRadar() {
-            if(!monRadarChart) return;
-            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
-            if(!groupeAffiche) return;
-
-            const notesProf = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-            const listeAutoEval = Array(listeCriteresProf.length).fill(null);
-            const listePairsEval = Array(listeCriteresProf.length).fill(null);
-
-            evaluationsSession.forEach(e => {
-                if(e.sujet === groupeAffiche) {
-                    const noteSur5 = (e.note_structure / 20) * 5;
-                    for(let i=0; i<listeCriteresProf.length; i++) {
-                        if(e.evaluateur === e.sujet) {
-                            listeAutoEval[i] = noteSur5;
-                        } else {
-                            if(!listePairsEval[i]) listePairsEval[i] = [];
-                            listePairsEval[i].push(noteSur5);
-                        }
-                    }
-                }
-            });
-
-            const dataPairsFinal = listePairsEval.map(val => Array.isArray(val) ? (val.reduce((a,b)=>a+b,0)/val.length) : null);
-
-            monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
-            monRadarChart.data.datasets[0].data = notesProf;
-            monRadarChart.data.datasets[1].data = listeAutoEval;
-            monRadarChart.data.datasets[2].data = dataPairsFinal;
-            monRadarChart.update();
+        function changerEquipeScene(nouvelleEquipe) {
+            ancienneEquipeSelectionnee = nouvelleEquipe;
+            document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${nouvelleEquipe}`;
+            genererSlidersHtml();
         }
 
-        window.onload = initDashboard;
+        async function soumettreFormulaireFinal() {
+            const monGroupe = document.getElementById('mon-groupe').value;
+            const confirmation = confirm("Êtes-vous sûr de vouloir envoyer vos notes ?");
+            if(!confirmation) return;
+
+            const tableauPayloadsEnvoi = [];
+
+            listeGroupesNoms.forEach(nomDuSujet => {
+                const notesDuSujet = memoireNotesLocales[nomDuSujet];
+                const moyenneSur5 = notesDuSujet.reduce((a,b) => a+b, 0) / listeCriteresSession.length;
+                const noteSur20 = (moyenneSur5 / 5) * 20;
+
+                tableauPayloadsEnvoi.push({
+                    session_id: idSessionEnCours,
+                    groupe_votant: monGroupe, // 🌟 Correspondance parfaite Supabase
+                    sujet: nomDuSujet,
+                    note: noteSur20          // 🌟 Correspondance parfaite Supabase
+                });
+            });
+
+            const { error } = await dbSupabase.from('evaluations').insert(tableauPayloadsEnvoi);
+
+            if (error) {
+                alert("Erreur Supabase : " + error.message);
+            } else {
+                document.getElementById('ecran-vote').classList.add('hidden');
+                document.getElementById('recap-nb-groupes').innerText = `${listeGroupesNoms.length} / ${listeGroupesNoms.length}`;
+                document.getElementById('ecran-verrouille').classList.remove('hidden');
+            }
+        }
+
+        window.onload = initVote;
     </script>
 </body>
 </html>
