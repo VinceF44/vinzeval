@@ -56,40 +56,39 @@
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // 1. Récupération du nom de la session pour le titre
+            // 1. Récupération du nom de la session
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionVote).single();
             if (s) {
                 document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
             }
 
-            // 2. Récupération des groupes de la session
-            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionVote);
+            // 2. Récupération des groupes de la session (on récupère l'id ET le nom)
+            const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionVote);
             
-            // 3. Récupération des apprenants liés à cette session
-            const { data: apps } = await db.from('apprenants').select('*').eq('session_id', idSessionVote);
+            // 3. Récupération des apprenants de cette session
+            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionVote);
 
             if (g) {
-                // Création d'un dictionnaire pour associer les prénoms à chaque groupe
-                const membresParGroupe = {};
+                // Création d'un dictionnaire basé sur l'ID unique du groupe (uuid)
+                const membresParIdGroupe = {};
                 g.forEach(grp => {
-                    membresParGroupe[grp.nom] = [];
+                    membresParIdGroupe[grp.id] = [];
                 });
 
-                // On remplit le dictionnaire avec les prénoms trouvés dans la table apprenants
+                // On remplit le dictionnaire avec les prénoms en utilisant la colonne 'groupe_id'
                 if (apps) {
                     apps.forEach(student => {
-                        // ⚠️ AJUSTEMENT : changez 'groupe' par le nom exact de votre colonne si nécessaire (ex: student.groupe_id)
-                        const nomDuGroupe = student.groupe; 
-                        if (membresParGroupe[nomDuGroupe]) {
-                            membresParGroupe[nomDuGroupe].push(student.prenom);
+                        if (membresParIdGroupe[student.groupe_id]) {
+                            membresParIdGroupe[student.groupe_id].push(student.prenom);
                         }
                     });
                 }
 
-                // Construction dynamique des options de la liste déroulante
+                // Construction des options de la liste déroulante
                 const optionsHtml = g.map(grp => {
-                    const listePrenoms = membresParGroupe[grp.nom];
+                    const listePrenoms = membresParIdGroupe[grp.id];
                     const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
+                    // La valeur transmise reste le nom textuel du groupe pour correspondre à votre dashboard
                     return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
                 }).join('');
 
@@ -97,7 +96,7 @@
                 document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
             }
 
-            // 4. Récupération des critères pour la notation de 1 à 5
+            // 4. Récupération des critères (Échelle 1 à 5)
             const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionVote);
             if (crits && crits.length > 0) {
                 listeCriteres = crits;
@@ -126,6 +125,7 @@
             const moySur5 = totalNotes / listeCriteres.length;
             const noteFinaleSur20 = (moySur5 / 5) * 20;
 
+            // 🚨 STRICTEMENT NETTOYÉ : On envoie uniquement les 4 champs indispensables attendus par votre table
             const { error } = await db.from('evaluations').insert([{
                 session_id: idSessionVote,
                 groupe_votant: votant,
@@ -140,7 +140,7 @@
                     document.getElementById(`v-v-${i}`).innerText = "3 / 5";
                 }
             } else {
-                alert("❌ Erreur lors de l'envoi : " + error.message);
+                alert("❌ Erreur technique lors de l'enregistrement : " + error.message);
             }
         }
 
