@@ -141,6 +141,21 @@
             }
         }
 
+        async function fermerSession(idSession) {
+    if (!confirm("Voulez-vous vraiment clôturer cette session ? Le formulaire de vote sera désactivé.")) return;
+
+    const { error } = await db
+        .from('sessions')
+        .update({ statut: 'terminee' })
+        .eq('id', idSession);
+
+    if (!error) {
+        alert("🔒 Session clôturée avec succès !");
+        window.location.reload(); // Recharge la page pour actualiser l'affichage
+    } else {
+        alert("❌ Erreur : " + error.message);
+    }
+}
         async function chargerToutesLesSessions() {
             try {
                 const { data, error } = await supabaseClientInstance.from('sessions').select('*').order('created_at', { ascending: false });
