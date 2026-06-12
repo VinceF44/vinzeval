@@ -3,38 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vote Session — Évaluation Croisée</title>
+    <title>Évaluation Session — Auto-Évaluation</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <div class="w-full max-w-lg bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl">
+    <div id="bloc-principal-evaluation" class="w-full max-w-lg bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
-        <div class="border-b border-gray-800 pb-4">
-            <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">🗳️ Espace Évaluation</span>
-            <h1 id="titre-session-vote" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
-        </div>
-
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Votant) :</label>
-                <select id="select-groupe-votant" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
+        <div id="ecran-formulaire" class="space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
+                <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Équipe à évaluer :</label>
-                <select id="select-sujet-evalue" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
-            </div>
-
-            <div id="conteneur-criteres-vote" class="space-y-4 pt-2 border-t border-gray-800/60">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe :</label>
+                    <select id="select-groupe-unique" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
+                    <p class="text-[11px] text-gray-500 mt-1">Sélectionnez votre groupe pour soumettre votre auto-évaluation.</p>
                 </div>
 
-            <div class="pt-4">
-                <button onclick="soumettreEvaluation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider">
-                    🚀 Envoyer mon évaluation
-                </button>
+                <div id="conteneur-criteres-evaluation" class="space-y-4 pt-2 border-t border-gray-800/60">
+                    </div>
+
+                <div class="pt-4">
+                    <button onclick="soumettreEvaluation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                        🚀 Envoyer mon évaluation
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <div id="ecran-rapport" class="hidden space-y-5 text-center py-4 animated fadeIn">
+            <div class="text-5xl">🎉</div>
+            <div>
+                <h2 class="text-2xl font-black text-white">Évaluation Enregistrée !</h2>
+                <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
+            </div>
+            
+            <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2">
+                <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">
+                    📊 Résumé de votre rapport
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">Nombre de critères évalués :</span>
+                    <span id="rapport-nb-criteres" class="font-bold text-white">0</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">Moyenne brute obtenue :</span>
+                    <span id="rapport-moyenne-cinq" class="font-bold text-blue-400 font-mono">0 / 5</span>
+                </div>
+                <div class="border-t border-gray-800/60 my-2 pt-2 flex justify-between items-center">
+                    <span class="text-sm font-bold text-gray-300">Note finale convertie :</span>
+                    <span id="rapport-note-vingt" class="text-xl font-black text-emerald-400 font-mono">00.00 / 20</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-500 italic">Merci ! Vos données ont été transmises en temps réel sur le tableau de bord du formateur.</p>
         </div>
 
     </div>
@@ -45,50 +71,42 @@
         let db;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const idSessionVote = urlParams.get('session_id');
+        const idSessionEvaluation = urlParams.get('session_id');
 
         let listeCriteres = [];
 
-        async function initVotePage() {
-            if (!idSessionVote) {
-                document.getElementById('titre-session-vote').innerText = "❌ Aucune session spécifiée";
+        async function initEvaluationPage() {
+            if (!idSessionEvaluation) {
+                document.getElementById('titre-session-evaluation').innerText = "❌ Aucune session spécifiée";
                 return;
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             // 1. Récupération du nom et du statut de la session
-const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionVote).single();
+            const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
 
-if (s) {
-    // 🚨 SÉCURITÉ : Si la session est marquée comme terminée, on bloque l'accès
-    if (s.statut === 'terminee') {
-        document.body.innerHTML = `
-            <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
-                <div class="text-4xl">🔒</div>
-                <h1 class="text-xl font-black text-white">Session Clôturée</h1>
-                <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé par le formateur. Les votes ne sont plus acceptés.</p>
-            </div>
-        `;
-        return; // On stoppe le chargement du formulaire
-    }
-    
-    document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
-}
+            if (s) {
+                if (s.statut === 'terminee') {
+                    document.body.innerHTML = `
+                        <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
+                            <div class="text-4xl">🔒</div>
+                            <h1 class="text-xl font-black text-white">Session Clôturée</h1>
+                            <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé. Les évaluations ne sont plus acceptées.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
+            }
 
-            // 2. Récupération des groupes de la session (on récupère l'id ET le nom)
-            const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionVote);
-            
-            // 3. Récupération des apprenants de cette session
-            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionVote);
+            // 2. Récupération des groupes et apprenants
+            const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
+            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
 
             if (g) {
-                // Création d'un dictionnaire basé sur l'ID unique du groupe (uuid)
                 const membresParIdGroupe = {};
-                g.forEach(grp => {
-                    membresParIdGroupe[grp.id] = [];
-                });
+                g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
 
-                // On remplit le dictionnaire avec les prénoms en utilisant la colonne 'groupe_id'
                 if (apps) {
                     apps.forEach(student => {
                         if (membresParIdGroupe[student.groupe_id]) {
@@ -97,29 +115,26 @@ if (s) {
                     });
                 }
 
-                // Construction des options de la liste déroulante
                 const optionsHtml = g.map(grp => {
                     const listePrenoms = membresParIdGroupe[grp.id];
                     const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
-                    // La valeur transmise reste le nom textuel du groupe pour correspondre à votre dashboard
                     return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
                 }).join('');
 
-                document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
-                document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
+                document.getElementById('select-groupe-unique').innerHTML = optionsHtml;
             }
 
-            // 4. Récupération des critères (Échelle 1 à 5)
-            const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionVote);
+            // 3. Récupération des critères
+            const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
             if (crits && crits.length > 0) {
                 listeCriteres = crits;
-                document.getElementById('conteneur-criteres-vote').innerHTML = crits.map((c, index) => `
+                document.getElementById('conteneur-criteres-evaluation').innerHTML = crits.map((c, index) => `
                     <div>
                         <div class="flex justify-between text-xs mb-1">
                             <span class="text-gray-400">🎯 ${c.nom}</span>
                             <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
                         </div>
-                        <input type="range" id="vote-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                        <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'" 
                             class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                     </div>
@@ -128,36 +143,58 @@ if (s) {
         }
 
         async function soumettreEvaluation() {
-            const votant = document.getElementById('select-groupe-votant').value;
-            const sujet = document.getElementById('select-sujet-evalue').value;
+            const groupeSelectionne = document.getElementById('select-groupe-unique').value;
 
+            // 🚨 SÉCURITÉ : Vérification anti-doublon
+            const { data: evaluationExistante, error: errVerif } = await db
+                .from('evaluations')
+                .select('id')
+                .eq('session_id', idSessionEvaluation)
+                .eq('groupe_votant', groupeSelectionne)
+                .eq('sujet', groupeSelectionne);
+
+            if (errVerif) {
+                alert("❌ Erreur réseau : " + errVerif.message);
+                return;
+            }
+
+            if (evaluationExistante && evaluationExistante.length > 0) {
+                alert(`⚠️ Refusé : Votre équipe (${groupeSelectionne}) a déjà soumis son auto-évaluation.`);
+                return;
+            }
+
+            // Calculs des scores
             let totalNotes = 0;
             for (let i = 0; i < listeCriteres.length; i++) {
-                totalNotes += parseFloat(document.getElementById(`vote-crit-${i}`).value);
+                totalNotes += parseFloat(document.getElementById(`eval-crit-${i}`).value);
             }
             const moySur5 = totalNotes / listeCriteres.length;
             const noteFinaleSur20 = (moySur5 / 5) * 20;
 
-            // 🚨 STRICTEMENT NETTOYÉ : On envoie uniquement les 4 champs indispensables attendus par votre table
+            // Envoi à Supabase (groupe évalue son propre groupe)
             const { error } = await db.from('evaluations').insert([{
-                session_id: idSessionVote,
-                groupe_votant: votant,
-                sujet: sujet,
+                session_id: idSessionEvaluation,
+                groupe_votant: groupeSelectionne,
+                sujet: groupeSelectionne,
                 note: noteFinaleSur20
             }]);
 
             if (!error) {
-                alert("🎉 Évaluation envoyée avec succès ! Merci.");
-                for (let i = 0; i < listeCriteres.length; i++) {
-                    document.getElementById(`vote-crit-${i}`).value = 3;
-                    document.getElementById(`v-v-${i}`).innerText = "3 / 5";
-                }
+                // 📊 GÉNÉRATION ET AFFICHAGE DU RAPPORT DES RÉSULTATS
+                document.getElementById('rapport-nom-groupe').innerText = `Rapport destiné au : ${groupeSelectionne}`;
+                document.getElementById('rapport-nb-criteres').innerText = listeCriteres.length;
+                document.getElementById('rapport-moyenne-cinq').innerText = `${moySur5.toFixed(2)} / 5`;
+                document.getElementById('rapport-note-vingt').innerText = `${noteFinaleSur20.toFixed(2)} / 20`;
+
+                // Masquer le formulaire et afficher le bloc de fin
+                document.getElementById('ecran-formulaire').classList.add('hidden');
+                document.getElementById('ecran-rapport').classList.remove('hidden');
             } else {
-                alert("❌ Erreur technique lors de l'enregistrement : " + error.message);
+                alert("❌ Erreur lors de la sauvegarde : " + error.message);
             }
         }
 
-        window.onload = initVotePage;
+        window.onload = initEvaluationPage;
     </script>
 </body>
 </html>
