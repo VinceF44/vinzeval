@@ -9,7 +9,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <!-- 1. ZONE DE SÉCURITÉ / VOTE PRINCIPAL -->
     <div id="ecran-vote" class="max-w-xl w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
         <div class="text-center border-b border-slate-700 pb-3">
             <h1 class="text-xl font-black text-indigo-400">🗳️ Évaluation Session Live</h1>
@@ -17,7 +16,6 @@
         </div>
 
         <div class="space-y-4">
-            <!-- IDENTIFICATION -->
             <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Votre Équipe :</label>
@@ -25,12 +23,10 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold uppercase text-indigo-400 mb-1">Équipe à noter :</label>
-                    <!-- Quand on change d'équipe dans la liste, on sauvegarde les sliders actuels et on charge les anciennes notes de cette équipe si elles existent -->
                     <select id="groupe-scene" onchange="changerEquipeScene(this.value)" class="w-full bg-slate-950 font-bold rounded p-2 text-sm border border-indigo-500 text-white focus:outline-none"></select>
                 </div>
             </div>
 
-            <!-- CURSEURS DE NOTES DYNAMIQUES (ÉCHELLE 1 À 5) -->
             <div class="bg-slate-900/30 p-4 rounded-xl border border-slate-700/50 space-y-5">
                 <div class="flex justify-between items-center border-b border-slate-700 pb-1">
                     <span id="titre-equipe-encours" class="text-xs font-bold text-amber-400 uppercase">Notes pour : --</span>
@@ -41,7 +37,6 @@
                 </div>
             </div>
 
-            <!-- BOUTON DE VALIDATION UNIQUE -->
             <div class="pt-2">
                 <button onclick="soumettreFormulaireFinal()" class="w-full bg-indigo-600 hover:bg-indigo-700 font-black py-3.5 rounded-xl transition cursor-pointer text-xs uppercase shadow-lg tracking-wider">
                     🚀 Clôturer et envoyer toutes mes évaluations
@@ -51,7 +46,6 @@
         </div>
     </div>
 
-    <!-- 2. ÉCRAN DE VERROUILLAGE / RÉSULTATS (CACHÉ PAR DÉFAUT) -->
     <div id="ecran-verrouille" class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-emerald-800 shadow-2xl space-y-6 hidden text-center">
         <div class="space-y-2">
             <span class="text-4xl">🎉</span>
@@ -60,7 +54,7 @@
         </div>
         
         <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-left space-y-3">
-            <h3 class="text-xs font-bold uppercase text-slate-400 border-b border-slate-700 pb-1">📈 Récapitulatif de votre session :</h3>
+            <h3 class="text-xs font-bold uppercase text-slate-400 border-b border-slate-700 pb-1">📈 Récapitulatif :</h3>
             <div class="flex justify-between text-xs">
                 <span>Équipes évaluées :</span>
                 <span id="recap-nb-groupes" class="font-bold text-indigo-400">0 / 0</span>
@@ -70,7 +64,6 @@
                 <span id="recap-auto" class="font-bold text-emerald-400">Validée ✅</span>
             </div>
         </div>
-        <p class="text-[10px] text-slate-500">Les résultats et vos points de lucidité sont calculés en direct sur le vidéoprojecteur du formateur.</p>
     </div>
 
     <script>
@@ -83,9 +76,6 @@
         
         let listeCriteresSession = [];
         let listeGroupesNoms = [];
-        
-        // 🧠 LA MÉMOIRE TAMPON : Stocke temporairement les notes saisies pour chaque groupe
-        // Structure : { "Groupe A": [3, 4.5, 5], "Groupe B": [2, 2, 4] }
         let memoireNotesLocales = {}; 
         let ancienneEquipeSelectionnee = "";
 
@@ -96,41 +86,26 @@
             }
             dbSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            // 1. Récupération des groupes
             const { data: groupes } = await dbSupabase.from('groupes').select('*').eq('session_id', idSessionEnCours);
             if (groupes && groupes.length > 0) {
                 listeGroupesNoms = groupes.map(g => g.nom);
+                document.getElementById('mon-groupe').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
+                document.getElementById('groupe-scene').innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
                 
-                const selectMonGroupe = document.getElementById('mon-groupe');
-                const selectGroupeScene = document.getElementById('groupe-scene');
-                
-                selectMonGroupe.innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
-                selectGroupeScene.innerHTML = groupes.map(g => `<option value="${g.nom}">${g.nom}</option>`).join('');
-                
-                // Initialiser l'affichage de l'équipe active par défaut
-                ancienneEquipeSelectionnee = selectGroupeScene.value;
+                ancienneEquipeSelectionnee = document.getElementById('groupe-scene').value;
                 document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${ancienneEquipeSelectionnee}`;
             }
 
-            // 2. Récupération des critères
             const { data: criteres } = await dbSupabase.from('criteres').select('*').eq('session_id', idSessionEnCours);
-            const conteneur = document.getElementById('conteneur-criteres-dynamiques');
-            
             if (criteres && criteres.length > 0) {
                 listeCriteresSession = criteres;
-                
-                // Initialiser la mémoire locale avec des notes médianes (3/5) pour chaque groupe
                 listeGroupesNoms.forEach(nomG => {
                     memoireNotesLocales[nomG] = Array(listeCriteresSession.length).fill(3);
                 });
-
                 genererSlidersHtml();
-            } else {
-                conteneur.innerHTML = `<p class="text-xs text-amber-400 text-center py-2">⚠️ Aucun critère configuré pour cette session.</p>`;
             }
         }
 
-        // Fonction isolée pour dessiner ou redessiner les curseurs selon la mémoire
         function genererSlidersHtml() {
             const conteneur = document.getElementById('conteneur-criteres-dynamiques');
             const notesDeLEquipe = memoireNotesLocales[ancienneEquipeSelectionnee];
@@ -151,59 +126,43 @@
             }).join('');
         }
 
-        // Sauvegarde instantanée dans la variable JS dès que le curseur bouge
         function sauvegarderNoteEnDirect(indexCritere, valeur) {
             document.getElementById(`val-c-${indexCritere}`).innerText = valeur + " / 5";
             memoireNotesLocales[ancienneEquipeSelectionnee][indexCritere] = parseFloat(valeur);
         }
 
-        // Déclenchée au changement de la liste déroulante "Équipe à noter"
         function changerEquipeScene(nouvelleEquipe) {
-            // L'ancienne équipe est maintenant mise à jour, on bascule sur la nouvelle
             ancienneEquipeSelectionnee = nouvelleEquipe;
             document.getElementById('titre-equipe-encours').innerText = `Notes pour : ${nouvelleEquipe}`;
-            
-            // On reconstruit les curseurs avec les notes mémorisées de la nouvelle équipe choisie
             genererSlidersHtml();
         }
 
-        // BOUTON UNIQUE FIN DE SÉANCE : Envoi groupé
         async function soumettreFormulaireFinal() {
             const monGroupe = document.getElementById('mon-groupe').value;
-            
-            // Validation de sécurité pédagogique : Vérifier si toutes les équipes ont bien été touchées/évaluées
-            // (Ici on regarde s'ils ont laissé les valeurs ou s'ils ont fait le tour de la liste déroulante)
-            const confirmation = confirm("Êtes-vous sûr de vouloir envoyer vos notes ? Vous ne pourrez plus revenir en arrière.");
+            const confirmation = confirm("Êtes-vous sûr de vouloir envoyer vos notes ?");
             if(!confirmation) return;
 
             const tableauPayloadsEnvoi = [];
 
-            // Pour chaque groupe de la session, on calcule sa moyenne générale sur 5, convertie sur 20
             listeGroupesNoms.forEach(nomDuSujet => {
                 const notesDuSujet = memoireNotesLocales[nomDuSujet];
-                const sommeSur5 = notesDuSujet.reduce((a,b) => a+b, 0);
-                const moyenneSur5 = sommeSur5 / listeCriteresSession.length;
-                
-                // Règle de trois pour conversion sur 20 en BDD
+                const moyenneSur5 = notesDuSujet.reduce((a,b) => a+b, 0) / listeCriteresSession.length;
                 const noteSur20 = (moyenneSur5 / 5) * 20;
 
                 tableauPayloadsEnvoi.push({
-    session_id: idSessionEnCours,
-    groupe_votant: monGroupe,
-    sujet: nomDuSujet,
-    note_globale: noteSur20 // 👈 On envoie juste la note convertie dans l'unique colonne 'note'
-});
+                    session_id: idSessionEnCours,
+                    groupe_votant: monGroupe, // 🌟 Correspondance parfaite Supabase
+                    sujet: nomDuSujet,
+                    note: noteSur20          // 🌟 Correspondance parfaite Supabase
+                });
             });
 
-            // Envoi massif en un seul appel réseau dans Supabase
             const { error } = await dbSupabase.from('evaluations').insert(tableauPayloadsEnvoi);
 
             if (error) {
-                alert("Erreur technique lors de l'enregistrement : " + error.message);
+                alert("Erreur Supabase : " + error.message);
             } else {
-                // Succès complet : On bascule l'interface sur l'écran verrouillé
                 document.getElementById('ecran-vote').classList.add('hidden');
-                
                 document.getElementById('recap-nb-groupes').innerText = `${listeGroupesNoms.length} / ${listeGroupesNoms.length}`;
                 document.getElementById('ecran-verrouille').classList.remove('hidden');
             }
