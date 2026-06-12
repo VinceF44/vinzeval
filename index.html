@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master — Curseurs 1-5 & Synthèse /20</title>
+    <title>Dashboard Master — Version Stable Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,7 +17,9 @@
                 <span class="bg-blue-950/50 text-blue-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-blue-800/50">👑 Performance Évaluateurs (Échelle Saisie 1-5 → Calcul /20)</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-gray-800 hover:bg-gray-700 text-xs font-bold py-2 px-4 rounded-lg border border-gray-700 transition cursor-pointer">🔄 Synchroniser</button>
+            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg shadow-blue-950/50 transition cursor-pointer flex items-center gap-2">
+                🔄 Récupérer les votes des élèves
+            </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -81,7 +83,7 @@
         let groupesSession = [];
         let evaluationsSession = [];
         let listeCriteresProf = [];
-        let notesFormateurLocales = {}; // Stocke les notes sur l'échelle 1 à 5 originelle du prof
+        let notesFormateurLocales = {}; 
         let monRadarChart = null;
 
         async function initDashboard() {
@@ -105,10 +107,10 @@
 
             creerGraphiqueRadarVide();
             chargerDonneesDashboard();
-            setInterval(chargerDonneesDashboard, 5000);
+            
+            // 🚨 SUPPRESSION DU SETINTERVAL QUI FAISAIT TOUT SAUTER TOUTES LES 5 SECONDES 🚨
         }
 
-        // Modifié pour afficher l'échelle de 1 à 5
         function genererSlidersHtml() {
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
                 <div>
@@ -138,7 +140,6 @@
                 tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
             }
             notesFormateurLocales[groupeCible] = tableauNotes;
-            alert(`Note enregistrée pour ${groupeCible} !`);
             calculerEtAfficherTout();
         }
 
@@ -167,7 +168,6 @@
 
                         const profNotesDuSujet = notesFormateurLocales[e.sujet];
                         if (profNotesDuSujet) {
-                            // On calcule la moyenne prof (qui est sur 5) et on la passe sur 20 pour comparer
                             const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
                             const moyProfSur20 = (moyProfSur5 / 5) * 20;
                             
@@ -191,7 +191,6 @@
 
                 const profNotes = notesFormateurLocales[nom];
                 const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
-                // CONVERSION MAGIQUE : La note finale de référence du formateur est projetée sur 20
                 const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
 
                 let ptAuto = 0;
@@ -241,7 +240,7 @@
                 `;
             });
 
-            mettreAjourGraphiqueRadar();
+            mettreAjourGraphiqueRadar_SansResetCurseurs();
         }
 
         function creerGraphiqueRadarVide() {
@@ -265,6 +264,7 @@
             });
         }
 
+        // Cette fonction s'exécute QUAND ON CHANGE de groupe dans la liste déroulante (on synchronise les sliders à ce moment-là)
         function mettreAjourGraphiqueRadar() {
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
@@ -284,7 +284,18 @@
                     }
                 }
             }
+            renduGraphiqueUniquement(groupeAffiche);
+        }
 
+        // Évite de toucher aux curseurs pendant qu'on recalcule le tableau en tâche de fond
+        function mettreAjourGraphiqueRadar_SansResetCurseurs() {
+            if(!monRadarChart) return;
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
+            renduGraphiqueUniquement(groupeAffiche);
+        }
+
+        function renduGraphiqueUniquement(groupeAffiche) {
             const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
             let autoEval = null;
             let notesDonnees = [];
@@ -292,9 +303,9 @@
             evaluationsSession.forEach(e => {
                 if(e.groupe_votant === groupeAffiche) {
                     if(e.sujet === groupeAffiche) {
-                        autoEval = (e.note / 20) * 5; // Ramener sur 5 pour l'affichage graphique
+                        autoEval = (e.note / 20) * 5; 
                     } else {
-                        notesDonnees.push((e.note / 20) * 5); // Ramener sur 5 pour l'affichage graphique
+                        notesDonnees.push((e.note / 20) * 5); 
                     }
                 }
             });
