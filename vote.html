@@ -56,11 +56,24 @@
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // 1. Récupération du nom de la session
-            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionVote).single();
-            if (s) {
-                document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
-            }
+            // 1. Récupération du nom et du statut de la session
+const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionVote).single();
+
+if (s) {
+    // 🚨 SÉCURITÉ : Si la session est marquée comme terminée, on bloque l'accès
+    if (s.statut === 'terminee') {
+        document.body.innerHTML = `
+            <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
+                <div class="text-4xl">🔒</div>
+                <h1 class="text-xl font-black text-white">Session Clôturée</h1>
+                <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé par le formateur. Les votes ne sont plus acceptés.</p>
+            </div>
+        `;
+        return; // On stoppe le chargement du formulaire
+    }
+    
+    document.getElementById('titre-session-vote').innerText = `Session : ${s.nom}`;
+}
 
             // 2. Récupération des groupes de la session (on récupère l'id ET le nom)
             const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionVote);
