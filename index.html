@@ -164,7 +164,7 @@
                 const noteSur5 = (e.note_structure / 20) * 5;
 
                 if (synthese[e.sujet]) {
-                    if (e.evaluateur === e.sujet) {
+                    if (e.groupe_votant === e.sujet) {
                         synthese[e.sujet].auto = noteSur5;
                     } else {
                         synthese[e.sujet].pairs.push(noteSur5);
@@ -173,10 +173,10 @@
 
                 // Système de calcul de lucidité : Écart absolu entre le vote d'un groupe et la moyenne du prof
                 const profNotes = notesFormateurLocales[e.sujet];
-                if (profNotes && e.evaluateur !== e.sujet) {
+                if (profNotes && e.groupe_votant !== e.sujet) {
                     const moyProfSur5 = profNotes.reduce((a,b)=>a+b,0) / profNotes.length;
-                    ecartsLucidite[e.evaluateur].somme += Math.abs(noteSur5 - moyProfSur5);
-                    ecartsLucidite[e.evaluateur].count += 1;
+                    ecartsLucidite[e.groupe_votant].somme += Math.abs(noteSur5 - moyProfSur5);
+                    ecartsLucidite[e.groupe_votant].count += 1;
                 }
             });
 
