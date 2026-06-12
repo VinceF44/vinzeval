@@ -161,7 +161,7 @@
 
             // Tri et conversion des données stockées (Sur 20 en base) vers l'échelle 1 à 5
             evaluationsSession.forEach(e => {
-                const noteSur5 = (e.note_structure / 20) * 5;
+                const noteSur5 = (e.note_globale / 20) * 5;
 
                 if (synthese[e.sujet]) {
                     if (e.groupe_votant === e.sujet) {
