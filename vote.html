@@ -11,6 +11,7 @@
 
     <div id="bloc-principal-evaluation" class="w-full max-w-lg bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
+        <!-- ÉCRAN FORMULAIRE (Saisie) -->
         <div id="ecran-formulaire" class="space-y-6">
             <div class="border-b border-gray-800 pb-4">
                 <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
@@ -18,20 +19,25 @@
             </div>
 
             <div class="space-y-4">
+                <!-- SÉLECTEUR 1 : Qui remplit le formulaire -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <select id="select-groupe-votant" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500"></select>
                 </div>
 
+                <!-- SÉLECTEUR 2 : Qui on évalue actuellement -->
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer (Sélectionnez à tour de rôle) :</label>
                     <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500"></select>
                     <p class="text-[11px] text-gray-500 mt-1">💡 Changez d'équipe pour évaluer tout le monde. Vos curseurs sont automatiquement sauvegardés pendant la navigation.</p>
                 </div>
 
+                <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
                 <div id="conteneur-criteres-evaluation" class="space-y-4 pt-2 border-t border-gray-800/60">
-                    </div>
+                    <!-- Généré dynamiquement en JS -->
+                </div>
 
+                <!-- BOUTON DE SOUMISSION FINALE -->
                 <div class="pt-4">
                     <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
                         🚀 Envoyer toutes nos évaluations
@@ -40,6 +46,7 @@
             </div>
         </div>
 
+        <!-- ÉCRAN RAPPORT FINAL (Masqué au départ) -->
         <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
@@ -76,67 +83,98 @@
 
         let listeCriteres = [];
         let ciblePrecedente = ""; 
-        
-        // Structure de stockage locale : { "Nom Groupe": { "indexCritere": note, ... }, ... }
         let memoireEvaluations = {};
 
         async function initEvaluationPage() {
-            if (!idSessionEvaluation) {
-                document.getElementById('titre-session-evaluation').innerText = "❌ Aucune session spécifiée";
-                return;
-            }
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // 1. Statut session
-            const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
-            if (s) {
-                if (s.statut === 'terminee') {
-                    document.body.innerHTML = `
-                        <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
-                            <div class="text-4xl">🔒</div>
-                            <h1 class="text-xl font-black text-white">Session Clôturée</h1>
-                            <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé. Les évaluations ne sont plus acceptées.</p>
-                        </div>
-                    `;
+            try {
+                if (!idSessionEvaluation) {
+                    document.getElementById('titre-session-evaluation').innerText = "❌ Aucune session spécifiée dans l'URL (?session_id=...)";
                     return;
                 }
-                document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
-            }
+                
+                // Initialisation client Supabase
+                db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // 2. Groupes & Apprenants
-            const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
-            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
-
-            if (g && g.length > 0) {
-                const membresParIdGroupe = {};
-                g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
-
-                if (apps) {
-                    apps.forEach(student => {
-                        if (membresParIdGroupe[student.groupe_id]) {
-                            membresParIdGroupe[student.groupe_id].push(student.prenom);
-                        }
-                    });
+                // 1. Chargement et vérification de la Session
+                const { data: s, error: errSession } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
+                
+                if (errSession) {
+                    alert("❌ Erreur Supabase (Table 'sessions') : " + errSession.message);
+                    return;
                 }
 
-                const optionsHtml = g.map(grp => {
-                    const listePrenoms = membresParIdGroupe[grp.id];
-                    const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
-                    return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
-                }).join('');
+                if (s) {
+                    if (s.statut === 'terminee') {
+                        document.body.innerHTML = `
+                            <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
+                                <div class="text-4xl">🔒</div>
+                                <h1 class="text-xl font-black text-white">Session Clôturée</h1>
+                                <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé. Les évaluations ne sont plus acceptées.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
+                }
 
-                document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
-                document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
-                
-                // Initialise la première cible active
-                ciblePrecedente = document.getElementById('select-sujet-evalue').value;
-            }
+                // 2. Chargement des Groupes
+                const { data: g, error: errGroupes } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
+                if (errGroupes) {
+                    alert("❌ Erreur Supabase (Table 'groupes') : " + errGroupes.message);
+                    return;
+                }
 
-            // 3. Critères
-            const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
-            if (crits && crits.length > 0) {
-                listeCriteres = crits;
-                genererCurseursCriteres();
+                // 3. Chargement des Apprenants
+                const { data: apps, error: errApps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
+                if (errApps) {
+                    alert("❌ Erreur Supabase (Table 'apprenants') : " + errApps.message);
+                    return;
+                }
+
+                // Population des menus déroulants si des groupes existent
+                if (g && g.length > 0) {
+                    const membresParIdGroupe = {};
+                    g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
+
+                    if (apps) {
+                        apps.forEach(student => {
+                            if (membresParIdGroupe[student.groupe_id]) {
+                                membresParIdGroupe[student.groupe_id].push(student.prenom);
+                            }
+                        });
+                    }
+
+                    const optionsHtml = g.map(grp => {
+                        const listePrenoms = membresParIdGroupe[grp.id];
+                        const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
+                        return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
+                    }).join('');
+
+                    document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
+                    document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
+                    
+                    // Assigne la première cible par défaut
+                    ciblePrecedente = document.getElementById('select-sujet-evalue').value;
+                } else {
+                    alert("⚠️ Aucun groupe trouvé dans la base de données pour cet identifiant de session.");
+                }
+
+                // 4. Chargement des Critères
+                const { data: crits, error: errCrits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
+                if (errCrits) {
+                    alert("❌ Erreur Supabase (Table 'criteres') : " + errCrits.message);
+                    return;
+                }
+
+                if (crits && crits.length > 0) {
+                    listeCriteres = crits;
+                    genererCurseursCriteres();
+                } else {
+                    alert("⚠️ Aucun critère de notation associé à cette session.");
+                }
+
+            } catch (errorGlobal) {
+                alert("💥 Erreur critique d'exécution JavaScript : " + errorGlobal.message);
             }
         }
 
@@ -154,9 +192,7 @@
             `).join('');
         }
 
-        // Sauvegarde l'état actuel et charge les notes de l'équipe sélectionnée
         function changerDeCibleEvaluation(nouvelleCible) {
-            // 1. Sauvegarder les valeurs des curseurs pour l'ancienne cible
             if (ciblePrecedente) {
                 memoireEvaluations[ciblePrecedente] = {};
                 listeCriteres.forEach((c, index) => {
@@ -164,7 +200,6 @@
                 });
             }
 
-            // 2. Charger les valeurs de la nouvelle cible (ou valeur médiane 3 par défaut si jamais touchée)
             listeCriteres.forEach((c, index) => {
                 const noteSauvegardee = (memoireEvaluations[nouvelleCible] && memoireEvaluations[nouvelleCible][index] !== undefined) 
                     ? memoireEvaluations[nouvelleCible][index] 
@@ -174,24 +209,20 @@
                 document.getElementById(`v-v-${index}`).innerText = `${noteSauvegardee} / 5`;
             });
 
-            // 3. Mettre à jour la cible courante
             ciblePrecedente = nouvelleCible;
         }
 
         async function soumettreEvaluationGenerale() {
             const groupeVotant = document.getElementById('select-groupe-votant').value;
-            
-            // On force la sauvegarde de la cible actuellement affichée à l'écran avant l'envoi
             changerDeCibleEvaluation(ciblePrecedente);
 
             const listeGroupesEvalues = Object.keys(memoireEvaluations);
 
             if (listeGroupesEvalues.length === 0) {
-                alert("❌ Vous n'avez pas encore bougé les curseurs ou évalué d'équipe.");
+                alert("❌ Vous n'avez pas encore évalué d'équipe.");
                 return;
             }
 
-            // 🚨 SÉCURITÉ DOUBLE ENVOI : On vérifie si ce groupe n'a pas déjà validé sa session dans Supabase
             const { data: verifDejaFait, error: errVerif } = await db
                 .from('evaluations')
                 .select('id')
@@ -205,11 +236,10 @@
             }
 
             if (verifDejaFait && verifDejaFait.length > 0) {
-                alert(`⚠️ Votre groupe (${groupeVotant}) a déjà transmis ses évaluations pour cette session. Opération verrouillée.`);
+                alert(`⚠️ Votre groupe (${groupeVotant}) a déjà transmis ses évaluations pour cette session.`);
                 return;
             }
 
-            // Préparation du package d'insertion pour Supabase
             const paquetInsertions = [];
             let aFaitSonAutoEval = false;
 
@@ -222,4 +252,41 @@
                 const moyenneSur5 = totalNotes / listeCriteres.length;
                 const noteFinaleSur20 = (moyenneSur5 / 5) * 20;
 
-                if (nomSujet === groupeVotant)
+                if (nomSujet === groupeVotant) {
+                    aFaitSonAutoEval = true;
+                }
+
+                paquetInsertions.push({
+                    session_id: idSessionEvaluation,
+                    groupe_votant: groupeVotant,
+                    sujet: nomSujet,
+                    note: noteFinaleSur20
+                });
+            });
+
+            const { error } = await db.from('evaluations').insert(paquetInsertions);
+
+            if (!error) {
+                document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
+                document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
+                
+                const baliseAutoEval = document.getElementById('rapport-auto-statut');
+                if (aFaitSonAutoEval) {
+                    baliseAutoEval.innerText = "Validée et Incluse ✅";
+                    baliseAutoEval.className = "font-bold text-emerald-400";
+                } else {
+                    baliseAutoEval.innerText = "Manquante ❌";
+                    baliseAutoEval.className = "font-bold text-red-400";
+                }
+
+                document.getElementById('ecran-formulaire').classList.add('hidden');
+                document.getElementById('ecran-rapport').classList.remove('hidden');
+            } else {
+                alert("❌ Erreur technique lors de la sauvegarde : " + error.message);
+            }
+        }
+
+        window.onload = initEvaluationPage;
+    </script>
+</body>
+</html>
