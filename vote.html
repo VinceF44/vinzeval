@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Évaluation Session — Auto-Évaluation</title>
+    <title>Session Évaluation — Formulaire d'Évaluation Croisée & Auto-Évaluation</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -19,48 +19,49 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe :</label>
-                    <select id="select-groupe-unique" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none"></select>
-                    <p class="text-[11px] text-gray-500 mt-1">Sélectionnez votre groupe pour soumettre votre auto-évaluation.</p>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
+                    <select id="select-groupe-votant" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500"></select>
+                </div>
+
+                <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
+                    <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer (Sélectionnez à tour de rôle) :</label>
+                    <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500"></select>
+                    <p class="text-[11px] text-gray-500 mt-1">💡 Changez d'équipe pour évaluer tout le monde. Vos curseurs sont automatiquement sauvegardés pendant la navigation.</p>
                 </div>
 
                 <div id="conteneur-criteres-evaluation" class="space-y-4 pt-2 border-t border-gray-800/60">
                     </div>
 
                 <div class="pt-4">
-                    <button onclick="soumettreEvaluation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
-                        🚀 Envoyer mon évaluation
+                    <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                        🚀 Envoyer toutes nos évaluations
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="ecran-rapport" class="hidden space-y-5 text-center py-4 animated fadeIn">
+        <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
-                <h2 class="text-2xl font-black text-white">Évaluation Enregistrée !</h2>
+                <h2 class="text-2xl font-black text-white">Évaluations Terminées !</h2>
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
             
             <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2">
                 <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">
-                    📊 Résumé de votre rapport
+                    📊 Résumé de votre session
                 </div>
                 <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Nombre de critères évalués :</span>
-                    <span id="rapport-nb-criteres" class="font-bold text-white">0</span>
+                    <span class="text-gray-400">Équipes évaluées au total :</span>
+                    <span id="rapport-nb-groupes" class="font-bold text-white font-mono text-base">0</span>
                 </div>
                 <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Moyenne brute obtenue :</span>
-                    <span id="rapport-moyenne-cinq" class="font-bold text-blue-400 font-mono">0 / 5</span>
-                </div>
-                <div class="border-t border-gray-800/60 my-2 pt-2 flex justify-between items-center">
-                    <span class="text-sm font-bold text-gray-300">Note finale convertie :</span>
-                    <span id="rapport-note-vingt" class="text-xl font-black text-emerald-400 font-mono">00.00 / 20</span>
+                    <span class="text-gray-400">Statut de votre auto-évaluation :</span>
+                    <span id="rapport-auto-statut" class="font-bold font-mono">Vérification...</span>
                 </div>
             </div>
 
-            <p class="text-xs text-gray-500 italic">Merci ! Vos données ont été transmises en temps réel sur le tableau de bord du formateur.</p>
+            <p class="text-xs text-gray-500 italic">Excellent travail. Vos données ont été centralisées en temps réel pour le calcul du Dashboard formateur.</p>
         </div>
 
     </div>
@@ -74,6 +75,10 @@
         const idSessionEvaluation = urlParams.get('session_id');
 
         let listeCriteres = [];
+        let ciblePrecedente = ""; 
+        
+        // Structure de stockage locale : { "Nom Groupe": { "indexCritere": note, ... }, ... }
+        let memoireEvaluations = {};
 
         async function initEvaluationPage() {
             if (!idSessionEvaluation) {
@@ -82,9 +87,8 @@
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // 1. Récupération du nom et du statut de la session
+            // 1. Statut session
             const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
-
             if (s) {
                 if (s.statut === 'terminee') {
                     document.body.innerHTML = `
@@ -99,11 +103,11 @@
                 document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
             }
 
-            // 2. Récupération des groupes et apprenants
+            // 2. Groupes & Apprenants
             const { data: g } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
             const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
 
-            if (g) {
+            if (g && g.length > 0) {
                 const membresParIdGroupe = {};
                 g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
 
@@ -121,80 +125,141 @@
                     return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
                 }).join('');
 
-                document.getElementById('select-groupe-unique').innerHTML = optionsHtml;
+                document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
+                document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
+                
+                // Initialise la première cible active
+                ciblePrecedente = document.getElementById('select-sujet-evalue').value;
             }
 
-            // 3. Récupération des critères
+            // 3. Critères
             const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
             if (crits && crits.length > 0) {
                 listeCriteres = crits;
-                document.getElementById('conteneur-criteres-evaluation').innerHTML = crits.map((c, index) => `
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-400">🎯 ${c.nom}</span>
-                            <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
-                        </div>
-                        <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
-                            oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'" 
-                            class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
-                    </div>
-                `).join('');
+                genererCurseursCriteres();
             }
         }
 
-        async function soumettreEvaluation() {
-            const groupeSelectionne = document.getElementById('select-groupe-unique').value;
+        function genererCurseursCriteres() {
+            document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-400">🎯 ${c.nom}</span>
+                        <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
+                    </div>
+                    <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                        oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'" 
+                        class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                </div>
+            `).join('');
+        }
 
-            // 🚨 SÉCURITÉ : Vérification anti-doublon
-            const { data: evaluationExistante, error: errVerif } = await db
+        // Sauvegarde l'état actuel et charge les notes de l'équipe sélectionnée
+        function changerDeCibleEvaluation(nouvelleCible) {
+            // 1. Sauvegarder les valeurs des curseurs pour l'ancienne cible
+            if (ciblePrecedente) {
+                memoireEvaluations[ciblePrecedente] = {};
+                listeCriteres.forEach((c, index) => {
+                    memoireEvaluations[ciblePrecedente][index] = parseFloat(document.getElementById(`eval-crit-${index}`).value);
+                });
+            }
+
+            // 2. Charger les valeurs de la nouvelle cible (ou valeur médiane 3 par défaut si jamais touchée)
+            listeCriteres.forEach((c, index) => {
+                const noteSauvegardee = (memoireEvaluations[nouvelleCible] && memoireEvaluations[nouvelleCible][index] !== undefined) 
+                    ? memoireEvaluations[nouvelleCible][index] 
+                    : 3;
+                
+                document.getElementById(`eval-crit-${index}`).value = noteSauvegardee;
+                document.getElementById(`v-v-${index}`).innerText = `${noteSauvegardee} / 5`;
+            });
+
+            // 3. Mettre à jour la cible courante
+            ciblePrecedente = nouvelleCible;
+        }
+
+        async function soumettreEvaluationGenerale() {
+            const groupeVotant = document.getElementById('select-groupe-votant').value;
+            
+            // On force la sauvegarde de la cible actuellement affichée à l'écran avant l'envoi
+            changerDeCibleEvaluation(ciblePrecedente);
+
+            const listeGroupesEvalues = Object.keys(memoireEvaluations);
+
+            if (listeGroupesEvalues.length === 0) {
+                alert("❌ Vous n'avez pas encore bougé les curseurs ou évalué d'équipe.");
+                return;
+            }
+
+            // 🚨 SÉCURITÉ DOUBLE ENVOI : On vérifie si ce groupe n'a pas déjà validé sa session dans Supabase
+            const { data: verifDejaFait, error: errVerif } = await db
                 .from('evaluations')
                 .select('id')
                 .eq('session_id', idSessionEvaluation)
-                .eq('groupe_votant', groupeSelectionne)
-                .eq('sujet', groupeSelectionne);
+                .eq('groupe_votant', groupeVotant)
+                .limit(1);
 
             if (errVerif) {
-                alert("❌ Erreur réseau : " + errVerif.message);
+                alert("❌ Erreur de communication réseau : " + errVerif.message);
                 return;
             }
 
-            if (evaluationExistante && evaluationExistante.length > 0) {
-                alert(`⚠️ Refusé : Votre équipe (${groupeSelectionne}) a déjà soumis son auto-évaluation.`);
+            if (verifDejaFait && verifDejaFait.length > 0) {
+                alert(`⚠️ Votre groupe (${groupeVotant}) a déjà transmis ses évaluations pour cette session. Opération verrouillée.`);
                 return;
             }
 
-            // Calculs des scores
-            let totalNotes = 0;
-            for (let i = 0; i < listeCriteres.length; i++) {
-                totalNotes += parseFloat(document.getElementById(`eval-crit-${i}`).value);
-            }
-            const moySur5 = totalNotes / listeCriteres.length;
-            const noteFinaleSur20 = (moySur5 / 5) * 20;
+            // Préparation du package d'insertion pour Supabase
+            const paquetInsertions = [];
+            let aFaitSonAutoEval = false;
 
-            // Envoi à Supabase (groupe évalue son propre groupe)
-            const { error } = await db.from('evaluations').insert([{
-                session_id: idSessionEvaluation,
-                groupe_votant: groupeSelectionne,
-                sujet: groupeSelectionne,
-                note: noteFinaleSur20
-            }]);
+            listeGroupesEvalues.forEach(nomSujet => {
+                let totalNotes = 0;
+                listeCriteres.forEach((c, index) => {
+                    totalNotes += memoireEvaluations[nomSujet][index];
+                });
+
+                const moyenneSur5 = totalNotes / listeCriteres.length;
+                const noteFinaleSur20 = (moyenneSur5 / 5) * 20;
+
+                if (nomSujet === groupeVotant) {
+                    aFaitSonAutoEval = true;
+                }
+
+                paquetInsertions.push({
+                    session_id: idSessionEvaluation,
+                    groupe_votant: groupeVotant,
+                    sujet: nomSujet,
+                    note: noteFinaleSur20
+                });
+            });
+
+            // Injection en Base de données
+            const { error } = await db.from('evaluations').insert(paquetInsertions);
 
             if (!error) {
-                // 📊 GÉNÉRATION ET AFFICHAGE DU RAPPORT DES RÉSULTATS
-                document.getElementById('rapport-nom-groupe').innerText = `Rapport destiné au : ${groupeSelectionne}`;
-                document.getElementById('rapport-nb-criteres').innerText = listeCriteres.length;
-                document.getElementById('rapport-moyenne-cinq').innerText = `${moySur5.toFixed(2)} / 5`;
-                document.getElementById('rapport-note-vingt').innerText = `${noteFinaleSur20.toFixed(2)} / 20`;
+                // MISE À JOUR ET AFFICHAGE DE LA FENÊTRE DE RAPPORT
+                document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
+                document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
+                
+                const baliseAutoEval = document.getElementById('rapport-auto-statut');
+                if (aFaitSonAutoEval) {
+                    baliseAutoEval.innerText = "Validée et Incluse ✅";
+                    baliseAutoEval.className = "font-bold text-emerald-400";
+                } else {
+                    baliseAutoEval.innerText = "Manquante ❌";
+                    baliseAutoEval.className = "font-bold text-red-400";
+                }
 
-                // Masquer le formulaire et afficher le bloc de fin
+                // Permutation visuelle des écrans
                 document.getElementById('ecran-formulaire').classList.add('hidden');
                 document.getElementById('ecran-rapport').classList.remove('hidden');
             } else {
-                alert("❌ Erreur lors de la sauvegarde : " + error.message);
+                alert("❌ Erreur technique lors de la sauvegarde sur le serveur : " + error.message);
             }
         }
 
-        window.onload = initEvaluationPage;
+        window.onload = initVotePage;
     </script>
 </body>
 </html>
