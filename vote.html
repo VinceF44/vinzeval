@@ -222,44 +222,4 @@
                 const moyenneSur5 = totalNotes / listeCriteres.length;
                 const noteFinaleSur20 = (moyenneSur5 / 5) * 20;
 
-                if (nomSujet === groupeVotant) {
-                    aFaitSonAutoEval = true;
-                }
-
-                paquetInsertions.push({
-                    session_id: idSessionEvaluation,
-                    groupe_votant: groupeVotant,
-                    sujet: nomSujet,
-                    note: noteFinaleSur20
-                });
-            });
-
-            // Injection en Base de données
-            const { error } = await db.from('evaluations').insert(paquetInsertions);
-
-            if (!error) {
-                // MISE À JOUR ET AFFICHAGE DE LA FENÊTRE DE RAPPORT
-                document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
-                document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
-                
-                const baliseAutoEval = document.getElementById('rapport-auto-statut');
-                if (aFaitSonAutoEval) {
-                    baliseAutoEval.innerText = "Validée et Incluse ✅";
-                    baliseAutoEval.className = "font-bold text-emerald-400";
-                } else {
-                    baliseAutoEval.innerText = "Manquante ❌";
-                    baliseAutoEval.className = "font-bold text-red-400";
-                }
-
-                // Permutation visuelle des écrans
-                document.getElementById('ecran-formulaire').classList.add('hidden');
-                document.getElementById('ecran-rapport').classList.remove('hidden');
-            } else {
-                alert("❌ Erreur technique lors de la sauvegarde sur le serveur : " + error.message);
-            }
-        }
-
-        window.onload = initVotePage;
-    </script>
-</body>
-</html>
+                if (nomSujet === groupeVotant)
