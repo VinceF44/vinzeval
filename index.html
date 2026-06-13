@@ -28,7 +28,7 @@
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
-                        <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
+                        <select id="select-groupe-formateur" onchange="mettreAjourSlidersDepuisHistorique()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
                     </div>
                     <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
                     <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
@@ -93,20 +93,13 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
-            // 1. Récupération des groupes
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
-            
-            // 2. Récupération des apprenants associés à la session (comme dans vote.html)
             const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
 
             if(g) {
                 groupesSession = g;
-
-                // On mappe les prénoms par ID unique de groupe
                 const membresParIdGroupe = {};
-                g.forEach(grp => {
-                    membresParIdGroupe[grp.id] = [];
-                });
+                g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
 
                 if (apps) {
                     apps.forEach(student => {
@@ -116,7 +109,6 @@
                     });
                 }
 
-                // Génération des options avec les prénoms entre parenthèses
                 document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => {
                     const listePrenoms = membresParIdGroupe[grp.id];
                     const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
@@ -131,7 +123,7 @@
             }
 
             creerGraphiqueRadarVide();
-            chargerDonneesDashboard();
+            await chargerDonneesDashboard();
         }
 
         function genererSlidersHtml() {
@@ -152,18 +144,79 @@
             const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
             if (!error && evals) {
                 evaluationsSession = evals;
+
+                // Extraction et reconstruction de l'objet local à partir des données de la bdd
+                notesFormateurLocales = {};
+                evaluationsSession.forEach(e => {
+                    if (e.groupe_votant === 'Formateur') {
+                        // Si le format stocké est déjà la moyenne sur 20, on retrouve la note sur 5 originale pour les sliders
+                        const noteSur5 = (e.note / 20) * 5;
+                        if (!notesFormateurLocales[e.sujet]) {
+                            notesFormateurLocales[e.sujet] = Array(listeCriteresProf.length).fill(noteSur5);
+                        } else {
+                            // Au cas où les critères individuels ne sont pas détaillés en base, on applique la moyenne partout
+                            notesFormateurLocales[e.sujet].fill(noteSur5);
+                        }
+                    }
+                });
+
                 calculerEtAfficherTout();
+                mettreAjourSlidersDepuisHistorique();
             }
         }
 
-        function enregistrerNoteFormateur() {
+        async function enregistrerNoteFormateur() {
             const groupeCible = document.getElementById('select-groupe-formateur').value;
             const tableauNotes = [];
             for(let i=0; i < listeCriteresProf.length; i++) {
                 tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
             }
+            
+            // Calcul de la moyenne sur 20 à envoyer à Supabase
+            const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
+            const moyenneSur20 = (moyenneSur5 / 5) * 20;
+
+            // 1. On nettoie l'ancienne note si elle existe déjà dans Supabase pour éviter les doublons
+            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
+
+            // 2. Sauvegarde persistante dans la base de données
+            const { error } = await db.from('evaluations').insert([{
+                session_id: idSessionDashboard,
+                groupe_votant: 'Formateur',
+                sujet: groupeCible,
+                note: moyenneSur20
+            }]);
+
+            if (error) {
+                alert("Erreur lors de la sauvegarde : " + error.message);
+                return;
+            }
+
+            // Mettre à jour l'état local et rafraîchir
             notesFormateurLocales[groupeCible] = tableauNotes;
-            calculerEtAfficherTout();
+            await chargerDonneesDashboard();
+            alert(`Note globale de ${moyenneSur20.toFixed(2)}/20 enregistrée pour le ${groupeCible} !`);
+        }
+
+        function mettreAjourSlidersDepuisHistorique() {
+            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
+            if(!groupeAffiche) return;
+
+            const notesProfExistantes = notesFormateurLocales[groupeAffiche];
+            for (let i = 0; i < listeCriteresProf.length; i++) {
+                const inputCurseur = document.getElementById(`prof-crit-${i}`);
+                const labelValeur = document.getElementById(`v-f-${i}`);
+                if (inputCurseur && labelValeur) {
+                    if (notesProfExistantes && notesProfExistantes[i] !== undefined) {
+                        inputCurseur.value = notesProfExistantes[i];
+                        labelValeur.innerText = notesProfExistantes[i] + " / 5";
+                    } else {
+                        inputCurseur.value = 3;
+                        labelValeur.innerText = "3 / 5";
+                    }
+                }
+            }
+            mettreAjourGraphiqueRadar_SansResetCurseurs();
         }
 
         function calculerEtAfficherTout() {
@@ -180,7 +233,7 @@
                 };
             });
 
-            // Étape 1 : On traite chaque évaluation soumise par un évaluateur (e.groupe_votant)
+            // Étape 1 : Traitement des données élèves
             evaluationsSession.forEach(e => {
                 const noteSur20 = e.note;
 
@@ -190,16 +243,14 @@
                     } else {
                         structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
 
-                        // Comparaison avec la note du formateur sur l'équipe qu'il vient de noter
-                        const profNotesDuSujet = notesFormateurLocales[e.sujet];
-                        if (profNotesDuSujet) {
-                            const moyProfSur5 = profNotesDuSujet.reduce((a,b)=>a+b,0) / profNotesDuSujet.length;
-                            const moyProfSur20 = (moyProfSur5 / 5) * 20;
-                            
+                        // Recherche de la note du formateur directement dans l'historique chargé de Supabase
+                        const evaluationProfSujet = evaluationsSession.find(ev => ev.groupe_votant === 'Formateur' && ev.sujet === e.sujet);
+                        
+                        if (evaluationProfSujet) {
+                            const moyProfSur20 = evaluationProfSujet.note;
                             const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
                             const seuilTolerance = moyProfSur20 * 0.20;
 
-                            // LOGIQUE STRICTE : Écart >= 20% -> Malus -1 | Écart < 20% -> Bonus +1
                             if (ecartAbsolu >= seuilTolerance) {
                                 structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
                             } else {
@@ -210,7 +261,7 @@
                 }
             });
 
-            // Étape 2 : Construction visuelle des lignes
+            // Étape 2 : Rendu HTML
             groupesSession.forEach(g => {
                 const nom = g.nom;
                 const donnees = structureParGroupe[nom];
@@ -219,11 +270,9 @@
                 const totalDonnees = donnees.notesDonneesAuxAutres.length;
                 const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
 
-                const profNotes = notesFormateurLocales[nom];
-                const moyProfSur5 = profNotes ? (profNotes.reduce((a,b)=>a+b,0) / profNotes.length) : null;
-                const noteProfSur20 = moyProfSur5 ? (moyProfSur5 / 5) * 20 : null;
+                const evalProf = evaluationsSession.find(ev => ev.groupe_votant === 'Formateur' && ev.sujet === nom);
+                const noteProfSur20 = evalProf ? evalProf.note : null;
 
-                // --- 1. CALCUL DU POINT AUTO (Écart < 20% = +1 | Écart >= 20% = -1) ---
                 let ptAuto = 0;
                 let textAuto = "--";
                 if (autoEvalVal !== null && noteProfSur20 !== null) {
@@ -239,20 +288,16 @@
                     }
                 }
 
-                // --- 2. POINTS COMPORTEMENT CAMARADES (Cumul brut non bridé ici) ---
                 let ptPairsCumule = donnees.accumulateurPointsCamarades;
                 let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
 
-                // --- 3. IMPACT TOTAL BRUT PUIS PLAFOND GLOBAL À [-2, +2] ---
                 let impactBrut = ptAuto + ptPairsCumule;
-                // Application stricte de la contrainte max +2 / min -2
                 const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
                 
                 let textImpact = "0";
                 if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
                 if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
 
-                // --- 4. CALCUL DE LA NOTE FINALE ---
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
                     const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
@@ -295,28 +340,6 @@
                     maintainAspectRatio: false
                 }
             });
-        }
-
-        function mettreAjourGraphiqueRadar() {
-            if(!monRadarChart) return;
-            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
-            if(!groupeAffiche) return;
-
-            const notesProfExistantes = notesFormateurLocales[groupeAffiche];
-            for (let i = 0; i < listeCriteresProf.length; i++) {
-                const inputCurseur = document.getElementById(`prof-crit-${i}`);
-                const labelValeur = document.getElementById(`v-f-${i}`);
-                if (inputCurseur && labelValeur) {
-                    if (notesProfExistantes && notesProfExistantes[i] !== undefined) {
-                        inputCurseur.value = notesProfExistantes[i];
-                        labelValeur.innerText = notesProfExistantes[i] + " / 5";
-                    } else {
-                        inputCurseur.value = 3;
-                        labelValeur.innerText = "3 / 5";
-                    }
-                }
-            }
-            renduGraphiqueUniquement(groupeAffiche);
         }
 
         function mettreAjourGraphiqueRadar_SansResetCurseurs() {
