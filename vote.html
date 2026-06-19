@@ -41,7 +41,6 @@
                         <button type="button" onclick="appliquerFormatText('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
                         <button type="button" onclick="appliquerFormatText('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                     </div>
-                    <!-- Zone de texte agrandie et police augmentée (text-sm, min-h-[150px], p-4) -->
                     <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-gray-950/60 p-4 text-sm leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
                 </div>
             </div>
@@ -170,12 +169,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
-                            <!-- Police agrandie (text-sm) et taille augmentée (rows=4, min-h-100px) -->
                             <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Notes personnelles :</label>
-                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Bonne présentation, mais un peu rapide..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
+                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Bonne présentation..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                     </div>
                 </div>
@@ -263,20 +261,30 @@
 
             listeGroupesEvalues.forEach(nomSujet => {
                 let totalNotes = 0;
+                const tableauNotes = [];
                 const dataCible = memoireEvaluations[nomSujet];
 
                 listeCriteres.forEach((c, index) => { 
                     const bloc = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
-                    totalNotes += bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
+                    let val = bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
+                    tableauNotes.push(val);
+                    totalNotes += val;
                 });
 
                 if (nomSujet === groupeVotant) aFaitSonAutoEval = true;
+
+                const moyenneSur20 = (totalNotes / listeCriteres.length / 5) * 20;
+
+                // CORRECTIF : COMPRESSION DES CURSEURS POUR LES APPRENANTS
+                let empreinteDecimale = "";
+                tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
+                const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
                 paquetInsertions.push({
                     session_id: idSessionEvaluation,
                     groupe_votant: groupeVotant,
                     sujet: nomSujet,
-                    note: (totalNotes / listeCriteres.length / 5) * 20
+                    note: noteCompletePayload
                 });
             });
 
