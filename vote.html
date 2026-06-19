@@ -7,10 +7,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center">
 
-    <!-- ÉLARGISSEMENT DE LA PAGE POUR LE CONFORT PC (max-w-4xl) -->
-    <div id="bloc-principal-evaluation" class="w-full max-w-4xl bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
+    <!-- LARGEUR OPTIMISÉE PC PORTABLE (max-w-5xl) & ULTRA RESPONSIVE MOBILE (w-full) -->
+    <div id="bloc-principal-evaluation" class="w-full max-w-5xl bg-gray-900 p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
         <!-- ÉCRAN FORMULAIRE (Saisie) -->
         <div id="ecran-formulaire" class="space-y-6">
@@ -19,7 +19,7 @@
                 <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
             </div>
 
-            <!-- CONFIGURATION EN DEUX COLONNES SUR PC POUR LES CONFIGURATIONS DE DÉPART -->
+            <!-- SÉLECTEURS : 1 COLONNE SUR MOBILE, 2 COLONNES SUR PC PORTABLE -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
@@ -39,18 +39,19 @@
                 <!-- Généré dynamiquement en JS -->
             </div>
 
-            <!-- ZONE DE FEEDBACK GLOBAL STYLE TEXTE ENRICHI -->
+            <!-- ZONE DE FEEDBACK GLOBAL AVEC LISTE À PUCES ACTIVÉE -->
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions Jury :</label>
                 
                 <div class="flex flex-col rounded-xl overflow-hidden border border-gray-800 focus-within:border-blue-500 transition-all">
-                    <!-- Barre d'outils d'édition rapide -->
+                    <!-- Barre d'outils d'édition rapide avec puces -->
                     <div class="flex items-center gap-1 bg-gray-950 p-2 border-b border-gray-800 select-none">
                         <button type="button" onclick="appliquerFormatText('bold')" title="Gras (Ctrl+B)" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
                         <button type="button" onclick="appliquerFormatText('underline')" title="Souligner (Ctrl+U)" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
+                        <button type="button" onclick="appliquerFormatText('insertUnorderedList')" title="Liste à puces" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                     </div>
-                    <!-- Zone d'écriture de texte enrichi -->
-                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation de ce groupe (Sauts de lignes, gras et souligné disponibles)..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[110px] focus:outline-none transition-all overflow-y-auto"></div>
+                    <!-- Zone d'écriture (Correction du style des listes de Tailwind via les classes directes [&_ul]) -->
+                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation de ce groupe (Sauts de lignes, puces, gras et souligné disponibles)..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
                 </div>
             </div>
 
@@ -102,7 +103,6 @@
         let votantPrecedent = "";
         let memoireEvaluations = {};
 
-        // Actionneur d'édition riche natif
         function appliquerFormatText(commande) {
             document.execCommand(commande, false, null);
         }
@@ -188,7 +188,7 @@
                         oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'; enregistrerEtatCurseursEnContinu();" 
                         class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                     
-                    <!-- RESTRUCTURATION EN COUCHES TEXTAREA CÔTE À CÔTE SUR ÉCRAN PC (md:grid-cols-2) -->
+                    <!-- RESTRUCTURATION ADAPTATIVE : 1 COL SUR MOBILE, 2 COL SUR LAPTOP PC -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
@@ -220,7 +220,6 @@
                 };
             });
 
-            // Enregistrement de l'IHM HTML pour conserver les styles gras/soulignés
             const inputFB = document.getElementById('feedback-global');
             if (inputFB) memoireEvaluations[cible].feedback = inputFB.innerHTML;
             
