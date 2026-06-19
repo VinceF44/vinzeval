@@ -14,7 +14,7 @@
         
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Règle des Écarts Strictes</span>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique Épurée</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
             <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
@@ -22,24 +22,14 @@
             </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 h-fit">
-                <h2 class="text-sm font-bold text-amber-400 border-b border-gray-800 pb-2 flex items-center gap-2">👨‍🏫 Évaluation Formateur (Échelle 1 - 5)</h2>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sélectionner l'équipe évaluée :</label>
-                        <select id="select-groupe-formateur" onchange="mettreAjourSlidersDepuisHistorique()" class="w-full bg-gray-950 rounded p-2 text-sm border border-gray-800 text-white focus:outline-none"></select>
-                    </div>
-                    <div id="conteneur-formateur-criteres" class="space-y-4 pt-2"></div>
-                    <button onclick="enregistrerNoteFormateur()" class="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-black py-2.5 rounded-xl text-xs uppercase transition shadow cursor-pointer">💾 Valider la note</button>
-                </div>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center gap-6 shadow-xl">
+            <div class="w-full md:w-1/3 space-y-2">
+                <h2 class="text-sm font-bold text-amber-400">🎯 Profil d'Évaluation Globale</h2>
+                <p class="text-xs text-gray-400 mb-3">Sélectionnez une équipe pour comparer l'évaluation du formateur, l'auto-évaluation et la moyenne des pairs.</p>
+                <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar_SansResetCurseurs()" class="w-full bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-amber-500 cursor-pointer"></select>
             </div>
-
-            <div class="lg:col-span-2 bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col justify-between items-center min-h-[350px]">
-                <div class="w-full border-b border-gray-800 pb-2 mb-2">
-                    <h2 class="text-sm font-bold text-white">🎯 Profil d'Évaluation Croisée (Repères de 1 à 5)</h2>
-                </div>
-                <div class="w-full max-w-[340px] aspect-square flex items-center justify-center">
+            <div class="flex-1 flex items-center justify-center min-h-[300px] w-full">
+                <div class="w-full max-w-[360px] aspect-square">
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
@@ -48,7 +38,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
                 <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
-                <p class="text-xs text-gray-400">Si l'écart avec le formateur is &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 et +2.</p>
+                <p class="text-xs text-gray-400">Si l'écart avec le formateur est &lt; 20% : +1 point (lucidité). Si l'écart est &ge; 20% : -1 point. Impact bridé entre -2 and +2.</p>
             </div>
             
             <div class="overflow-x-auto">
@@ -69,7 +59,6 @@
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -117,155 +106,83 @@
             }
 
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
-            if(critsProf && critsProf.length > 0) {
-                listeCriteresProf = critsProf;
-                genererSlidersHtml();
-            }
+            if(critsProf && critsProf.length > 0) listeCriteresProf = critsProf;
 
             creerGraphiqueRadarVide();
             await chargerDonneesDashboard();
         }
 
-        function genererSlidersHtml() {
-            document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-gray-400">🎯 ${c.nom}</span>
-                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
-                    </div>
-                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
-                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'" 
-                        class="w-full accent-amber-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
-                </div>
-            `).join('');
+        function decoderNoteEtCurseurs(notePleine) {
+            const chaineNote = notePleine.toFixed(10);
+            const parties = chaineNote.split('.');
+            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+            let chaineDecimaleEmpreinte = parties[1].substring(4);
+            let curseursRestitues = [];
+            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+                if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
+            }
+            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
 
         async function chargerDonneesDashboard() {
             const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
             if (!error && evals) {
-                evaluationsSession = evals;
-
-                // Extraction et reconstruction de l'objet local à partir des données de la bdd
+                evaluationsSession = [];
                 notesFormateurLocales = {};
-                evaluationsSession.forEach(e => {
+
+                evals.forEach(e => {
                     if (e.groupe_votant === 'Formateur') {
-                        // Si le format stocké est déjà la moyenne sur 20, on retrouve la note sur 5 originale pour les sliders
-                        const noteSur5 = (e.note / 20) * 5;
-                        if (!notesFormateurLocales[e.sujet]) {
-                            notesFormateurLocales[e.sujet] = Array(listeCriteresProf.length).fill(noteSur5);
+                        const extraction = decoderNoteEtCurseurs(e.note);
+                        if (extraction.sliders.length === listeCriteresProf.length) {
+                            notesFormateurLocales[e.sujet] = extraction.sliders;
                         } else {
-                            // Au cas où les critères individuels ne sont pas détaillés en base, on applique la moyenne partout
-                            notesFormateurLocales[e.sujet].fill(noteSur5);
+                            const noteSur5 = (e.note / 20) * 5;
+                            const valeurArrondie = Math.round(noteSur5 * 2) / 2;
+                            notesFormateurLocales[e.sujet] = Array(listeCriteresProf.length).fill(valeurArrondie);
                         }
+                        evaluationsSession.push({ ...e, note: extraction.noteGlobale });
+                    } else {
+                        evaluationsSession.push(e);
                     }
                 });
 
                 calculerEtAfficherTout();
-                mettreAjourSlidersDepuisHistorique();
             }
-        }
-
-        async function enregistrerNoteFormateur() {
-            const groupeCible = document.getElementById('select-groupe-formateur').value;
-            const tableauNotes = [];
-            for(let i=0; i < listeCriteresProf.length; i++) {
-                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
-            }
-            
-            // Calcul de la moyenne sur 20 à envoyer à Supabase
-            const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
-            const moyenneSur20 = (moyenneSur5 / 5) * 20;
-
-            // 1. On nettoie l'ancienne note si elle existe déjà dans Supabase pour éviter les doublons
-            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
-
-            // 2. Sauvegarde persistante dans la base de données
-            const { error } = await db.from('evaluations').insert([{
-                session_id: idSessionDashboard,
-                groupe_votant: 'Formateur',
-                sujet: groupeCible,
-                note: moyenneSur20
-            }]);
-
-            if (error) {
-                alert("Erreur lors de la sauvegarde : " + error.message);
-                return;
-            }
-
-            // Mettre à jour l'état local et rafraîchir
-            notesFormateurLocales[groupeCible] = tableauNotes;
-            await chargerDonneesDashboard();
-            alert(`Note globale de ${moyenneSur20.toFixed(2)}/20 enregistrée pour le ${groupeCible} !`);
-        }
-
-        function mettreAjourSlidersDepuisHistorique() {
-            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
-            if(!groupeAffiche) return;
-
-            const notesProfExistantes = notesFormateurLocales[groupeAffiche];
-            for (let i = 0; i < listeCriteresProf.length; i++) {
-                const inputCurseur = document.getElementById(`prof-crit-${i}`);
-                const labelValeur = document.getElementById(`v-f-${i}`);
-                if (inputCurseur && labelValeur) {
-                    if (notesProfExistantes && notesProfExistantes[i] !== undefined) {
-                        inputCurseur.value = notesProfExistantes[i];
-                        labelValeur.innerText = notesProfExistantes[i] + " / 5";
-                    } else {
-                        inputCurseur.value = 3;
-                        labelValeur.innerText = "3 / 5";
-                    }
-                }
-            }
-            mettreAjourGraphiqueRadar_SansResetCurseurs();
         }
 
         function calculerEtAfficherTout() {
             const corpsTable = document.getElementById('table-corps-resultats');
+            if (!corpsTable) return;
             corpsTable.innerHTML = '';
 
             const structureParGroupe = {};
-
             groupesSession.forEach(g => {
-                structureParGroupe[g.nom] = {
-                    autoEval: null,
-                    notesDonneesAuxAutres: [],
-                    accumulateurPointsCamarades: 0
-                };
+                structureParGroupe[g.nom] = { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
             });
 
-            // Étape 1 : Traitement des données élèves
             evaluationsSession.forEach(e => {
                 const noteSur20 = e.note;
-
                 if (structureParGroupe[e.groupe_votant]) {
                     if (e.groupe_votant === e.sujet) {
                         structureParGroupe[e.groupe_votant].autoEval = noteSur20;
                     } else {
                         structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
-
-                        // Recherche de la note du formateur directement dans l'historique chargé de Supabase
                         const evaluationProfSujet = evaluationsSession.find(ev => ev.groupe_votant === 'Formateur' && ev.sujet === e.sujet);
-                        
                         if (evaluationProfSujet) {
                             const moyProfSur20 = evaluationProfSujet.note;
                             const ecartAbsolu = Math.abs(noteSur20 - moyProfSur20);
                             const seuilTolerance = moyProfSur20 * 0.20;
-
-                            if (ecartAbsolu >= seuilTolerance) {
-                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
-                            } else {
-                                structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
-                            }
+                            if (ecartAbsolu >= seuilTolerance) structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
+                            else structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
                         }
                     }
                 }
             });
 
-            // Étape 2 : Rendu HTML
             groupesSession.forEach(g => {
                 const nom = g.nom;
                 const donnees = structureParGroupe[nom];
-
                 const autoEvalVal = donnees.autoEval;
                 const totalDonnees = donnees.notesDonneesAuxAutres.length;
                 const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
@@ -273,35 +190,21 @@
                 const evalProf = evaluationsSession.find(ev => ev.groupe_votant === 'Formateur' && ev.sujet === nom);
                 const noteProfSur20 = evalProf ? evalProf.note : null;
 
-                let ptAuto = 0;
-                let textAuto = "--";
+                let ptAuto = 0, textAuto = "--";
                 if (autoEvalVal !== null && noteProfSur20 !== null) {
-                    const ecartAuto = Math.abs(autoEvalVal - noteProfSur20);
-                    const seuilAuto = noteProfSur20 * 0.20;
-
-                    if (ecartAuto >= seuilAuto) {
-                        ptAuto = -1;
-                        textAuto = "-1";
-                    } else {
-                        ptAuto = 1;
-                        textAuto = "+1";
-                    }
+                    if (Math.abs(autoEvalVal - noteProfSur20) >= (noteProfSur20 * 0.20)) { ptAuto = -1; textAuto = "-1"; }
+                    else { ptAuto = 1; textAuto = "+1"; }
                 }
 
                 let ptPairsCumule = donnees.accumulateurPointsCamarades;
                 let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
 
-                let impactBrut = ptAuto + ptPairsCumule;
-                const impactTotalEntier = Math.min(2, Math.max(-2, impactBrut));
-                
-                let textImpact = "0";
-                if (impactTotalEntier > 0) textImpact = `+${impactTotalEntier}`;
-                if (impactTotalEntier < 0) textImpact = `${impactTotalEntier}`;
+                const impactTotalEntier = Math.min(2, Math.max(-2, ptAuto + ptPairsCumule));
+                let textImpact = impactTotalEntier > 0 ? `+${impactTotalEntier}` : impactTotalEntier < 0 ? `${impactTotalEntier}` : "0";
 
                 let noteFinaleAffichage = "--";
                 if (noteProfSur20 !== null) {
-                    const noteCalculee = Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier));
-                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${noteCalculee.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)).toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
                 }
 
                 corpsTable.innerHTML += `
@@ -317,20 +220,20 @@
                     </tr>
                 `;
             });
-
             mettreAjourGraphiqueRadar_SansResetCurseurs();
         }
 
         function creerGraphiqueRadarVide() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            monRadarChart = new Chart(ctx, {
+            const canvas = document.getElementById('radarChart');
+            if (!canvas) return;
+            monRadarChart = new Chart(canvas.getContext('2d'), {
                 type: 'radar',
                 data: {
                     labels: [],
                     datasets: [
                         { label: 'Formateur 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
                         { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
-                        { label: 'Moyenne Donnée Aux Autres 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
+                        { label: 'Moyenne Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
                     ]
                 },
                 options: {
@@ -346,30 +249,21 @@
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
             if(!groupeAffiche) return;
-            renduGraphiqueUniquement(groupeAffiche);
-        }
 
-        function renduGraphiqueUniquement(groupeAffiche) {
             const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-            let autoEval = null;
-            let notesDonnees = [];
+            let autoEval = null, notesDonnees = [];
 
             evaluationsSession.forEach(e => {
                 if(e.groupe_votant === groupeAffiche) {
-                    if(e.sujet === groupeAffiche) {
-                        autoEval = (e.note / 20) * 5; 
-                    } else {
-                        notesDonnees.push((e.note / 20) * 5); 
-                    }
+                    if(e.sujet === groupeAffiche) autoEval = (e.note / 20) * 5; 
+                    else notesDonnees.push((e.note / 20) * 5); 
                 }
             });
-
-            const moyDonnee = notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null;
 
             monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
             monRadarChart.data.datasets[0].data = notesProfDonneesChart;
             monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
-            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(moyDonnee);
+            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null);
             monRadarChart.update();
         }
 
