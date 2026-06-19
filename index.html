@@ -12,21 +12,23 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique Multi-Jury</span>
+                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer">
-                🔄 Récupérer les votes
+            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0">
+                🔄 Rafraîchir les données
             </button>
         </div>
 
+        <!-- VISION GRAPHIQUE RADAR CENTRALISÉE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center gap-6 shadow-xl">
-            <div class="w-full md:w-1/3 space-y-2">
-                <h2 class="text-sm font-bold text-amber-400">🎯 Profil d'Évaluation Globale</h2>
-                <p class="text-xs text-gray-400 mb-3">Sélectionnez une équipe pour comparer la moyenne des évaluateurs, l'auto-évaluation et la moyenne des pairs.</p>
-                <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar_SansResetCurseurs()" class="w-full bg-gray-950 rounded p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-amber-500 cursor-pointer"></select>
+            <div class="w-full md:w-1/3 space-y-3">
+                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 Sélection de l'équipe</h2>
+                <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe pour comparer la moyenne des évaluateurs, l'auto-évaluation, et afficher le détail de toutes ses grilles ci-dessous.</p>
+                <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar_SansResetCurseurs()" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-amber-500 cursor-pointer transition-all"></select>
             </div>
             <div class="flex-1 flex items-center justify-center min-h-[300px] w-full">
                 <div class="w-full max-w-[360px] aspect-square">
@@ -35,9 +37,26 @@
             </div>
         </div>
 
+        <!-- NOUVEAU BLOC : RÉCAPITULATIF DÉTAILLÉ DES GRILLES -->
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
+            <div class="border-b border-gray-800 pb-3 flex justify-between items-end">
+                <div>
+                    <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Notes et critères attribués à l'équipe actuellement sélectionnée ci-dessus.</p>
+                </div>
+            </div>
+            
+            <!-- Conteneur des cartes (Grille CSS responsive) -->
+            <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Les cartes seront injectées ici par Javascript -->
+                <div class="col-span-full text-center p-6 text-gray-600 italic text-sm">Chargement des grilles d'évaluation...</div>
+            </div>
+        </div>
+
+        <!-- TABLEAU DE BORD PRINCIPAL -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
-                <h2 class="text-base font-black text-white">📊 Tableau de Bord - Vue par Groupe Évaluateur (Rendu /20)</h2>
+                <h2 class="text-base font-black text-white">📊 Tableau de Bord Général (Matrice de session)</h2>
                 <p class="text-xs text-gray-400">Si l'écart avec la moyenne des formateurs est &lt; 20% : +1 point. Impact bridé entre -2 et +2.</p>
             </div>
             
@@ -48,10 +67,10 @@
                             <th class="py-3 px-3">Groupe Évaluateur</th>
                             <th class="py-3 px-3 text-center bg-blue-950/20">Son Auto-Éval (/20)</th>
                             <th class="py-3 px-3 text-center font-bold text-blue-400">Malus/Bonus Auto</th>
-                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres (/20)</th>
-                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Éval Camrades</th>
+                            <th class="py-3 px-3 text-center bg-purple-950/20">Moy. Notes Données aux autres</th>
+                            <th class="py-3 px-3 text-center font-bold text-purple-400">Malus/Bonus Pairs</th>
                             <th class="py-3 px-3 text-center bg-amber-950/20">Moy. Formateurs (/20)</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Total (Max ±2)</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact (Max ±2)</th>
                             <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
                         </tr>
                     </thead>
@@ -83,10 +102,8 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
-            // Récupérer les évaluateurs inscrits pour identifier leurs lignes
             const { data: evs } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard);
             nomsEvaluateursInscrits = evs ? evs.map(e => e.nom) : [];
-            // Au cas où aucun n'est inscrit, on garde des fallbacks
             if(nomsEvaluateursInscrits.length === 0) nomsEvaluateursInscrits = ["Formateur Principal", "Formateur"];
 
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
@@ -120,11 +137,15 @@
         }
 
         function decoderNoteEtCurseurs(notePleine) {
-            const chaineNote = notePleine.toFixed(10);
+            if (!notePleine) return { noteGlobale: 0, sliders: [] };
+            const chaineNote = parseFloat(notePleine).toFixed(10);
             const parties = chaineNote.split('.');
+            if (parties.length < 2) return { noteGlobale: notePleine, sliders: [] };
+            
             const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
             let chaineDecimaleEmpreinte = parties[1].substring(4);
             let curseursRestitues = [];
+            
             for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
                 let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
                 if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
@@ -143,35 +164,33 @@
                 const countFormateursParSujet = {};
 
                 evals.forEach(e => {
-                    // CORRECTIF : On vérifie si le votant fait partie de l'équipe des évaluateurs inscrits
+                    let rawNote = e.note; // Conservation de la note brute (avec les décimales secrètes)
+                    
                     if (nomsEvaluateursInscrits.includes(e.groupe_votant) || e.groupe_votant === 'Formateur') {
-                        const extraction = decoderNoteEtCurseurs(e.note);
+                        const extraction = decoderNoteEtCurseurs(rawNote);
                         let sliders = extraction.sliders;
                         
                         if (sliders.length !== tpsCount) {
-                            const noteSur5 = (e.note / 20) * 5;
+                            const noteSur5 = (rawNote / 20) * 5;
                             const valeurArrondie = Math.round(noteSur5 * 2) / 2;
                             sliders = Array(tpsCount).fill(valeurArrondie);
                         }
 
-                        // Accumulation pour calcul de moyenne collaborative multi-jury
                         if (!totalSlidersFormateurs[e.sujet]) {
                             totalSlidersFormateurs[e.sujet] = Array(tpsCount).fill(0);
                             countFormateursParSujet[e.sujet] = 0;
                         }
                         
-                        for(let i=0; i<tpsCount; i++) {
-                            totalSlidersFormateurs[e.sujet][i] += sliders[i];
-                        }
+                        for(let i=0; i<tpsCount; i++) { totalSlidersFormateurs[e.sujet][i] += sliders[i]; }
                         countFormateursParSujet[e.sujet]++;
 
-                        evaluationsSession.push({ ...e, note: extraction.noteGlobale, estProf: true });
+                        evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: true });
                     } else {
-                        evaluationsSession.push(e);
+                        // Pour les apprenants, on garde la note brute pour le détail plus tard
+                        evaluationsSession.push({ ...e, note_brute: rawNote, estProf: false });
                     }
                 });
 
-                // Consolidation finale des curseurs radar moyens
                 Object.keys(totalSlidersFormateurs).forEach(sujet => {
                     const c = countFormateursParSujet[sujet] || 1;
                     notesFormateurLocales[sujet] = totalSlidersFormateurs[sujet].map(val => val / c);
@@ -199,7 +218,6 @@
                     } else {
                         structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(noteSur20);
                         
-                        // Ecart calculé par rapport à la moyenne des formateurs s'ils sont plusieurs
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
                         if (evalsProfSujet.length > 0) {
                             const moyProfSur20 = evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length;
@@ -218,7 +236,6 @@
                 const totalDonnees = donnees.notesDonneesAuxAutres.length;
                 const moyNotesDonnees = totalDonnees > 0 ? (donnees.notesDonneesAuxAutres.reduce((a,b)=>a+b,0) / totalDonnees) : null;
 
-                // Calcul de la note moyenne de l'équipe des formateurs
                 const evalsProfCeGroupe = evaluationsSession.filter(ev => ev.estProf && ev.sujet === nom);
                 const noteProfSur20 = evalsProfCeGroupe.length > 0 ? (evalsProfCeGroupe.reduce((a,b)=>a+b.note,0) / evalsProfCeGroupe.length) : null;
 
@@ -297,6 +314,92 @@
             monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
             monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null);
             monRadarChart.update();
+
+            // Mettre à jour le nouveau bloc détaillé en cascade
+            mettreAjourDetailsEvaluations(groupeAffiche);
+        }
+
+        // NOUVELLE FONCTION : Affichage détaillé des cartes d'évaluation
+        function mettreAjourDetailsEvaluations(groupeAffiche) {
+            const conteneur = document.getElementById('grille-details-evaluations');
+            if(!conteneur) return;
+            conteneur.innerHTML = '';
+
+            const evalsPourCeGroupe = evaluationsSession.filter(e => e.sujet === groupeAffiche);
+
+            // Tri intelligent : Formateurs -> Auto-éval -> Autres apprenants
+            evalsPourCeGroupe.sort((a, b) => {
+                if (a.estProf && !b.estProf) return -1;
+                if (!a.estProf && b.estProf) return 1;
+                if (a.groupe_votant === a.sujet) return -1;
+                if (b.groupe_votant === b.sujet) return 1;
+                return 0;
+            });
+
+            if (evalsPourCeGroupe.length === 0) {
+                conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-gray-500 italic text-sm">Aucune évaluation enregistrée pour cette équipe pour le moment.</div>`;
+                return;
+            }
+
+            evalsPourCeGroupe.forEach(e => {
+                // Décodage de la note pour récupérer les curseurs (s'ils ont été encodés)
+                const extraction = decoderNoteEtCurseurs(e.note_brute);
+                let sliders = extraction.sliders;
+
+                let contenuCriteres = '';
+
+                if (sliders.length === listeCriteresProf.length) {
+                    // Les critères ont bien été encodés (Cas standard Formateur)
+                    listeCriteresProf.forEach((crit, idx) => {
+                        const noteSur5 = sliders[idx];
+                        let colorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+                        if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
+                        else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
+
+                        contenuCriteres += `
+                            <div class="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0">
+                                <span class="text-gray-400 truncate pr-2" title="${crit.nom}">${crit.nom}</span>
+                                <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    // Cas Apprenants / Pairs (Ne sauvegardent qu'une note globale sans encoder les curseurs)
+                    contenuCriteres = `
+                        <div class="flex-1 flex items-center justify-center py-4">
+                            <span class="text-[10px] text-gray-600 italic text-center px-2">Détail par critère technique non disponible pour les évaluations par les pairs.</span>
+                        </div>
+                    `;
+                }
+
+                const estAutoEval = e.groupe_votant === e.sujet;
+                let typeLabel = e.estProf ? '👩‍🏫 Formateur' : (estAutoEval ? '🎯 Auto-Éval' : '👥 Pairs');
+                let styleLabel = e.estProf 
+                    ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' 
+                    : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
+                
+                let noteColor = e.note >= 10 ? 'text-white' : 'text-red-400';
+
+                conteneur.innerHTML += `
+                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col hover:border-gray-700 transition-colors shadow-inner">
+                        <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
+                            <div>
+                                <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
+                                    ${typeLabel}
+                                </span>
+                                <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>
+                            </div>
+                            <div class="text-right shrink-0 pl-2">
+                                <div class="text-xl font-black font-mono tracking-tighter ${noteColor}">${e.note.toFixed(2)}</div>
+                                <div class="text-[9px] text-gray-500 font-mono font-bold -mt-1">/ 20</div>
+                            </div>
+                        </div>
+                        <div class="flex-1 flex flex-col space-y-0.5 mt-1">
+                            ${contenuCriteres}
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         window.onload = initDashboard;
