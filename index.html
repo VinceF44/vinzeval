@@ -128,7 +128,6 @@
             await chargerDonneesDashboard();
         }
 
-        // CORRECTIF MUTATION HAUTE PRÉCISION (14 décimales pour absorber tous les critères)
         function decoderNoteEtCurseurs(notePleine) {
             if (!notePleine) return { noteGlobale: 0, sliders: [] };
             const chaineNote = Number(notePleine).toFixed(14);
@@ -142,7 +141,7 @@
             for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
                 let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
                 if (bloc.length === 2) {
-                    if (bloc === "00") break; // Fin de l'empreinte, reste du padding à blanc
+                    if (bloc === "00") break;
                     curseursRestitues.push(parseInt(bloc, 10) / 10);
                 }
             }
@@ -161,11 +160,10 @@
 
                 evals.forEach(e => {
                     let rawNote = e.note;
+                    const extraction = decoderNoteEtCurseurs(rawNote);
                     
                     if (nomsEvaluateursInscrits.includes(e.groupe_votant) || e.groupe_votant === 'Formateur') {
-                        const extraction = decoderNoteEtCurseurs(rawNote);
                         let sliders = extraction.sliders;
-                        
                         if (sliders.length !== tpsCount) {
                             const noteSur5 = (rawNote / 20) * 5;
                             const valeurArrondie = Math.round(noteSur5 * 2) / 2;
@@ -176,13 +174,13 @@
                             totalSlidersFormateurs[e.sujet] = Array(tpsCount).fill(0);
                             countFormateursParSujet[e.sujet] = 0;
                         }
-                        
                         for(let i=0; i<tpsCount; i++) { totalSlidersFormateurs[e.sujet][i] += sliders[i]; }
                         countFormateursParSujet[e.sujet]++;
 
                         evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: true });
                     } else {
-                        evaluationsSession.push({ ...e, note_brute: rawNote, estProf: false });
+                        // On garde aussi la note déchiffrée pour les apprenants
+                        evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: false });
                     }
                 });
 
@@ -228,7 +226,6 @@
                 const nom = g.nom;
                 const donnees = structureParGroupe[nom];
                 const autoEvalVal = donnees.autoEval;
-                const totalDonnees = donnees.notesDonneesAuxAutres.length;
 
                 const evalsProfCeGroupe = evaluationsSession.filter(ev => ev.estProf && ev.sujet === nom);
                 const noteProfSur20 = evalsProfCeGroupe.length > 0 ? (evalsProfCeGroupe.reduce((a,b)=>a+b.note,0) / evalsProfCeGroupe.length) : null;
@@ -240,7 +237,7 @@
                 }
 
                 let ptPairsCumule = donnees.accumulateurPointsCamarades;
-                let textPairs = totalDonnees > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
+                let textPairs = donnees.notesDonneesAuxAutres.length > 0 ? (ptPairsCumule >= 0 ? `+${ptPairsCumule}` : `${ptPairsCumule}`) : "--";
 
                 const impactTotalEntier = Math.min(2, Math.max(-2, ptAuto + ptPairsCumule));
                 let textImpact = impactTotalEntier > 0 ? `+${impactTotalEntier}` : impactTotalEntier < 0 ? `${impactTotalEntier}` : "0";
@@ -286,25 +283,51 @@
             });
         }
 
+        // CORRECTIF RADAR : Trace les points de l'auto-évaluation et des pairs pour déformer le polygone
         function mettreAjourGraphiqueRadar_SansResetCurseurs() {
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
             if(!groupeAffiche) return;
 
             const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-            let autoEval = null, notesDonnees = [];
+            
+            let autoEvalSliders = Array(listeCriteresProf.length).fill(null);
+            let notesDonneesAccumulateur = Array(listeCriteresProf.length).fill(0);
+            let countNotesDonnees = 0;
 
             evaluationsSession.forEach(e => {
-                if(e.groupe_votant === groupeAffiche && !e.estProf) {
-                    if(e.sujet === groupeAffiche) autoEval = (e.note / 20) * 5; 
-                    else notesDonnees.push((e.note / 20) * 5); 
+                // On vérifie les évaluations REÇUES par l'équipe affichée !
+                if(e.sujet === groupeAffiche && !e.estProf) {
+                    const extraction = decoderNoteEtCurseurs(e.note_brute);
+                    let sliders = extraction.sliders;
+                    
+                    // Rétrocompatibilité si d'anciennes notes n'avaient pas les curseurs
+                    if(sliders.length !== listeCriteresProf.length) {
+                        sliders = Array(listeCriteresProf.length).fill((e.note / 20) * 5);
+                    }
+
+                    if(e.groupe_votant === groupeAffiche) {
+                        // C'est son auto-évaluation
+                        autoEvalSliders = sliders; 
+                    } else {
+                        // C'est l'évaluation d'un pair reçu
+                        for(let i=0; i<listeCriteresProf.length; i++) {
+                            notesDonneesAccumulateur[i] += sliders[i];
+                        }
+                        countNotesDonnees++;
+                    }
                 }
             });
 
+            let moyennePairsSliders = Array(listeCriteresProf.length).fill(null);
+            if(countNotesDonnees > 0) {
+                moyennePairsSliders = notesDonneesAccumulateur.map(val => val / countNotesDonnees);
+            }
+
             monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
             monRadarChart.data.datasets[0].data = notesProfDonneesChart;
-            monRadarChart.data.datasets[1].data = Array(listeCriteresProf.length).fill(autoEval);
-            monRadarChart.data.datasets[2].data = Array(listeCriteresProf.length).fill(notesDonnees.length > 0 ? (notesDonnees.reduce((a,b)=>a+b,0)/notesDonnees.length) : null);
+            monRadarChart.data.datasets[1].data = autoEvalSliders;
+            monRadarChart.data.datasets[2].data = moyennePairsSliders;
             monRadarChart.update();
 
             mettreAjourDetailsEvaluations(groupeAffiche);
@@ -352,7 +375,7 @@
                 } else {
                     contenuCriteres = `
                         <div class="flex-1 flex items-center justify-center py-4">
-                            <span class="text-[10px] text-gray-600 italic text-center px-2">Détail par critère technique non disponible pour les évaluations par les pairs.</span>
+                            <span class="text-[10px] text-gray-600 italic text-center px-2">Détail par critère technique non disponible (Ancienne note sans détails).</span>
                         </div>
                     `;
                 }
