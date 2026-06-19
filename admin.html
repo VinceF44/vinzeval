@@ -35,7 +35,7 @@
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Un critère par ligne) :</label>
-                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[160px] focus:border-[#3b82f6] transition-all"></textarea>
+                        <textarea id="criteres-session" rows="6" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
                         <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Sautez à la ligne pour chaque nouveau critère.</p>
                     </div>
                 </div>
@@ -52,10 +52,18 @@
                         </div>
                     </div>
                     
-                    <div class="flex-1 flex flex-col">
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
-                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                        <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Ils seront automatiquement répartis équitablement.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
+                            <textarea id="liste-apprenants-brute" rows="4" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[100px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ils seront automatiquement répartis équitablement.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
+                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[80px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ces profils disposeront du formulaire d'évaluation dédié.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,6 +108,9 @@
             let countActives = 0, countTerminees = 0;
 
             sessions.forEach(s => {
+                // Échappement des apostrophes pour éviter les conflits dans les attributs HTML
+                const nomEchappe = s.nom.replace(/'/g, "\\'");
+
                 if (s.statut !== 'terminee') {
                     countActives++;
                     conteneurActives.innerHTML += `
@@ -109,10 +120,12 @@
                                 <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#2563eb] hover:bg-[#1d4ed8]">🗳️ Lien Vote</a>
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#2563eb] hover:bg-[#1d4ed8]">🗳️ Evaluation apprenant(e)</a>
+                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#a855f7] hover:bg-[#9333ea]">👩‍🏫 Evaluation formateur.trice</a>
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="text-slate-900 text-xs font-bold py-2 px-3.5 rounded-lg transition-all hover:brightness-110 active:scale-[0.97] bg-[#fe9a00]">📊 Dashboard</a>
+                                <button onclick="modifierSession('${s.id}', '${nomEchappe}')" class="bg-[#030712] text-amber-400 hover:text-white hover:bg-amber-500/20 text-xs py-2 px-3.5 rounded-lg border border-amber-500/30 transition-all cursor-pointer active:scale-[0.97]">✏️ Modifier</button>
                                 <button onclick="cloturerSession('${s.id}')" class="bg-[#030712] text-red-400 hover:text-white hover:bg-red-950/40 text-xs py-2 px-3.5 rounded-lg border border-red-900/30 transition-all cursor-pointer active:scale-[0.97]">🔒 Clôturer</button>
-                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#030712] text-slate-400 hover:text-slate-200 text-xs py-2 px-3.5 rounded-lg border border-slate-800 transition-all cursor-pointer active:scale-[0.97]">👥 Dupliquer</button>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="bg-[#030712] text-slate-400 hover:text-slate-200 text-xs py-2 px-3.5 rounded-lg border border-slate-800 transition-all cursor-pointer active:scale-[0.97]">👥 Dupliquer</button>
                                 <button onclick="supprimerSession('${s.id}')" class="bg-[#030712] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3.5 rounded-lg border border-red-900/40 transition-all cursor-pointer active:scale-[0.97]">🗑️ Supprimer</button>
                             </div>
                         </div>
@@ -127,7 +140,7 @@
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="bg-[#101828] text-slate-400 hover:text-slate-200 text-xs py-2 px-4 rounded-lg border border-slate-800 transition-all">👁️ Consulter Dashboard</a>
-                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#101828] text-slate-500 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">👥 Dupliquer</button>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="bg-[#101828] text-slate-500 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">👥 Dupliquer</button>
                                 <button onclick="supprimerSession('${s.id}')" class="bg-[#101828] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">🗑️ Supprimer</button>
                             </div>
                         </div>
@@ -139,21 +152,38 @@
             if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
         }
 
+        async function modifierSession(idSession, nomActuel) {
+            const nouveauNom = prompt(`Modifier le nom de la session :`, nomActuel);
+            if (!nouveauNom || nouveauNom.trim() === "" || nouveauNom.trim() === nomActuel) return;
+
+            const { error } = await db.from('sessions').update({ nom: nouveauNom.trim() }).eq('id', idSession);
+            
+            if (error) {
+                alert("❌ Erreur lors de la modification : " + error.message);
+            } else {
+                alert("✏️ Le nom de la session a été modifié avec succès !");
+                chargerSessions();
+            }
+        }
+
         async function genererSessionComplete() {
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
 
             if (!nomSession) {
                 alert("Erreur : Le nom de la session est obligatoire.");
                 return;
             }
 
+            // 1. Insertion Session
             const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
             if (errSess) { alert("Échec création session: " + errSess.message); return; }
 
+            // 2. Insertion Critères
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
@@ -162,6 +192,16 @@
                 }
             }
 
+            // 3. Insertion Évaluateurs
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom }));
+                    await db.from('evaluateurs').insert(payloadEvaluateurs);
+                }
+            }
+
+            // 4. Insertion Groupes
             const listeNomsGroupes = [];
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
@@ -175,6 +215,7 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
+            // 5. Répartition & Insertion Apprenants
             if (apprenantsRaw) {
                 let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
                 
@@ -202,6 +243,7 @@
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
             document.getElementById('liste-apprenants-brute').value = "";
+            document.getElementById('liste-evaluateurs-brute').value = "";
             chargerSessions();
         }
 
@@ -231,8 +273,6 @@
         async function supprimerSession(idSession) {
             if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
 
-            // Supabase gère normalement la suppression en cascade (ON DELETE CASCADE) si les clés étrangères sont configurées ainsi.
-            // Par sécurité maximale, on supprime directement la session de la table principale.
             const { error } = await db.from('sessions').delete().eq('id', idSession);
             
             if (error) {
