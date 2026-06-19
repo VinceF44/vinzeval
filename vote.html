@@ -26,13 +26,18 @@
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer (Sélectionnez à tour de rôle) :</label>
                     <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500"></select>
-                    <p class="text-[11px] text-gray-500 mt-1">💡 Changez d'équipe pour évaluer tout le monde. Vos curseurs sont automatiquement sauvegardés pendant la navigation.</p>
+                    <p class="text-[11px] text-gray-500 mt-1">💡 Changez d'équipe pour évaluer tout le monde. Vos curseurs et notes textuelles sont automatiquement sauvegardés.</p>
                 </div>
 
-                <div id="conteneur-criteres-evaluation" class="space-y-4 pt-2 border-t border-gray-800/60">
+                <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
                     </div>
 
-                <div class="pt-4">
+                <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
+                    <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
+                    <textarea id="feedback-global" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Vos impressions générales sur la prestation de ce groupe..." class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-all"></textarea>
+                </div>
+
+                <div class="pt-2">
                     <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
                         🚀 Envoyer toutes nos évaluations
                     </button>
@@ -135,7 +140,6 @@
                     listeCriteres = crits;
                     genererCurseursCriteres();
                     
-                    // RESTAURATION DU CACHE DU PREMIER VOTANT PAR DÉFAUT
                     const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
                     if (cacheSauvegarde) {
                         memoireEvaluations = JSON.parse(cacheSauvegarde);
@@ -152,27 +156,48 @@
 
         function genererCurseursCriteres() {
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-gray-400">🎯 ${c.nom}</span>
+                <div class="bg-gray-950/30 p-3 rounded-xl border border-gray-800/40 space-y-2">
+                    <div class="flex justify-between text-xs font-semibold">
+                        <span class="text-gray-300">🎯 ${c.nom}</span>
                         <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
                     </div>
                     <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
                         oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'; enregistrerEtatCurseursEnContinu();" 
                         class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                    
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase text-gray-500 mb-0.5">❓ Questions à poser :</label>
+                            <input type="text" id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Ex: Pourquoi ce choix d'API ?" class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-blue-500 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold uppercase text-gray-500 mb-0.5">📔 Journal / Notes :</label>
+                            <input type="text" id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Ex: Slide 3 très claire, intro dynamique" class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-blue-500 transition-all">
+                        </div>
+                    </div>
                 </div>
             `).join('');
         }
 
-        // COEUR DU CORRECTIF : Sauvegarde partitionnée par votant et sujet précis
         function sauvegarderCacheSpecifique(votant, cible) {
             if (!votant || !cible) return;
             
-            if (!memoireEvaluations[cible]) memoireEvaluations[cible] = {};
+            if (!memoireEvaluations[cible]) memoireEvaluations[cible] = { criteres: {}, feedback: "" };
+            
             listeCriteres.forEach((c, index) => {
-                const input = document.getElementById(`eval-crit-${index}`);
-                if (input) memoireEvaluations[cible][index] = parseFloat(input.value);
+                const inputNote = document.getElementById(`eval-crit-${index}`);
+                const inputQ = document.getElementById(`questions-crit-${index}`);
+                const inputJ = document.getElementById(`journal-crit-${index}`);
+                
+                memoireEvaluations[cible].criteres[index] = {
+                    note: inputNote ? parseFloat(inputNote.value) : 3,
+                    questions: inputQ ? inputQ.value : "",
+                    journal: inputJ ? inputJ.value : ""
+                };
             });
+
+            const inputFB = document.getElementById('feedback-global');
+            if (inputFB) memoireEvaluations[cible].feedback = inputFB.value;
             
             localStorage.setItem(`cache_vote_${idSessionEvaluation}_${votant}`, JSON.stringify(memoireEvaluations));
         }
@@ -183,7 +208,6 @@
             sauvegarderCacheSpecifique(votantActuel, cibleActuelle);
         }
 
-        // EVENEMENT 1 : Changement de cible à évaluer
         function changerDeCibleEvaluation(nouvelleCible) {
             const votantActuel = document.getElementById('select-groupe-votant').value;
             if (ciblePrecedente) {
@@ -193,42 +217,45 @@
             ciblePrecedente = nouvelleCible;
         }
 
-        // EVENEMENT 2 : Changement de groupe qui remplit le formulaire (Ton besoin actuel)
         function changerDeGroupeVotant(nouveauVotant) {
-            // 1. Sauvegarder les curseurs actuels sous l'ancien profil évaluateur avant de switcher
             if (votantPrecedent && ciblePrecedente) {
                 sauvegarderCacheSpecifique(votantPrecedent, ciblePrecedente);
             }
 
-            // 2. Charger le cache hermétique appartenant au NOUVEAU votant
             const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${nouveauVotant}`);
-            if (cacheSauvegarde) {
-                memoireEvaluations = JSON.parse(cacheSauvegarde);
-            } else {
-                memoireEvaluations = {}; // Espace vierge si ce groupe n'a pas encore voté
-            }
+            memoireEvaluations = cacheSauvegarde ? JSON.parse(cacheSauvegarde) : {};
 
-            // 3. Mettre à jour l'IHM visuelle pour la cible sélectionnée
             const cibleActuelle = document.getElementById('select-sujet-evalue').value;
             restituerCurseursDepuisMemoire(cibleActuelle);
-
-            // 4. Mémoriser le nouveau votant comme pivot
             votantPrecedent = nouveauVotant;
         }
 
         function restituerCurseursDepuisMemoire(cible) {
+            const dataCible = memoireEvaluations[cible];
+
             listeCriteres.forEach((c, index) => {
-                const noteSauvegardee = (memoireEvaluations[cible] && memoireEvaluations[cible][index] !== undefined) 
-                    ? memoireEvaluations[cible][index] 
-                    : 3;
+                const blocDonnees = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
                 
+                // Gestion de la rétrocompatibilité (si l'ancien cache était un simple chiffre)
+                const noteSauvegardee = blocDonnees ? (typeof blocDonnees === 'object' ? blocDonnees.note : blocDonnees) : 3;
+                const questionSauvegardee = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.questions : "";
+                const journalSauvegarde = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.journal : "";
+
                 const input = document.getElementById(`eval-crit-${index}`);
                 const label = document.getElementById(`v-v-${index}`);
+                const inputQ = document.getElementById(`questions-crit-${index}`);
+                const inputJ = document.getElementById(`journal-crit-${index}`);
+
                 if (input && label) {
                     input.value = noteSauvegardee;
                     label.innerText = `${noteSauvegardee} / 5`;
                 }
+                if (inputQ) inputQ.value = questionSauvegardee;
+                if (inputJ) inputJ.value = journalSauvegarde;
             });
+
+            const inputFB = document.getElementById('feedback-global');
+            if (inputFB) inputFB.value = (dataCible && dataCible.feedback) ? dataCible.feedback : "";
         }
 
         async function soumettreEvaluationGenerale() {
@@ -252,7 +279,12 @@
 
             listeGroupesEvalues.forEach(nomSujet => {
                 let totalNotes = 0;
-                listeCriteres.forEach((c, index) => { totalNotes += memoireEvaluations[nomSujet][index]; });
+                const dataCible = memoireEvaluations[nomSujet];
+
+                listeCriteres.forEach((c, index) => { 
+                    const bloc = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
+                    totalNotes += bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
+                });
 
                 const moyenneSur5 = totalNotes / listeCriteres.length;
                 const noteFinaleSur20 = (moyenneSur5 / 5) * 20;
@@ -270,7 +302,6 @@
             const { error } = await db.from('evaluations').insert(paquetInsertions);
 
             if (!error) {
-                // NETTOYAGE UNIQUE DU CACHE DE CE GROUPE VOTANT APRÈS SUCCÈS
                 localStorage.removeItem(`cache_vote_${idSessionEvaluation}_${groupeVotant}`);
 
                 document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
