@@ -9,42 +9,60 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center">
 
-    <div id="bloc-principal-evaluation" class="w-full max-w-lg bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
+    <!-- ÉLARGISSEMENT DE LA PAGE POUR LE CONFORT PC (max-w-4xl) -->
+    <div id="bloc-principal-evaluation" class="w-full max-w-4xl bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
+        <!-- ÉCRAN FORMULAIRE (Saisie) -->
         <div id="ecran-formulaire" class="space-y-6">
             <div class="border-b border-gray-800 pb-4">
                 <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
                 <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
             </div>
 
-            <div class="space-y-4">
+            <!-- CONFIGURATION EN DEUX COLONNES SUR PC POUR LES CONFIGURATIONS DE DÉPART -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
-                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500"></select>
+                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
                 </div>
 
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
-                    <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer (Sélectionnez à tour de rôle) :</label>
-                    <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500"></select>
-                    <p class="text-[11px] text-gray-500 mt-1">💡 Changez d'équipe pour évaluer tout le monde. Vos curseurs et notes textuelles sont automatiquement sauvegardés.</p>
+                    <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer :</label>
+                    <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
                 </div>
+            </div>
+            
+            <p class="text-[11px] text-gray-500 bg-gray-950/30 p-2 rounded-lg border border-gray-800/40">💡 Notez l'équipe à tour de rôle. Vos curseurs, bloc-notes et feedbacks enrichis se sauvegardent en continu dans le navigateur (anti-perte).</p>
 
-                <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
+            <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
+            <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
+                <!-- Généré dynamiquement en JS -->
+            </div>
+
+            <!-- ZONE DE FEEDBACK GLOBAL STYLE TEXTE ENRICHI -->
+            <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
+                <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions Jury :</label>
+                
+                <div class="flex flex-col rounded-xl overflow-hidden border border-gray-800 focus-within:border-blue-500 transition-all">
+                    <!-- Barre d'outils d'édition rapide -->
+                    <div class="flex items-center gap-1 bg-gray-950 p-2 border-b border-gray-800 select-none">
+                        <button type="button" onclick="appliquerFormatText('bold')" title="Gras (Ctrl+B)" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
+                        <button type="button" onclick="appliquerFormatText('underline')" title="Souligner (Ctrl+U)" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
                     </div>
-
-                <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
-                    <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
-                    <textarea id="feedback-global" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Vos impressions générales sur la prestation de ce groupe..." class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500 transition-all"></textarea>
+                    <!-- Zone d'écriture de texte enrichi -->
+                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation de ce groupe (Sauts de lignes, gras et souligné disponibles)..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[110px] focus:outline-none transition-all overflow-y-auto"></div>
                 </div>
+            </div>
 
-                <div class="pt-2">
-                    <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
-                        🚀 Envoyer toutes nos évaluations
-                    </button>
-                </div>
+            <!-- BOUTON DE SOUMISSION FINALE -->
+            <div class="pt-2">
+                <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                    🚀 Envoyer toutes nos évaluations
+                </button>
             </div>
         </div>
 
+        <!-- ÉCRAN RAPPORT FINAL -->
         <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
@@ -52,7 +70,7 @@
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
             
-            <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2">
+            <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
                 <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">
                     📊 Résumé de votre session
                 </div>
@@ -83,6 +101,11 @@
         let ciblePrecedente = ""; 
         let votantPrecedent = "";
         let memoireEvaluations = {};
+
+        // Actionneur d'édition riche natif
+        function appliquerFormatText(commande) {
+            document.execCommand(commande, false, null);
+        }
 
         async function initEvaluationPage() {
             try {
@@ -156,7 +179,7 @@
 
         function genererCurseursCriteres() {
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
-                <div class="bg-gray-950/30 p-3 rounded-xl border border-gray-800/40 space-y-2">
+                <div class="bg-gray-950/30 p-4 rounded-xl border border-gray-800/40 space-y-3">
                     <div class="flex justify-between text-xs font-semibold">
                         <span class="text-gray-300">🎯 ${c.nom}</span>
                         <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
@@ -165,14 +188,15 @@
                         oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'; enregistrerEtatCurseursEnContinu();" 
                         class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
                     
-                    <div class="grid grid-cols-2 gap-2 pt-1">
+                    <!-- RESTRUCTURATION EN COUCHES TEXTAREA CÔTE À CÔTE SUR ÉCRAN PC (md:grid-cols-2) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                         <div>
-                            <label class="block text-[9px] font-bold uppercase text-gray-500 mb-0.5">❓ Questions à poser :</label>
-                            <input type="text" id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Ex: Pourquoi ce choix d'API ?" class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-blue-500 transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
+                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Saut de ligne libre pour lister vos questions..." class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[70px]"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold uppercase text-gray-500 mb-0.5">📔 Journal / Notes :</label>
-                            <input type="text" id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Ex: Slide 3 très claire, intro dynamique" class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-blue-500 transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Journal / Notes personnelles :</label>
+                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Saut de ligne libre pour votre prise de notes..." class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[70px]"></textarea>
                         </div>
                     </div>
                 </div>
@@ -196,8 +220,9 @@
                 };
             });
 
+            // Enregistrement de l'IHM HTML pour conserver les styles gras/soulignés
             const inputFB = document.getElementById('feedback-global');
-            if (inputFB) memoireEvaluations[cible].feedback = inputFB.value;
+            if (inputFB) memoireEvaluations[cible].feedback = inputFB.innerHTML;
             
             localStorage.setItem(`cache_vote_${idSessionEvaluation}_${votant}`, JSON.stringify(memoireEvaluations));
         }
@@ -236,7 +261,6 @@
             listeCriteres.forEach((c, index) => {
                 const blocDonnees = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
                 
-                // Gestion de la rétrocompatibilité (si l'ancien cache était un simple chiffre)
                 const noteSauvegardee = blocDonnees ? (typeof blocDonnees === 'object' ? blocDonnees.note : blocDonnees) : 3;
                 const questionSauvegardee = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.questions : "";
                 const journalSauvegarde = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.journal : "";
@@ -255,18 +279,12 @@
             });
 
             const inputFB = document.getElementById('feedback-global');
-            if (inputFB) inputFB.value = (dataCible && dataCible.feedback) ? dataCible.feedback : "";
+            if (inputFB) inputFB.innerHTML = (dataCible && dataCible.feedback) ? dataCible.feedback : "";
         }
 
         async function soumettreEvaluationGenerale() {
             const groupeVotant = document.getElementById('select-groupe-votant').value;
             enregistrerEtatCurseursEnContinu();
-
-            const listeGroupesEvalues = Object.keys(memoireEvaluations);
-            if (listeGroupesEvalues.length === 0) {
-                alert("❌ Vous n'avez pas encore évalué d'équipe.");
-                return;
-            }
 
             const { data: verifDejaFait } = await db.from('evaluations').select('id').eq('session_id', idSessionEvaluation).eq('groupe_votant', groupeVotant).limit(1);
             if (verifDejaFait && verifDejaFait.length > 0) {
@@ -274,6 +292,7 @@
                 return;
             }
 
+            const listeGroupesEvalues = Object.keys(memoireEvaluations);
             const paquetInsertions = [];
             let aFaitSonAutoEval = false;
 
@@ -299,6 +318,8 @@
                 });
             });
 
+            if (paquetInsertions.length === 0) { alert("❌ Aucune note saisie à transmettre."); return; }
+
             const { error } = await db.from('evaluations').insert(paquetInsertions);
 
             if (!error) {
@@ -319,7 +340,7 @@
                 document.getElementById('ecran-formulaire').classList.add('hidden');
                 document.getElementById('ecran-rapport').classList.remove('hidden');
             } else {
-                alert("❌ Erreur technique lors de la sauvegarde : " + error.message);
+                alert("❌ Erreur technique : " + error.message);
             }
         }
 
