@@ -28,8 +28,9 @@
                 <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe pour comparer la moyenne des évaluateurs, l'auto-évaluation, et afficher le détail de toutes ses grilles ci-dessous.</p>
                 <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar_SansResetCurseurs()" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-amber-500 cursor-pointer transition-all"></select>
             </div>
-            <div class="flex-1 flex items-center justify-center min-h-[300px] w-full">
-                <div class="w-full max-w-[360px] aspect-square">
+            
+            <div class="flex-1 flex items-center justify-center w-full min-h-[340px] pt-4 md:pt-0">
+                <div class="relative w-full max-w-[340px]">
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
@@ -179,7 +180,6 @@
 
                         evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: true });
                     } else {
-                        // On garde aussi la note déchiffrée pour les apprenants
                         evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: false });
                     }
                 });
@@ -264,26 +264,41 @@
         function creerGraphiqueRadarVide() {
             const canvas = document.getElementById('radarChart');
             if (!canvas) return;
-            monRadarChart = new Chart(canvas.getContext('2d'), {
+            // CORRECTIF : Passer le canvas en direct plutôt que getContext('2d') sécurise Chart.js
+            monRadarChart = new Chart(canvas, {
                 type: 'radar',
                 data: {
                     labels: [],
                     datasets: [
-                        { label: 'Moyenne Jury 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)', borderWidth: 2 },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderWidth: 2 },
-                        { label: 'Moyenne Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', borderWidth: 2 }
-                    ]
+                        { label: 'Moyenne Jury 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.03)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
+                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.03)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
+                        { label: 'Moyenne Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.03)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
+                ]
                 },
                 options: {
-                    scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } } } },
-                    plugins: { legend: { labels: { color: '#f8fafc', boxWidth: 10 } } },
+                    scales: { 
+                        r: { 
+                            min: 0, 
+                            max: 5, 
+                            ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, 
+                            grid: { color: '#334155' }, 
+                            angleLines: { color: '#334155' }, 
+                            pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } } 
+                        } 
+                    },
+                    plugins: { 
+                        legend: { 
+                            position: 'top',
+                            align: 'end', // Aligne la légende en haut à droite comme sur ta maquette
+                            labels: { color: '#f8fafc', boxWidth: 12, font: { size: 11 } } 
+                        } 
+                    },
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: true // CORRECTIF LOGIQUE CLÉ : Force Chart.js à garder le ratio sans s'effondrer
                 }
             });
         }
 
-        // CORRECTIF RADAR : Trace les points de l'auto-évaluation et des pairs pour déformer le polygone
         function mettreAjourGraphiqueRadar_SansResetCurseurs() {
             if(!monRadarChart) return;
             const groupeAffiche = document.getElementById('select-groupe-formateur').value;
@@ -296,21 +311,17 @@
             let countNotesDonnees = 0;
 
             evaluationsSession.forEach(e => {
-                // On vérifie les évaluations REÇUES par l'équipe affichée !
                 if(e.sujet === groupeAffiche && !e.estProf) {
                     const extraction = decoderNoteEtCurseurs(e.note_brute);
                     let sliders = extraction.sliders;
                     
-                    // Rétrocompatibilité si d'anciennes notes n'avaient pas les curseurs
                     if(sliders.length !== listeCriteresProf.length) {
                         sliders = Array(listeCriteresProf.length).fill((e.note / 20) * 5);
                     }
 
                     if(e.groupe_votant === groupeAffiche) {
-                        // C'est son auto-évaluation
                         autoEvalSliders = sliders; 
                     } else {
-                        // C'est l'évaluation d'un pair reçu
                         for(let i=0; i<listeCriteresProf.length; i++) {
                             notesDonneesAccumulateur[i] += sliders[i];
                         }
