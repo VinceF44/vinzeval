@@ -29,7 +29,6 @@
                 </div>
             </div>
 
-            <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
                 <!-- Généré dynamiquement en JS -->
             </div>
@@ -42,7 +41,8 @@
                         <button type="button" onclick="appliquerFormatText('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
                         <button type="button" onclick="appliquerFormatText('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                     </div>
-                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
+                    <!-- Zone de texte agrandie et police augmentée (text-sm, min-h-[150px], p-4) -->
+                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-gray-950/60 p-4 text-sm leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
                 </div>
             </div>
 
@@ -131,14 +131,12 @@
             } catch (errorGlobal) { alert("💥 Erreur : " + errorGlobal.message); }
         }
 
-        // NOUVELLE FONCTION : Gestion dynamique de la couleur des macarons
         function mettreAJourCouleurBadge(index, valeur) {
             const badge = document.getElementById(`badge-note-app-${index}`);
             if(!badge) return;
             valeur = parseFloat(valeur);
             badge.innerText = valeur;
             
-            // Base du macaron
             badge.className = "flex items-center justify-center w-12 h-12 rounded-xl font-black text-xl border shadow-lg transition-colors duration-300 ";
             
             if (valeur < 2.5) {
@@ -154,39 +152,35 @@
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
                 <div class="bg-gray-950/40 p-5 rounded-xl border border-gray-800/60 shadow-inner space-y-4">
                     
-                    <!-- EN-TÊTE : TITRE + MACARON GÉANT -->
                     <div class="flex justify-between items-center gap-4">
                         <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
                         <div id="badge-note-app-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
 
-                    <!-- BARRE DE NOTATION AMÉLIORÉE AVEC REPÈRES -->
                     <div class="relative pt-2 pb-4">
                         <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="mettreAJourCouleurBadge(${index}, this.value); enregistrerEtatCurseursEnContinu();" 
                             class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-blue-500 relative z-10 focus:outline-none">
                         
-                        <!-- Repères 1 à 5 sous la barre -->
                         <div class="flex justify-between px-1.5 text-[11px] text-gray-500 mt-2 font-mono font-bold select-none">
                             <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                         </div>
                     </div>
                     
-                    <!-- CHAMPS TEXTES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
-                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="2" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[60px]"></textarea>
+                            <!-- Police agrandie (text-sm) et taille augmentée (rows=4, min-h-100px) -->
+                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Notes personnelles :</label>
-                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="2" placeholder="Ex: Bonne présentation, mais un peu rapide..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[60px]"></textarea>
+                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Bonne présentation, mais un peu rapide..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                     </div>
                 </div>
             `).join('');
             
-            // Initialiser les couleurs des badges
             listeCriteres.forEach((_, i) => mettreAJourCouleurBadge(i, 3));
         }
 
@@ -242,7 +236,7 @@
                 const input = document.getElementById(`eval-crit-${index}`);
                 if (input) {
                     input.value = noteSauvegardee;
-                    mettreAJourCouleurBadge(index, noteSauvegardee); // Restituer la couleur
+                    mettreAJourCouleurBadge(index, noteSauvegardee);
                 }
                 
                 const inputQ = document.getElementById(`questions-crit-${index}`);
