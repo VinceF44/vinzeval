@@ -9,7 +9,8 @@
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center selection:bg-[#a855f7]/30">
 
-    <div class="w-full max-w-lg bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
+    <!-- ÉLARGISSEMENT DE LA CONSOLE FORMATEUR SUR SÉANCE PC (max-w-4xl) -->
+    <div class="w-full max-w-4xl bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
         <div class="border-b border-slate-800 pb-4">
             <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
@@ -18,7 +19,8 @@
             <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
         </div>
 
-        <div class="space-y-4">
+        <!-- LAYOUT DEUX COLONNES HAUT POUR LES FILTRES DE SÉLECTION -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
                 <select id="select-evaluateur" onchange="changerDeFormateurVotant(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
@@ -29,23 +31,36 @@
             <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                 <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
                 <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
-                    </select>
-                <p class="text-[11px] text-slate-500 mt-1">💡 Vos curseurs et zones de texte se mettent à jour automatiquement en changeant de cible.</p>
+                    <!-- Chargé dynamiquement -->
+                </select>
             </div>
+        </div>
+        
+        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Vos curseurs, grilles de notes libres, questions et bilans formatés s'actualisent en changeant de cible.</p>
 
-            <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
+        <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
+        <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
+            <!-- Chargé dynamiquement -->
+        </div>
+
+        <!-- ZONE DE FEEDBACK ENRICHI JURY -->
+        <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
+            <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Recommandations Jury :</label>
+            
+            <div class="flex flex-col rounded-xl overflow-hidden border border-slate-800 focus-within:border-[#a855f7] transition-all">
+                <div class="flex items-center gap-1 bg-[#030712] p-2 border-b border-slate-800 select-none">
+                    <button type="button" onclick="appliquerFormatTextProf('bold')" title="Gras (Ctrl+B)" class="h-7 w-8 font-black text-xs rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">B</button>
+                    <button type="button" onclick="appliquerFormatTextProf('underline')" title="Souligner (Ctrl+U)" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
                 </div>
-
-            <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
-                <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Recommandations Jury :</label>
-                <textarea id="feedback-global-prof" oninput="synchroniserNotesLocales()" rows="3" placeholder="Synthèse de l'évaluation, points forts de la posture, axes d'amélioration clés..." class="w-full bg-[#030712] rounded-xl p-3 text-xs border border-slate-800 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#a855f7] transition-all"></textarea>
+                <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance (Sauts de lignes, gras et souligné disponibles)..." class="w-full bg-[#030712]/60 p-3 text-xs text-white min-h-[110px] focus:outline-none transition-all overflow-y-auto"></div>
             </div>
+        </div>
 
-            <div class="pt-2">
-                <button onclick="enregistrerNoteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
-                    💾 Valider et Enregistrer la note
-                </button>
-            </div>
+        <!-- BOUTON ENREGISTRER -->
+        <div class="pt-2">
+            <button onclick="enregistrerNoteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                💾 Valider et Enregistrer la note
+            </button>
         </div>
     </div>
 
@@ -62,6 +77,10 @@
         let notesFormateurLocales = {}; 
         let ciblePrecedente = "";
         let evaluateurPrecedent = "";
+
+        function appliquerFormatTextProf(commande) {
+            document.execCommand(commande, false, null);
+        }
 
         async function initFormulaire() {
             if (!idSessionDashboard) {
@@ -101,7 +120,7 @@
 
         function genererSlidersHtml() {
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
-                <div class="bg-[#030712]/30 p-3 rounded-xl border border-slate-800/50 space-y-2">
+                <div class="bg-[#030712]/30 p-4 rounded-xl border border-slate-800/50 space-y-3">
                     <div class="flex justify-between text-xs font-semibold">
                         <span class="text-slate-300">🎯 ${c.nom}</span>
                         <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
@@ -110,14 +129,15 @@
                         oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'; synchroniserNotesLocales();" 
                         class="w-full accent-amber-500 h-1 bg-[#030712] rounded-lg appearance-none cursor-pointer">
                     
-                    <div class="grid grid-cols-2 gap-2 pt-1">
+                    <!-- RESTRUCTURATION EN COUCHES TEXTAREA CÔTE À CÔTE SUR ÉCRAN PC (md:grid-cols-2) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                         <div>
-                            <label class="block text-[9px] font-bold uppercase text-slate-500 mb-0.5">❓ Questions à poser :</label>
-                            <input type="text" id="prof-questions-${index}" oninput="synchroniserNotesLocales()" placeholder="Ex: Préciser la répartition technique..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-[#a855f7] transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">❓ Questions à poser :</label>
+                            <textarea id="prof-questions-${index}" oninput="synchroniserNotesLocales()" rows="3" placeholder="Saut de ligne libre pour lister vos questions jury..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[70px]"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold uppercase text-slate-500 mb-0.5">📔 Journal / Prise de notes :</label>
-                            <input type="text" id="prof-journal-${index}" oninput="synchroniserNotesLocales()" placeholder="Ex: Très bonne répartie sur l'architecture" class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded p-1.5 text-[11px] focus:outline-none focus:border-[#a855f7] transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">📔 Journal / Prise de notes :</label>
+                            <textarea id="prof-journal-${index}" oninput="synchroniserNotesLocales()" rows="3" placeholder="Saut de ligne libre pour vos remarques à chaud..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[70px]"></textarea>
                         </div>
                     </div>
                 </div>
@@ -196,7 +216,7 @@
                 sliders: tNotes,
                 questions: tQuestions,
                 journal: tJournal,
-                feedback: inputFB ? inputFB.value : ""
+                feedback: inputFB ? inputFB.innerHTML : ""
             };
 
             localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
@@ -250,7 +270,7 @@
 
             const inputFB = document.getElementById('feedback-global-prof');
             if (inputFB) {
-                inputFB.value = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
+                inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
             }
         }
 
