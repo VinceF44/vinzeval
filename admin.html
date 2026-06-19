@@ -100,7 +100,11 @@
 
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            if (error) return;
+            
+            if (error) {
+                alert("❌ Erreur de connexion Supabase : " + error.message);
+                return;
+            }
 
             const conteneurActives = document.getElementById('liste-sessions-actives');
             const conteneurTerminees = document.getElementById('liste-sessions-terminees');
@@ -108,17 +112,26 @@
             conteneurActives.innerHTML = "";
             conteneurTerminees.innerHTML = "";
 
+            if (!sessions || sessions.length === 0) {
+                conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
+                conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
+                return;
+            }
+
             let countActives = 0, countTerminees = 0;
 
             sessions.forEach(s => {
-                const nomEchappe = s.nom.replace(/'/g, "\\'");
+                // SÉCURISATION : Si le nom est vide ou corrompu, on applique un fallback pour éviter le crash net
+                const nomValide = s.nom || "Session sans nom";
+                // Échappement blindé contre les guillemets simples ET doubles pour préserver l'attribut HTML onclick
+                const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                 if (s.statut !== 'terminee') {
                     countActives++;
                     conteneurActives.innerHTML += `
                         <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                             <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                <div class="font-bold text-slate-100 text-base tracking-tight truncate">${s.nom}</div>
+                                <div class="font-bold text-slate-100 text-base tracking-tight truncate">${nomValide}</div>
                                 <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
@@ -138,7 +151,7 @@
                     conteneurTerminees.innerHTML += `
                         <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
                             <div>
-                                <div class="font-medium text-slate-400 text-base">🗃️ ${s.nom}</div>
+                                <div class="font-medium text-slate-400 text-base">🗃️ ${nomValide}</div>
                                 <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
@@ -158,34 +171,29 @@
         async function entrerEnModeModification(idSession) {
             idSessionEnCoursModification = idSession;
             
-            // Changement visuel du cadre de configuration
             const zoneConfigurateur = document.getElementById('zone-configurateur');
             zoneConfigurateur.classList.remove('border-slate-800');
             zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
             document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition active</span> — Modification profonde de la session`;
 
-            // Récupération globale asynchrone des données de la session ciblée
             const { data: session } = await db.from('sessions').select('nom').eq('id', idSession).single();
             const { data: crits } = await db.from('criteres').select('nom').eq('session_id', idSession);
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
             const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
             const { data: apps } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
 
-            // Remplissage automatique des champs de l'IHM
             if(session) document.getElementById('nouveau-nom-session').value = session.nom;
             if(crits) document.getElementById('criteres-session').value = crits.map(c => c.nom).join('\n');
             if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
             
             if(grps && grps.length > 0) {
                 document.getElementById('nb-groupes').value = grps.length;
-                // Extraction automatique du préfixe à partir du premier groupe trouvé (ex: "Groupe 1" -> "Groupe ")
                 const premierNom = grps[0].nom;
                 const match = premierNom.match(/^(.*?)(\d+)$/);
                 if (match) document.getElementById('prefixe-groupes').value = match[1];
             }
             if(apps) document.getElementById('liste-apprenants-brute').value = apps.map(a => a.prenom).join('\n');
 
-            // Mutation des boutons d'action du bas du formulaire
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-emerald-600 border border-emerald-500/20 hover:bg-emerald-700 active:scale-[0.99]">
@@ -197,20 +205,17 @@
                 </div>
             `;
 
-            // Remontée fluide de l'écran vers le formulaire
             window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
         }
 
         function annulerModeModification() {
             idSessionEnCoursModification = null;
             
-            // Restauration des styles initiaux
             const zoneConfigurateur = document.getElementById('zone-configurateur');
             zoneConfigurateur.classList.remove('border-emerald-500/40', 'bg-[#101828]/95');
             zoneConfigurateur.classList.add('border-slate-800');
             document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
 
-            // Nettoyage complet
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
             document.getElementById('liste-apprenants-brute').value = "";
@@ -218,7 +223,6 @@
             document.getElementById('nb-groupes').value = "3";
             document.getElementById('prefixe-groupes').value = "Groupe ";
 
-            // Restauration du bouton initial
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
                     🚀 Générer la session complète
@@ -238,17 +242,14 @@
 
             if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
 
-            // 1. Mise à jour de l'enregistrement de la session principale
             const { error: errSess } = await db.from('sessions').update({ nom: nomSession }).eq('id', idSessionEnCoursModification);
             if (errSess) { alert("Échec modification session: " + errSess.message); return; }
 
-            // 2. Purge en cascade ordonnée des tables dépendantes pour écrasement propre
             await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
 
-            // 3. Ré-insertion des Critères
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
@@ -257,7 +258,6 @@
                 }
             }
 
-            // 4. Ré-insertion des Évaluateurs
             if (evaluateursRaw) {
                 const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
@@ -266,7 +266,6 @@
                 }
             }
 
-            // 5. Régénération complète des Groupes
             const listeNomsGroupes = [];
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
@@ -280,7 +279,6 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // 6. Redistribution et Ré-insertion des Apprenants
             if (apprenantsRaw) {
                 let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
                 if (listeApprenants.length > 0) {
@@ -339,4 +337,78 @@
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
                 const nomDuGroupe = `${prefixe}${i}`;
-                listeNomsGroupes.push(nomDuGrou
+                listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
+            if (errGrp) { alert("Erreur lors de la génération des groupes : " + errGrp.message); return; }
+
+            const mapNomVersIdGroupe = {};
+            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            if (apprenantsRaw) {
+                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
+                
+                if (listeApprenants.length > 0) {
+                    for (let i = listeApprenants.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
+                    }
+
+                    const payloadApprenants = listeApprenants.map((prenom, index) => {
+                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
+                        return {
+                            session_id: session.id,
+                            prenom: prenom,
+                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
+                        };
+                    });
+
+                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
+                    if (errApp) alert("Attention : Échec de la répartition des apprenants : " + errApp.message);
+                }
+            }
+
+            alert("🎉 Session complète configurée et générée avec succès !");
+            document.getElementById('nouveau-nom-session').value = "";
+            document.getElementById('criteres-session').value = "";
+            document.getElementById('liste-apprenants-brute').value = "";
+            document.getElementById('liste-evaluateurs-brute').value = "";
+            chargerSessions();
+        }
+
+        async function cloturerSession(idSession) {
+            if (!confirm("⚠️ Fermer définitivement cette session ?\n\nLe lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique.")) return;
+            const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
+            if (!error) chargerSessions();
+        }
+
+        async function dupliquerSession(idSessionSource, nomActuel) {
+            const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
+            if (!nouveauNom || nouveauNom.trim() === "") return;
+
+            const { data: nouvelleSession, error: errSess } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active' }]).select().single();
+            if (errSess) return;
+
+            const { data: criteresSource } = await db.from('criteres').select('nom').eq('session_id', idSessionSource);
+            if (criteresSource && criteresSource.length > 0) {
+                const nouveauxCriteres = criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom }));
+                await db.from('criteres').insert(nouveauxCriteres);
+            }
+
+            alert("👥 Session et critères dupliqués ! (Pensez à recréer/réaffecter vos groupes d'élèves pour cette nouvelle session).");
+            chargerSessions();
+        }
+
+        async function supprimerSession(idSession) {
+            if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
+
+            const { error } = await db.from('sessions').delete().eq('id', idSession);
+            if (error) alert("Erreur lors de la suppression : " + error.message);
+            else chargerSessions();
+        }
+
+        window.onload = initAdmin;
+    </script>
+</body>
+</html>
