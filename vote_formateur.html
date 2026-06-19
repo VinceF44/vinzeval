@@ -68,7 +68,6 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = s.nom;
 
-            // 1. Charger les évaluateurs créés dans l'admin
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
             const selectEval = document.getElementById('select-evaluateur');
             if(evals && evals.length > 0) {
@@ -78,7 +77,6 @@
             }
             evaluateurPrecedent = selectEval.value;
 
-            // 2. Charger les groupes
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
             if(g && g.length > 0) {
                 groupesSession = g;
@@ -87,14 +85,12 @@
                 ciblePrecedente = selectGrp.value;
             }
 
-            // 3. Charger les critères
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
             if(critsProf && critsProf.length > 0) {
                 listeCriteresProf = critsProf;
                 genererSlidersHtml();
             }
 
-            // 4. Télécharger l'historique de départ
             await chargerNotesExistantes();
         }
 
@@ -126,9 +122,16 @@
         }
 
         async function chargerNotesExistantes() {
-            // A. Base de données Supabase (Fond officiel de la session)
-            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur');
-            notesFormateurLocales = {}; // Reset de l'état mémoire
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
+            if (!evaluateurActuel) return;
+
+            // CORRECTIF CLÉ : On filtre la base de données uniquement sur l'évaluateur actif !
+            const { data } = await db.from('evaluations')
+                .select('*')
+                .eq('session_id', idSessionDashboard)
+                .eq('groupe_votant', evaluateurActuel);
+                
+            notesFormateurLocales = {}; 
             
             if (data) {
                 data.forEach(e => {
@@ -139,14 +142,10 @@
                 });
             }
 
-            // B. Surcharge sélective par le cache du formateur actuellement actif
-            const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            if (evaluateurActuel) {
-                const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${evaluateurActuel}`);
-                if (cacheSauvegarde) {
-                    const notesDuCache = JSON.parse(cacheSauvegarde);
-                    Object.assign(notesFormateurLocales, notesDuCache);
-                }
+            const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${evaluateurActuel}`);
+            if (cacheSauvegarde) {
+                const notesDuCache = JSON.parse(cacheSauvegarde);
+                Object.assign(notesFormateurLocales, notesDuCache);
             }
 
             restituerSlidersPourCible(ciblePrecedente);
@@ -164,11 +163,9 @@
             }
             notesFormateurLocales[groupeCible] = tableauNotes;
 
-            // Clé partitionnée hermétique par évaluateur
             localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
         }
 
-        // ÉVÉNEMENT 1 : Changement de groupe cible (sujet évalué)
         function changerDeCibleFormateur(nouvelleCible) {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
             if (ciblePrecedente && evaluateurActuel) {
@@ -178,19 +175,14 @@
             ciblePrecedente = nouvelleCible;
         }
 
-        // ÉVÉNEMENT 2 : Changement de Formateur Votant (Sécurise le multi-évaluateurs)
         function changerDeFormateurVotant(nouveauEvaluateur) {
             const cibleActuelle = document.getElementById('select-sujet-evalue').value;
             
-            // 1. On fige les notes actuelles sous l'ancien nom de formateur
             if (evaluateurPrecedent && cibleActuelle) {
                 synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
             }
 
-            // 2. On change de contexte de mémorisation
             evaluateurPrecedent = nouveauEvaluateur;
-
-            // 3. On recharge la mémoire (DB + Cache isolé du nouveau formateur)
             chargerNotesExistantes();
         }
 
@@ -227,11 +219,12 @@
 
             const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
-            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
+            // Enregistrement précis sous l'identité de l'évaluateur actif
+            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', evaluateurActuel).eq('sujet', groupeCible);
 
             const { error } = await db.from('evaluations').insert([{
                 session_id: idSessionDashboard,
-                groupe_votant: 'Formateur',
+                groupe_votant: evaluateurActuel,
                 sujet: groupeCible,
                 note: noteCompletePayload
             }]);
@@ -239,7 +232,7 @@
             if (error) {
                 alert("❌ Erreur : " + error.message);
             } else {
-                alert(`🎉 Évaluation enregistrée pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
+                alert(`🎉 Évaluation enregistrée par ${evaluateurActuel} pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
             }
         }
 
