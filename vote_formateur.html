@@ -9,7 +9,6 @@
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center selection:bg-[#a855f7]/30">
 
-    <!-- LARGEUR OPTIMISÉE PC PORTABLE (max-w-5xl) & ULTRA RESPONSIVE MOBILE (w-full) -->
     <div class="w-full max-w-5xl bg-[#101828] p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
         <div class="border-b border-slate-800 pb-4">
@@ -19,7 +18,6 @@
             <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
         </div>
 
-        <!-- SÉLECTEURS : 1 COLONNE SUR MOBILE, 2 COLONNES SUR PC PORTABLE -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
@@ -27,12 +25,9 @@
                     <option value="" disabled selected>-- Choisissez votre nom --</option>
                 </select>
             </div>
-
             <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                 <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
-                <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
-                    <!-- Chargé dynamiquement -->
-                </select>
+                <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer"></select>
             </div>
         </div>
         
@@ -43,23 +38,18 @@
             <!-- Chargé dynamiquement -->
         </div>
 
-        <!-- ZONE DE FEEDBACK ENRICHI JURY AVEC LISTE À PUCES ACTIVÉE -->
         <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
             <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Recommandations Jury :</label>
-            
             <div class="flex flex-col rounded-xl overflow-hidden border border-slate-800 focus-within:border-[#a855f7] transition-all">
-                <!-- Barre d'outils avec bouton liste à puces -->
                 <div class="flex items-center gap-1 bg-[#030712] p-2 border-b border-slate-800 select-none">
-                    <button type="button" onclick="appliquerFormatTextProf('bold')" title="Gras (Ctrl+B)" class="h-7 w-8 font-black text-xs rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">B</button>
-                    <button type="button" onclick="appliquerFormatTextProf('underline')" title="Souligner (Ctrl+U)" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
-                    <button type="button" onclick="appliquerFormatTextProf('insertUnorderedList')" title="Liste à puces" class="h-7 w-8 font-bold text-base rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
+                    <button type="button" onclick="appliquerFormatTextProf('bold')" class="h-7 w-8 font-black text-xs rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">B</button>
+                    <button type="button" onclick="appliquerFormatTextProf('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
+                    <button type="button" onclick="appliquerFormatTextProf('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                 </div>
-                <!-- Zone d'écriture (Correction du style des listes de Tailwind via les classes directes [&_ul]) -->
                 <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance (Sauts de lignes, puces, gras et souligné disponibles)..." class="w-full bg-[#030712]/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
             </div>
         </div>
 
-        <!-- BOUTON ENREGISTRER -->
         <div class="pt-2">
             <button onclick="enregistrerNoteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
                 💾 Valider et Enregistrer la note
@@ -81,13 +71,11 @@
         let ciblePrecedente = "";
         let evaluateurPrecedent = "";
 
-        function appliquerFormatTextProf(commande) {
-            document.execCommand(commande, false, null);
-        }
+        function appliquerFormatTextProf(commande) { document.execCommand(commande, false, null); }
 
         async function initFormulaire() {
             if (!idSessionDashboard) {
-                document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant dans l'URL.</p>";
+                document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant.</p>";
                 return;
             }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -97,19 +85,16 @@
 
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
             const selectEval = document.getElementById('select-evaluateur');
-            if(evals && evals.length > 0) {
-                evals.forEach(e => { selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`; });
-            } else {
-                selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
-            }
+            if(evals && evals.length > 0) evals.forEach(e => { selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`; });
+            else selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
+            
             evaluateurPrecedent = selectEval.value;
 
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
             if(g && g.length > 0) {
                 groupesSession = g;
-                const selectGrp = document.getElementById('select-sujet-evalue');
-                selectGrp.innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
-                ciblePrecedente = selectGrp.value;
+                document.getElementById('select-sujet-evalue').innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+                ciblePrecedente = document.getElementById('select-sujet-evalue').value;
             }
 
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
@@ -121,75 +106,91 @@
             await chargerNotesExistantes();
         }
 
+        // NOUVELLE FONCTION : Gestion dynamique de la couleur des macarons Formateur
+        function mettreAJourCouleurBadgeProf(index, valeur) {
+            const badge = document.getElementById(`badge-note-prof-${index}`);
+            if(!badge) return;
+            valeur = parseFloat(valeur);
+            badge.innerText = valeur;
+            
+            badge.className = "flex items-center justify-center w-12 h-12 rounded-xl font-black text-xl border shadow-lg transition-colors duration-300 ";
+            
+            if (valeur < 2.5) {
+                badge.className += "bg-red-500/10 text-red-400 border-red-500/30";
+            } else if (valeur <= 3.5) {
+                badge.className += "bg-amber-500/10 text-amber-400 border-amber-500/30";
+            } else {
+                badge.className += "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+            }
+        }
+
         function genererSlidersHtml() {
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
-                <div class="bg-[#030712]/30 p-4 rounded-xl border border-slate-800/50 space-y-3">
-                    <div class="flex justify-between text-xs font-semibold">
-                        <span class="text-slate-300">🎯 ${c.nom}</span>
-                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
-                    </div>
-                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
-                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'; synchroniserNotesLocales();" 
-                        class="w-full accent-amber-500 h-1 bg-[#030712] rounded-lg appearance-none cursor-pointer">
+                <div class="bg-[#030712]/40 p-5 rounded-xl border border-slate-800/60 shadow-inner space-y-4">
                     
-                    <!-- RESTRUCTURATION ADAPTATIVE : 1 COL SUR MOBILE, 2 COL SUR LAPTOP PC -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    <!-- EN-TÊTE : TITRE + MACARON GÉANT -->
+                    <div class="flex justify-between items-center gap-4">
+                        <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                        <div id="badge-note-prof-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
+                    </div>
+
+                    <!-- BARRE DE NOTATION AMÉLIORÉE AVEC REPÈRES -->
+                    <div class="relative pt-2 pb-4">
+                        <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                            oninput="mettreAJourCouleurBadgeProf(${index}, this.value); synchroniserNotesLocales();" 
+                            class="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-[#a855f7] relative z-10 focus:outline-none">
+                        
+                        <div class="flex justify-between px-1.5 text-[11px] text-slate-500 mt-2 font-mono font-bold select-none">
+                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CHAMPS TEXTES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">❓ Questions à poser :</label>
-                            <textarea id="prof-questions-${index}" oninput="synchroniserNotesLocales()" rows="3" placeholder="Saut de ligne libre pour lister vos questions jury..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[70px]"></textarea>
+                            <textarea id="prof-questions-${index}" oninput="synchroniserNotesLocales()" rows="2" placeholder="Ex: Préciser l'architecture..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[60px]"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">📔 Journal / Prise de notes :</label>
-                            <textarea id="prof-journal-${index}" oninput="synchroniserNotesLocales()" rows="3" placeholder="Saut de ligne libre pour vos remarques à chaud..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[70px]"></textarea>
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">📔 Prise de notes :</label>
+                            <textarea id="prof-journal-${index}" oninput="synchroniserNotesLocales()" rows="2" placeholder="Ex: Support visuel impeccable..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[60px]"></textarea>
                         </div>
                     </div>
                 </div>
             `).join('');
+
+            listeCriteresProf.forEach((_, i) => mettreAJourCouleurBadgeProf(i, 3));
         }
 
         function decoderNoteEtCurseurs(notePleine) {
             const chaineNote = notePleine.toFixed(10);
             const parties = chaineNote.split('.');
-            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
-            let chaineDecimaleEmpreinte = parties[1].substring(4);
             let curseursRestitues = [];
-            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
-                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+            for (let i = 0; i < parties[1].substring(4).length; i += 2) {
+                let bloc = parties[1].substring(4).substring(i, i + 2);
                 if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
             }
-            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+            return curseursRestitues;
         }
 
         async function chargerNotesExistantes() {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
             if (!evaluateurActuel) return;
 
-            const { data } = await db.from('evaluations')
-                .select('*')
-                .eq('session_id', idSessionDashboard)
-                .eq('groupe_votant', evaluateurActuel);
-                
+            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', evaluateurActuel);
             notesFormateurLocales = {}; 
             
             if (data) {
                 data.forEach(e => {
-                    const extraction = decoderNoteEtCurseurs(e.note);
-                    if (extraction.sliders.length === listeCriteresProf.length) {
-                        notesFormateurLocales[e.sujet] = {
-                            sliders: extraction.sliders,
-                            questions: Array(listeCriteresProf.length).fill(""),
-                            journal: Array(listeCriteresProf.length).fill(""),
-                            feedback: ""
-                        };
+                    const sliders = decoderNoteEtCurseurs(e.note);
+                    if (sliders.length === listeCriteresProf.length) {
+                        notesFormateurLocales[e.sujet] = { sliders: sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: "" };
                     }
                 });
             }
 
             const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${evaluateurActuel}`);
-            if (cacheSauvegarde) {
-                const notesDuCache = JSON.parse(cacheSauvegarde);
-                Object.assign(notesFormateurLocales, notesDuCache);
-            }
+            if (cacheSauvegarde) Object.assign(notesFormateurLocales, JSON.parse(cacheSauvegarde));
 
             restituerSlidersPourCible(ciblePrecedente);
         }
@@ -199,9 +200,7 @@
             const groupeCible = groupeForce || document.getElementById('select-sujet-evalue').value;
             if (!groupeCible || !evaluateurCible) return;
             
-            const tNotes = [];
-            const tQuestions = [];
-            const tJournal = [];
+            const tNotes = [], tQuestions = [], tJournal = [];
 
             for(let i=0; i < listeCriteresProf.length; i++) {
                 const input = document.getElementById(`prof-crit-${i}`);
@@ -214,31 +213,21 @@
             }
 
             const inputFB = document.getElementById('feedback-global-prof');
-
-            notesFormateurLocales[groupeCible] = {
-                sliders: tNotes,
-                questions: tQuestions,
-                journal: tJournal,
-                feedback: inputFB ? inputFB.innerHTML : ""
-            };
+            notesFormateurLocales[groupeCible] = { sliders: tNotes, questions: tQuestions, journal: tJournal, feedback: inputFB ? inputFB.innerHTML : "" };
 
             localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
         }
 
         function changerDeCibleFormateur(nouvelleCible) {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            if (ciblePrecedente && evaluateurActuel) {
-                synchroniserNotesLocales(ciblePrecedente, evaluateurActuel);
-            }
+            if (ciblePrecedente && evaluateurActuel) synchroniserNotesLocales(ciblePrecedente, evaluateurActuel);
             restituerSlidersPourCible(nouvelleCible);
             ciblePrecedente = nouvelleCible;
         }
 
         function changerDeFormateurVotant(nouveauEvaluateur) {
             const cibleActuelle = document.getElementById('select-sujet-evalue').value;
-            if (evaluateurPrecedent && cibleActuelle) {
-                synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
-            }
+            if (evaluateurPrecedent && cibleActuelle) synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
             evaluateurPrecedent = nouveauEvaluateur;
             chargerNotesExistantes();
         }
@@ -248,14 +237,7 @@
             const isOldFormat = Array.isArray(blocExistante);
 
             for (let i = 0; i < listeCriteresProf.length; i++) {
-                const input = document.getElementById(`prof-crit-${i}`);
-                const label = document.getElementById(`v-f-${i}`);
-                const inputQ = document.getElementById(`prof-questions-${i}`);
-                const inputJ = document.getElementById(`prof-journal-${i}`);
-
-                let val = 3;
-                let question = "";
-                let journal = "";
+                let val = 3, question = "", journal = "";
 
                 if (blocExistante) {
                     val = isOldFormat ? blocExistante[i] : (blocExistante.sliders ? blocExistante.sliders[i] : 3);
@@ -263,55 +245,45 @@
                     journal = (!isOldFormat && blocExistante.journal) ? blocExistante.journal[i] : "";
                 }
 
-                if (input && label) {
+                const input = document.getElementById(`prof-crit-${i}`);
+                if (input) {
                     input.value = val;
-                    label.innerText = val + " / 5";
+                    mettreAJourCouleurBadgeProf(i, val); // Restitue la couleur
                 }
+                
+                const inputQ = document.getElementById(`prof-questions-${i}`);
                 if (inputQ) inputQ.value = question;
+                
+                const inputJ = document.getElementById(`prof-journal-${i}`);
                 if (inputJ) inputJ.value = journal;
             }
 
             const inputFB = document.getElementById('feedback-global-prof');
-            if (inputFB) {
-                inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
-            }
+            if (inputFB) inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
         }
 
         async function enregistrerNoteFormateur() {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
             const groupeCible = document.getElementById('select-sujet-evalue').value;
             
-            if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur avant de valider."); return; }
+            if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur."); return; }
             if (!groupeCible) return;
 
             synchroniserNotesLocales(groupeCible, evaluateurActuel);
-            const dataTarget = notesFormateurLocales[groupeCible];
-            const tableauNotes = dataTarget.sliders || dataTarget;
+            const tableauNotes = notesFormateurLocales[groupeCible].sliders || notesFormateurLocales[groupeCible];
 
-            const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
-            const moyenneSur20 = (moyenneSur5 / 5) * 20;
-
+            const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
             let empreinteDecimale = "";
-            tableauNotes.forEach(val => {
-                empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0');
-            });
+            tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
 
             const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
             await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', evaluateurActuel).eq('sujet', groupeCible);
 
-            const { error } = await db.from('evaluations').insert([{
-                session_id: idSessionDashboard,
-                groupe_votant: evaluateurActuel,
-                sujet: groupeCible,
-                note: noteCompletePayload
-            }]);
+            const { error } = await db.from('evaluations').insert([{ session_id: idSessionDashboard, groupe_votant: evaluateurActuel, sujet: groupeCible, note: noteCompletePayload }]);
 
-            if (error) {
-                alert("❌ Erreur : " + error.message);
-            } else {
-                alert(`🎉 Évaluation enregistrée par ${evaluateurActuel} pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
-            }
+            if (error) alert("❌ Erreur : " + error.message);
+            else alert(`🎉 Évaluation enregistrée par ${evaluateurActuel} pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
         }
 
         window.onload = initFormulaire;
