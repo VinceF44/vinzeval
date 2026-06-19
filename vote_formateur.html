@@ -45,162 +45,169 @@
     </div>
 
     <script>
-        const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        let db;
+    const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+    let db;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const idSessionDashboard = urlParams.get('session_id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const idSessionDashboard = urlParams.get('session_id');
 
-        let groupesSession = [];
-        let listeCriteresProf = [];
-        let notesFormateurLocales = {}; 
-        let ciblePrecedente = "";
+    let groupesSession = [];
+    let listeCriteresProf = [];
+    let notesFormateurLocales = {}; 
+    let ciblePrecedente = "";
 
-        async function initFormulaire() {
-            if (!idSessionDashboard) {
-                document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant dans l'URL.</p>";
-                return;
-            }
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
-            if(s) document.getElementById('nom-session').innerText = s.nom;
+    async function initFormulaire() {
+        if (!idSessionDashboard) {
+            document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant dans l'URL.</p>";
+            return;
+        }
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
+        if(s) document.getElementById('nom-session').innerText = s.nom;
 
-            // 1. Charger les évaluateurs créés dans l'admin
-            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
-            const selectEval = document.getElementById('select-evaluateur');
-            if(evals && evals.length > 0) {
-                evals.forEach(e => { selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`; });
-            } else {
-                selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
-            }
-
-            // 2. Charger les groupes
-            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
-            if(g && g.length > 0) {
-                groupesSession = g;
-                const selectGrp = document.getElementById('select-sujet-evalue');
-                selectGrp.innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
-                ciblePrecedente = selectGrp.value;
-            }
-
-            // 3. Charger les critères
-            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
-            if(critsProf && critsProf.length > 0) {
-                listeCriteresProf = critsProf;
-                genererSlidersHtml();
-            }
-
-            // 4. Télécharger l'historique existant pour pré-remplir les sliders
-            await chargerNotesExistantes() ;
+        const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
+        const selectEval = document.getElementById('select-evaluateur');
+        if(evals && evals.length > 0) {
+            evals.forEach(e => { selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`; });
+        } else {
+            selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
         }
 
-        function genererSlidersHtml() {
-            document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
-                <div>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-slate-400">🎯 ${c.nom}</span>
-                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
-                    </div>
-                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
-                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'; synchroniserNotesLocales();" 
-                        class="w-full accent-amber-500 h-1 bg-[#030712] rounded-lg appearance-none cursor-pointer">
+        const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
+        if(g && g.length > 0) {
+            groupesSession = g;
+            const selectGrp = document.getElementById('select-sujet-evalue');
+            selectGrp.innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+            ciblePrecedente = selectGrp.value;
+        }
+
+        const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+        if(critsProf && critsProf.length > 0) {
+            listeCriteresProf = critsProf;
+            genererSlidersHtml();
+        }
+
+        await chargerNotesExistantes();
+    }
+
+    function genererSlidersHtml() {
+        document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
+            <div>
+                <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-400">🎯 ${c.nom}</span>
+                    <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
                 </div>
-            `).join('');
-        }
+                <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                    oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'; synchroniserNotesLocales();" 
+                    class="w-full accent-amber-500 h-1 bg-[#030712] rounded-lg appearance-none cursor-pointer">
+            </div>
+        `).join('');
+    }
 
-        function decoderNoteEtCurseurs(notePleine) {
-            const chaineNote = notePleine.toFixed(10);
-            const parties = chaineNote.split('.');
-            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
-            let chaineDecimaleEmpreinte = parties[1].substring(4);
-            let curseursRestitues = [];
-            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
-                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
-                if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
-            }
-            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+    function decoderNoteEtCurseurs(notePleine) {
+        const chaineNote = notePleine.toFixed(10);
+        const parties = chaineNote.split('.');
+        const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+        let chaineDecimaleEmpreinte = parties[1].substring(4);
+        let curseursRestitues = [];
+        for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+            let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+            if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
         }
+        return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+    }
 
-        async function chargerNotesExistantes() {
-            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur');
-            if (data) {
-                data.forEach(e => {
-                    const extraction = decoderNoteEtCurseurs(e.note);
-                    if (extraction.sliders.length === listeCriteresProf.length) {
-                        notesFormateurLocales[e.sujet] = extraction.sliders;
-                    }
-                });
-                restituerSlidersPourCible(ciblePrecedente);
-            }
-        }
-
-        function synchroniserNotesLocales() {
-            const groupeCible = document.getElementById('select-sujet-evalue').value;
-            if (!groupeCible) return;
-            const tableauNotes = [];
-            for(let i=0; i < listeCriteresProf.length; i++) {
-                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
-            }
-            notesFormateurLocales[groupeCible] = tableauNotes;
-        }
-
-        function changerDeCibleFormateur(nouvelleCible) {
-            synchroniserNotesLocales();
-            restituerSlidersPourCible(nouvelleCible);
-            ciblePrecedente = nouvelleCible;
-        }
-
-        function restituerSlidersPourCible(cible) {
-            const notesExistantes = notesFormateurLocales[cible];
-            for (let i = 0; i < listeCriteresProf.length; i++) {
-                const input = document.getElementById(`prof-crit-${i}`);
-                const label = document.getElementById(`v-f-${i}`);
-                if (input && label) {
-                    const val = (notesExistantes && notesExistantes[i] !== undefined) ? notesExistantes[i] : 3;
-                    input.value = val;
-                    label.innerText = val + " / 5";
+    async function chargerNotesExistantes() {
+        // 1. Récupération depuis Supabase
+        const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur');
+        if (data) {
+            data.forEach(e => {
+                const extraction = decoderNoteEtCurseurs(e.note);
+                if (extraction.sliders.length === listeCriteresProf.length) {
+                    notesFormateurLocales[e.sujet] = extraction.sliders;
                 }
-            }
-        }
-
-        async function enregistrerNoteFormateur() {
-            const groupeCible = document.getElementById('select-sujet-evalue').value;
-            if (!groupeCible) return;
-
-            synchroniserNotesLocales();
-            const tableauNotes = notesFormateurLocales[groupeCible];
-
-            const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
-            const moyenneSur20 = (moyenneSur5 / 5) * 20;
-
-            let empreinteDecimale = "";
-            tableauNotes.forEach(val => {
-                empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0');
             });
-
-            const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
-
-            // Suppression de l'ancienne ligne
-            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
-
-            // Insertion de la note encodée
-            const { error } = await db.from('evaluations').insert([{
-                session_id: idSessionDashboard,
-                groupe_votant: 'Formateur',
-                sujet: groupeCible,
-                note: noteCompletePayload
-            }]);
-
-            if (error) {
-                alert("❌ Erreur : " + error.message);
-            } else {
-                alert(`🎉 Évaluation enregistrée pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
-            }
         }
 
-        window.onload = initFormulaire;
-    </script>
+        // 2. SURCHARGE PAR LE CACHE LOCAL EN COURS (Anti-veille / Anti-rafraîchissement)
+        const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}`);
+        if (cacheSauvegarde) {
+            const notesDuCache = JSON.parse(cacheSauvegarde);
+            Object.assign(notesFormateurLocales, notesDuCache);
+        }
+
+        restituerSlidersPourCible(ciblePrecedente);
+    }
+
+    function synchroniserNotesLocales() {
+        const groupeCible = document.getElementById('select-sujet-evalue').value;
+        if (!groupeCible) return;
+        
+        const tableauNotes = [];
+        for(let i=0; i < listeCriteresProf.length; i++) {
+            tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
+        }
+        notesFormateurLocales[groupeCible] = tableauNotes;
+
+        // Sauvegarde immédiate dans le cache du navigateur
+        localStorage.setItem(`cache_formateur_${idSessionDashboard}`, JSON.stringify(notesFormateurLocales));
+    }
+
+    function changerDeCibleFormateur(nouvelleCible) {
+        synchroniserNotesLocales();
+        restituerSlidersPourCible(nouvelleCible);
+        ciblePrecedente = nouvelleCible;
+    }
+
+    function restituerSlidersPourCible(cible) {
+        const notesExistantes = notesFormateurLocales[cible];
+        for (let i = 0; i < listeCriteresProf.length; i++) {
+            const input = document.getElementById(`prof-crit-${i}`);
+            const label = document.getElementById(`v-f-${i}`);
+            if (input && label) {
+                const val = (notesExistantes && notesExistantes[i] !== undefined) ? notesExistantes[i] : 3;
+                input.value = val;
+                label.innerText = val + " / 5";
+            }
+        }
+    }
+
+    async function enregistrerNoteFormateur() {
+        const groupeCible = document.getElementById('select-sujet-evalue').value;
+        if (!groupeCible) return;
+
+        synchroniserNotesLocales();
+        const tableauNotes = notesFormateurLocales[groupeCible];
+
+        const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
+        const moyenneSur20 = (moyenneSur5 / 5) * 20;
+
+        let empreinteDecimale = "";
+        tableauNotes.forEach(val => {
+            empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0');
+        });
+
+        const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
+
+        await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
+
+        const { error } = await db.from('evaluations').insert([{
+            session_id: idSessionDashboard,
+            groupe_votant: 'Formateur',
+            sujet: groupeCible,
+            note: noteCompletePayload
+        }]);
+
+        if (error) {
+            alert("❌ Erreur : " + error.message);
+        } else {
+            alert(`🎉 Évaluation enregistrée pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
+        }
+    }
+
+    window.onload = initFormulaire;
+</script>
 </body>
 </html>
