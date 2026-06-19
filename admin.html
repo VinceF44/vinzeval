@@ -108,7 +108,6 @@
             let countActives = 0, countTerminees = 0;
 
             sessions.forEach(s => {
-                // Échappement des apostrophes pour éviter les conflits dans les attributs HTML
                 const nomEchappe = s.nom.replace(/'/g, "\\'");
 
                 if (s.statut !== 'terminee') {
@@ -120,8 +119,8 @@
                                 <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#2563eb] hover:bg-[#1d4ed8]">🗳️ Evaluation apprenant(e)</a>
-                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#a855f7] hover:bg-[#9333ea]">👩‍🏫 Evaluation formateur.trice</a>
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#2563eb] hover:bg-[#1d4ed8]">🗳️ Apprenant</a>
+                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#a855f7] hover:bg-[#9333ea]">👩‍🏫 Formateur</a>
                                 <a href="index.html?session_id=${s.id}" target="_blank" class="text-slate-900 text-xs font-bold py-2 px-3.5 rounded-lg transition-all hover:brightness-110 active:scale-[0.97] bg-[#fe9a00]">📊 Dashboard</a>
                                 <button onclick="modifierSession('${s.id}', '${nomEchappe}')" class="bg-[#030712] text-amber-400 hover:text-white hover:bg-amber-500/20 text-xs py-2 px-3.5 rounded-lg border border-amber-500/30 transition-all cursor-pointer active:scale-[0.97]">✏️ Modifier</button>
                                 <button onclick="cloturerSession('${s.id}')" class="bg-[#030712] text-red-400 hover:text-white hover:bg-red-950/40 text-xs py-2 px-3.5 rounded-lg border border-red-900/30 transition-all cursor-pointer active:scale-[0.97]">🔒 Clôturer</button>
@@ -179,11 +178,9 @@
                 return;
             }
 
-            // 1. Insertion Session
             const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
             if (errSess) { alert("Échec création session: " + errSess.message); return; }
 
-            // 2. Insertion Critères
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
@@ -192,7 +189,6 @@
                 }
             }
 
-            // 3. Insertion Évaluateurs
             if (evaluateursRaw) {
                 const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
@@ -201,7 +197,6 @@
                 }
             }
 
-            // 4. Insertion Groupes
             const listeNomsGroupes = [];
             const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
@@ -215,7 +210,6 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // 5. Répartition & Insertion Apprenants
             if (apprenantsRaw) {
                 let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
                 
