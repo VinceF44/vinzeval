@@ -3,409 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Espace Zen Pro</title>
+    <title>Console Admin — Gestion des Évaluations</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-6">
         
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
-                <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">
-                    ⚙️ Espace Gestion
-                </span>
-                <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
+                <span class="bg-purple-950/50 text-purple-400 text-[10px] font-bold uppercase px-2.5 py-1 rounded border border-purple-800/50">⚙️ Espace Organisateur</span>
+                <h1 class="text-2xl font-black text-white mt-1">Console Administration</h1>
             </div>
-        </div>
-
-        <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
-            <h2 id="titre-formulaire" class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
-                <span>✨</span> Configurer et Générer une Session
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div class="flex flex-col justify-between space-y-4">
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
-                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col">
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Un critère par ligne) :</label>
-                        <textarea id="criteres-session" rows="6" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
-                        <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Sautez à la ligne pour chaque nouveau critère.</p>
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-between space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nombre de Groupes :</label>
-                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Préfixe des Groupes :</label>
-                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
-                            <textarea id="liste-apprenants-brute" rows="4" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[100px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ils seront automatiquement répartis équitablement.</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[80px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ces profils disposeront du formulaire d'évaluation dédié.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="conteneur-boutons-action">
-                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session complète
+            <div class="flex gap-2">
+                <button onclick="chargerSessions()" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl border border-gray-700 transition cursor-pointer">
+                    🔄 Rafraîchir la liste
                 </button>
             </div>
         </div>
 
-        <div class="space-y-3">
-            <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours</h2>
-            <div id="liste-sessions-actives" class="space-y-3"></div>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+            <h2 class="text-sm font-bold text-purple-400 uppercase tracking-wider">🆕 Initialiser une nouvelle session</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenances Bachelor Janvier 2026" class="flex-1 bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-purple-500 transition-all">
+                <button onclick="creerNouvelleSession()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-3 px-6 rounded-xl transition cursor-pointer uppercase tracking-wider shrink-0">
+                    🚀 Créer la session
+                </button>
+            </div>
         </div>
 
-        <div class="space-y-3 pt-4 border-t border-slate-800">
-            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique</h2>
-            <div id="liste-sessions-terminees" class="space-y-2.5"></div>
-        </div>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+            <div class="border-b border-gray-800 pb-2">
+                <h2 class="text-base font-black text-white">📋 Sessions d'Évaluations Actives</h2>
+                <p class="text-xs text-gray-400">Accédez aux espaces de vote, ouvrez la matrice de résultats ou téléchargez les bilans A4 individuels.</p>
+            </div>
 
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
+                            <th class="py-3 px-3">Nom de la session</th>
+                            <th class="py-3 px-3 text-center">Statut</th>
+                            <th class="py-3 px-3 text-right">Actions de pilotage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-corps-sessions" class="divide-y divide-gray-800/60">
+                        <tr>
+                            <td colspan="3" class="text-center py-6 text-gray-500 italic">Connexion et chargement des sessions en cours...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
-        let idSessionEnCoursModification = null;
 
-        async function initAdmin() {
+        function initAdmin() {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             chargerSessions();
         }
 
         async function chargerSessions() {
-            const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
+            const corpsTable = document.getElementById('table-corps-sessions');
+            if(!corpsTable) return;
+
+            const { data: list, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
             
             if (error) {
-                alert("❌ Erreur de connexion Supabase : " + error.message);
+                corpsTable.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-red-400">❌ Erreur : ${error.message}</td></tr>`;
                 return;
             }
 
-            const conteneurActives = document.getElementById('liste-sessions-actives');
-            const conteneurTerminees = document.getElementById('liste-sessions-terminees');
+            if (!list || list.length === 0) {
+                corpsTable.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-gray-500 italic">Aucune session créée pour le moment.</td></tr>`;
+                return;
+            }
+
+            corpsTable.innerHTML = list.map(s => {
+                const badgeStatut = s.statut === 'terminee' 
+                    ? '<span class="bg-red-950 text-red-400 px-2 py-0.5 rounded text-[10px] border border-red-900/40">Clôturée</span>'
+                    : '<span class="bg-green-950 text-green-400 px-2 py-0.5 rounded text-[10px] border border-green-900/40">Active</span>';
+
+                return `
+                    <tr class="hover:bg-gray-900/40 transition font-sans">
+                        <td class="py-3.5 px-3 font-bold text-white text-sm">${s.nom}</td>
+                        <td class="py-3.5 px-3 text-center">${badgeStatut}</td>
+                        <td class="py-3.5 px-3 text-right space-x-1.5 whitespace-nowrap">
+                            <a href="vote.html?session_id=${s.id}" target="_blank" class="inline-block bg-blue-950/40 hover:bg-blue-900/60 text-blue-400 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-blue-900/30 transition">🔗 Vote Élèves</a>
+                            <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="inline-block bg-purple-950/40 hover:bg-purple-900/60 text-purple-400 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-purple-900/30 transition">👩‍🏫 Vote Prof</a>
+                            <a href="index.html?session_id=${s.id}" target="_blank" class="inline-block bg-amber-950/40 hover:bg-amber-900/60 text-amber-400 text-[11px] font-bold py-1.5 px-2.5 rounded-lg border border-amber-900/30 transition">📊 Dashboard</a>
+                            <button onclick="exporterBulletinsPDF('${s.id}')" class="bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold py-1.5 px-3 rounded-lg transition cursor-pointer shadow-sm">
+                                📄 Bulletins PDF
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function creerNouvelleSession() {
+            const input = document.getElementById('nouveau-nom-session');
+            if(!input || !input.value.trim()) return alert("Veuillez saisir un nom de session valide.");
+
+            const nom = input.value.trim();
+            const { error } = await db.from('sessions').insert([{ nom: nom, statut: 'active' }]);
             
-            conteneurActives.innerHTML = "";
-            conteneurTerminees.innerHTML = "";
+            if(error) alert("Erreur technique : " + error.message);
+            else {
+                input.value = "";
+                chargerSessions();
+            }
+        }
 
-            if (!sessions || sessions.length === 0) {
-                conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
-                conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
-                return;
+        // =========================================================================
+        // 🚀 MOTEUR DE GÉNÉRATION DU PDF UNIQUE (1 PAGE A4 PAR APPRENANT)
+        // =========================================================================
+        async function exporterBulletinsPDF(sessionId) {
+            if (!sessionId) return alert("ID de session introuvable.");
+            
+            console.log("Initialisation du requêtage des matrices...");
+
+            const { data: s } = await db.from('sessions').select('nom').eq('id', sessionId).single();
+            const { data: crits } = await db.from('criteres').select('*').eq('session_id', sessionId);
+            const { data: groupes } = await db.from('groupes').select('*').eq('session_id', sessionId);
+            const { data: apprenants } = await db.from('apprenants').select('*').eq('session_id', sessionId);
+            const { data: evals } = await db.from('evaluations').select('*').eq('session_id', sessionId);
+            const { data: evalsInscrits } = await db.from('evaluateurs').select('nom').eq('session_id', sessionId);
+
+            if (!groupes || groupes.length === 0 || !apprenants || apprenants.length === 0) {
+                return alert("Erreur : Aucun apprenant ou équipe n'est configuré dans cette session.");
             }
 
-            let countActives = 0, countTerminees = 0;
+            const nomsProfs = evalsInscrits ? evalsInscrits.map(e => e.nom) : ["Formateur Principal", "Formateur"];
+            const tpsCount = crits ? crits.length : 0;
 
-            sessions.forEach(s => {
-                // SÉCURISATION : Si le nom est vide ou corrompu, on applique un fallback pour éviter le crash net
-                const nomValide = s.nom || "Session sans nom";
-                // Échappement blindé contre les guillemets simples ET doubles pour préserver l'attribut HTML onclick
-                const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            function decoderNote(notePleine) {
+                if (!notePleine) return { noteGlobale: 0, sliders: [] };
+                const chaineNote = Number(notePleine).toFixed(14);
+                const parties = chaineNote.split('.');
+                if (parties.length < 2) return { noteGlobale: notePleine, sliders: [] };
+                const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+                let chaineDecimaleEmpreinte = parties[1].substring(4);
+                let curseursRestitues = [];
+                for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+                    let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+                    if (bloc.length === 2) {
+                        if (bloc === "00") break;
+                        curseursRestitues.push(parseInt(bloc, 10) / 10);
+                    }
+                }
+                return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+            }
 
-                if (s.statut !== 'terminee') {
-                    countActives++;
-                    conteneurActives.innerHTML += `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
-                            <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                <div class="font-bold text-slate-100 text-base tracking-tight truncate">${nomValide}</div>
-                                <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" title="Évaluation Apprenant(e)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" title="Évaluation Formateur(trice)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
-                                <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                <button onclick="entrerEnModeModification('${s.id}')" title="Modifier toute la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">✏️</button>
-                                <button onclick="cloturerSession('${s.id}')" title="Clôturer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 hover:text-white border-red-900/30 transition-all text-xs cursor-pointer">🔒</button>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" title="Supprimer définitivement" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white border-red-900/40 transition-all text-xs cursor-pointer">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    countTerminees++;
-                    conteneurTerminees.innerHTML += `
-                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
-                            <div>
-                                <div class="font-medium text-slate-400 text-base">🗃️ ${nomValide}</div>
-                                <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
-                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard Archivé" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer depuis l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" title="Supprimer l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white transition-all text-xs cursor-pointer">🗑️</button>
-                            </div>
-                        </div>
-                    `;
+            const structureMatrice = {};
+            groupes.forEach(g => {
+                structureMatrice[g.nom] = { autoEval: null, notesDonneesAuxAutres: [], ptsCamarades: 0 };
+            });
+
+            evals.forEach(e => {
+                const extraction = decoderNote(e.note);
+                const estProf = nomsProfs.includes(e.groupe_votant) || e.groupe_votant === 'Formateur';
+                
+                if (structureMatrice[e.groupe_votant] && !estProf) {
+                    if (e.groupe_votant === e.sujet) {
+                        structureMatrice[e.groupe_votant].autoEval = extraction.noteGlobale;
+                    } else {
+                        structureMatrice[e.groupe_votant].notesDonneesAuxAutres.push(extraction.noteGlobale);
+                        const evalsProfSujet = evals.filter(ev => (nomsProfs.includes(ev.groupe_votant) || ev.groupe_votant === 'Formateur') && ev.sujet === e.sujet);
+                        if (evalsProfSujet.length > 0) {
+                            const moyProfSur20 = evalsProfSujet.reduce((a,b) => a + decoderNote(b.note).noteGlobale, 0) / evalsProfSujet.length;
+                            if (Math.abs(extraction.noteGlobale - moyProfSur20) >= (moyProfSur20 * 0.20)) structureMatrice[e.groupe_votant].ptsCamarades -= 1;
+                            else structureMatrice[e.groupe_votant].ptsCamarades += 1;
+                        }
+                    }
                 }
             });
 
-            if (countActives === 0) conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
-            if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
-        }
+            const mapIdVersNomGroupe = {};
+            groupes.forEach(g => mapIdVersNomGroupe[g.id] = g.nom);
 
-        async function entrerEnModeModification(idSession) {
-            idSessionEnCoursModification = idSession;
-            
-            const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.classList.remove('border-slate-800');
-            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition active</span> — Modification profonde de la session`;
+            // MODIFICATION CLÉ : Création du conteneur HTML global unique pour fusionner les pages
+            const conteneurGlobalHtml = document.createElement('div');
 
-            const { data: session } = await db.from('sessions').select('nom').eq('id', idSession).single();
-            const { data: crits } = await db.from('criteres').select('nom').eq('session_id', idSession);
-            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
-            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-            const { data: apps } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
+            for (const app of apprenants) {
+                const nomGroupe = mapIdVersNomGroupe[app.groupe_id];
+                if (!nomGroupe) continue;
 
-            if(session) document.getElementById('nouveau-nom-session').value = session.nom;
-            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.nom).join('\n');
-            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
-            
-            if(grps && grps.length > 0) {
-                document.getElementById('nb-groupes').value = grps.length;
-                const premierNom = grps[0].nom;
-                const match = premierNom.match(/^(.*?)(\d+)$/);
-                if (match) document.getElementById('prefixe-groupes').value = match[1];
-            }
-            if(apps) document.getElementById('liste-apprenants-brute').value = apps.map(a => a.prenom).join('\n');
+                const evalsRecues = evals.filter(e => e.sujet === nomGroupe);
 
-            document.getElementById('conteneur-boutons-action').innerHTML = `
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-emerald-600 border border-emerald-500/20 hover:bg-emerald-700 active:scale-[0.99]">
-                        💾 Enregistrer les modifications
-                    </button>
-                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer text-slate-400 bg-[#030712] border border-slate-800 hover:text-slate-200 hover:bg-slate-900">
-                        Annuler
-                    </button>
-                </div>
-            `;
+                let autoEvalSliders = Array(tpsCount).fill(null);
+                let jurySlidersAccumulateur = Array(tpsCount).fill(0);
+                let countJury = 0;
+                let pairsSlidersAccumulateur = Array(tpsCount).fill(0);
+                let countPairs = 0;
+                let totalNoteJurySur20 = 0;
 
-            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
-        }
+                evalsRecues.forEach(e => {
+                    const estProf = nomsProfs.includes(e.groupe_votant) || e.groupe_votant === 'Formateur';
+                    const extraction = decoderNote(e.note);
+                    let sliders = extraction.sliders;
 
-        function annulerModeModification() {
-            idSessionEnCoursModification = null;
-            
-            const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.classList.remove('border-emerald-500/40', 'bg-[#101828]/95');
-            zoneConfigurateur.classList.add('border-slate-800');
-            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
-
-            document.getElementById('nouveau-nom-session').value = "";
-            document.getElementById('criteres-session').value = "";
-            document.getElementById('liste-apprenants-brute').value = "";
-            document.getElementById('liste-evaluateurs-brute').value = "";
-            document.getElementById('nb-groupes').value = "3";
-            document.getElementById('prefixe-groupes').value = "Groupe ";
-
-            document.getElementById('conteneur-boutons-action').innerHTML = `
-                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session complète
-                </button>
-            `;
-        }
-
-        async function sauvegarderModificationsSession() {
-            if (!idSessionEnCoursModification) return;
-
-            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-            const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
-            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
-            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-
-            if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
-
-            const { error: errSess } = await db.from('sessions').update({ nom: nomSession }).eq('id', idSessionEnCoursModification);
-            if (errSess) { alert("Échec modification session: " + errSess.message); return; }
-
-            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
-
-            if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                if (arrCriteres.length > 0) {
-                    const payloadCriteres = arrCriteres.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom }));
-                    await db.from('criteres').insert(payloadCriteres);
-                }
-            }
-
-            if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                if (arrEvaluateurs.length > 0) {
-                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom }));
-                    await db.from('evaluateurs').insert(payloadEvaluateurs);
-                }
-            }
-
-            const listeNomsGroupes = [];
-            const payloadGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`;
-                listeNomsGroupes.push(nomDuGroupe);
-                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
-            }
-            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
-            if (errGrp) { alert("Erreur génération groupes : " + errGrp.message); return; }
-
-            const mapNomVersIdGroupe = {};
-            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-            if (apprenantsRaw) {
-                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
-                if (listeApprenants.length > 0) {
-                    for (let i = listeApprenants.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
-                    }
-                    const payloadApprenants = listeApprenants.map((prenom, index) => {
-                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                        return {
-                            session_id: idSessionEnCoursModification,
-                            prenom: prenom,
-                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                        };
-                    });
-                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
-                    if (errApp) alert("Attention : Échec de la répartition : " + errApp.message);
-                }
-            }
-
-            alert("✏️ Session entièrement mise à jour et reconfigurée avec succès !");
-            annulerModeModification();
-            chargerSessions();
-        }
-
-        async function genererSessionComplete() {
-            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-            const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
-            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
-            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-
-            if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
-
-            const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
-            if (errSess) { alert("Échec création session: " + errSess.message); return; }
-
-            if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                if (arrCriteres.length > 0) {
-                    const payloadCriteres = arrCriteres.map(nom => ({ session_id: session.id, nom: nom }));
-                    await db.from('criteres').insert(payloadCriteres);
-                }
-            }
-
-            if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                if (arrEvaluateurs.length > 0) {
-                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom }));
-                    await db.from('evaluateurs').insert(payloadEvaluateurs);
-                }
-            }
-
-            const listeNomsGroupes = [];
-            const payloadGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`;
-                listeNomsGroupes.push(nomDuGroupe);
-                payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
-            }
-            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
-            if (errGrp) { alert("Erreur lors de la génération des groupes : " + errGrp.message); return; }
-
-            const mapNomVersIdGroupe = {};
-            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-            if (apprenantsRaw) {
-                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
-                
-                if (listeApprenants.length > 0) {
-                    for (let i = listeApprenants.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
+                    if (sliders.length !== tpsCount) {
+                        sliders = Array(tpsCount).fill((extraction.noteGlobale / 20) * 5);
                     }
 
-                    const payloadApprenants = listeApprenants.map((prenom, index) => {
-                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                        return {
-                            session_id: session.id,
-                            prenom: prenom,
-                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                        };
-                    });
+                    if (estProf) {
+                        countJury++;
+                        totalNoteJurySur20 += extraction.noteGlobale;
+                        for (let i = 0; i < tpsCount; i++) jurySlidersAccumulateur[i] += sliders[i];
+                    } else if (e.groupe_votant === nomGroupe) {
+                        autoEvalSliders = sliders;
+                    } else {
+                        countPairs++;
+                        for (let i = 0; i < tpsCount; i++) pairsSlidersAccumulateur[i] += sliders[i];
+                    }
+                });
 
-                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
-                    if (errApp) alert("Attention : Échec de la répartition des apprenants : " + errApp.message);
+                const moyJuryCriteres = jurySlidersAccumulateur.map(val => countJury > 0 ? (val / countJury).toFixed(1) : "--");
+                const moyPairsCriteres = pairsSlidersAccumulateur.map(val => countPairs > 0 ? (val / countPairs).toFixed(1) : "--");
+                const moyJurySur20 = countJury > 0 ? totalNoteJurySur20 / countJury : null;
+
+                const donneesMatrice = structureMatrice[nomGroupe];
+                let ptAuto = 0, textAuto = "0";
+                if (donneesMatrice.autoEval !== null && moyJurySur20 !== null) {
+                    if (Math.abs(donneesMatrice.autoEval - moyJurySur20) >= (moyJurySur20 * 0.20)) { ptAuto = -1; textAuto = "-1"; }
+                    else { ptAuto = 1; textAuto = "+1"; }
                 }
+                let ptPairs = donneesMatrice.ptsCamarades;
+                let textPairs = ptPairs >= 0 ? `+${ptPairs}` : `${ptPairs}`;
+
+                const impactTotal = Math.min(2, Math.max(-2, ptAuto + ptPairs));
+                const noteFinale = moyJurySur20 !== null ? Math.min(20, Math.max(0, moyJurySur20 + impactTotal)).toFixed(2) : "--";
+
+                // Création d'une "page virtuelle" propre pour chaque élève
+                const pageApprenant = document.createElement('div');
+                pageApprenant.style.fontFamily = 'sans-serif';
+                pageApprenant.style.color = '#1e293b';
+                pageApprenant.style.padding = '40px';
+                pageApprenant.style.backgroundColor = '#ffffff';
+                // AJUSTEMENT UX CAPITAL : Force l'imprimante ou html2pdf à créer une nouvelle page
+                pageApprenant.style.pageBreakAfter = 'always'; 
+
+                let lignesCriteresHtml = "";
+                if (crits) {
+                    crits.forEach((c, idx) => {
+                        lignesCriteresHtml += `
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 8px; font-weight: bold; font-size: 13px; color: #334155;">🎯 ${c.nom}</td>
+                                <td style="padding: 12px 8px; text-align: center; font-weight: bold; color: #2563eb; font-size: 14px;">${autoEvalSliders[idx] !== null ? autoEvalSliders[idx] : '--'}</td>
+                                <td style="padding: 12px 8px; text-align: center; font-weight: bold; color: #7c3aed; font-size: 14px;">${moyPairsCriteres[idx]}</td>
+                                <td style="padding: 12px 8px; text-align: center; font-weight: bold; color: #d97706; font-size: 14px; background-color: #fef3c7;">${moyJuryCriteres[idx]}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                pageApprenant.innerHTML = `
+                    <div style="border-bottom: 3px solid #1e293b; padding-bottom: 15px; margin-bottom: 30px;">
+                        <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: #64748b; tracking-wider: 0.1em;">Bulletin Officiel d'Évaluation</span>
+                        <h1 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 4px 0 0 0;">${s ? s.nom : 'Session de Soutenance'}</h1>
+                    </div>
+
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; width: 50%;">Apprenant(e) :</td>
+                                <td style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; width: 50%;">Équipe de soutenance :</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size: 18px; font-weight: 800; color: #0f172a; padding-top: 4px;">👤 ${app.prenom}</td>
+                                <td style="font-size: 18px; font-weight: 800; color: #2563eb; padding-top: 4px;">👥 ${nomGroupe}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 12px; letter-spacing: 0.05em;">📊 Analyse Détaillée par Critère Technique (Barème sur 5)</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                        <thead>
+                            <tr style="background-color: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <th style="padding: 12px 8px; text-align: left; width: 55%;">Critères évalués</th>
+                                <th style="padding: 12px 8px; text-align: center; width: 15%;">Son Auto-Eval</th>
+                                <th style="padding: 12px 8px; text-align: center; width: 15%;">Moyenne Pairs</th>
+                                <th style="padding: 12px 8px; text-align: center; width: 15%;">Moyenne Jury</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${lignesCriteresHtml}
+                        </tbody>
+                    </table>
+
+                    <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: #1e293b; margin-bottom: 12px; letter-spacing: 0.05em;">📐 Algorithme de Calcul de la Note Finale</h3>
+                    <div style="border: 2px solid #0f172a; border-radius: 16px; overflow: hidden; background-color: #fff;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <tr style="border-bottom: 1px solid #e2e8f0; background-color: #f8fafc;">
+                                <td style="padding: 14px 16px; color: #475569;">Moyenne brute de la prestation orale (Jury) :</td>
+                                <td style="padding: 14px 16px; text-align: right; font-weight: bold; color: #0f172a; font-size: 14px;">${moyJurySur20 !== null ? moyJurySur20.toFixed(2) : '--'} / 20</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 14px 16px; color: #475569;">Impact Alignement Auto-Évaluation :</td>
+                                <td style="padding: 14px 16px; text-align: right; font-weight: bold; color: ${ptAuto < 0 ? '#ef4444' : '#10b981'};">${textAuto} point</td>
+                            </tr>
+                            <tr style="border-bottom: 2px solid #0f172a;">
+                                <td style="padding: 14px 16px; color: #475569;">Impact Objectivité Notation des Pairs :</td>
+                                <td style="padding: 14px 16px; text-align: right; font-weight: bold; color: ${ptPairs < 0 ? '#ef4444' : '#10b981'};">${textPairs} points</td>
+                            </tr>
+                            <tr style="background-color: #0f172a; color: #ffffff;">
+                                <td style="padding: 18px 16px; font-size: 15px; font-weight: bold;">🎯 NOTE FINALE RETENUE :</td>
+                                <td style="padding: 18px 16px; text-align: right; font-size: 22px; font-weight: 900; color: #fcd34d;">${noteFinale} / 20</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 50px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+                        Document individuel de restitution académique.
+                    </div>
+                `;
+
+                // Compilation de l'étudiant dans le gros catalogue unique
+                conteneurGlobalHtml.appendChild(pageApprenant);
             }
 
-            alert("🎉 Session complète configurée et générée avec succès !");
-            document.getElementById('nouveau-nom-session').value = "";
-            document.getElementById('criteres-session').value = "";
-            document.getElementById('liste-apprenants-brute').value = "";
-            document.getElementById('liste-evaluateurs-brute').value = "";
-            chargerSessions();
-        }
+            // CONFIGURATION FINALE ET DÉCLENCHEMENT DE L'IMPRESSION DU PDF UNIQUE
+            const optionsPdf = {
+                margin: 0,
+                filename: `Bulletins_Session_${s ? s.nom.replace(/\s+/g, '_') : 'Session'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-        async function cloturerSession(idSession) {
-            if (!confirm("⚠️ Fermer définitivement cette session ?\n\nLe lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique.")) return;
-            const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
-            if (!error) chargerSessions();
-        }
-
-        async function dupliquerSession(idSessionSource, nomActuel) {
-            const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
-            if (!nouveauNom || nouveauNom.trim() === "") return;
-
-            const { data: nouvelleSession, error: errSess } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active' }]).select().single();
-            if (errSess) return;
-
-            const { data: criteresSource } = await db.from('criteres').select('nom').eq('session_id', idSessionSource);
-            if (criteresSource && criteresSource.length > 0) {
-                const nouveauxCriteres = criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom }));
-                await db.from('criteres').insert(nouveauxCriteres);
-            }
-
-            alert("👥 Session et critères dupliqués ! (Pensez à recréer/réaffecter vos groupes d'élèves pour cette nouvelle session).");
-            chargerSessions();
-        }
-
-        async function supprimerSession(idSession) {
-            if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
-
-            const { error } = await db.from('sessions').delete().eq('id', idSession);
-            if (error) alert("Erreur lors de la suppression : " + error.message);
-            else chargerSessions();
+            // Un seul fichier contenant tout l'historique
+            await html2pdf().set(optionsPdf).from(conteneurGlobalHtml).save();
+            alert("🎉 Opération réussie ! Un seul fichier PDF contenant l'intégralité des bulletins (1 élève par page) a été généré et se trouve dans vos téléchargements.");
         }
 
         window.onload = initAdmin;
