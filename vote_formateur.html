@@ -31,7 +31,7 @@
             </div>
         </div>
         
-        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Vos curseurs, grilles de notes libres, questions et bilans formatés s'actualisent en changeant de cible.</p>
+        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Notez les équipes à tour de rôle en changeant de cible. Vos curseurs et blocs-notes sont sauvegardés au fur et à mesure. Cliquez sur le gros bouton en bas à la fin pour tout valider d'un coup.</p>
 
         <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
             </div>
@@ -49,8 +49,8 @@
         </div>
 
         <div class="pt-2">
-            <button onclick="enregistrerNoteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
-                💾 Valider et Enregistrer la note
+            <button onclick="enregistrerToutesLesNotesFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                💾 Enregistrer toutes les évaluations de la session
             </button>
         </div>
     </div>
@@ -156,7 +156,6 @@
             listeCriteresProf.forEach((_, i) => mettreAJourCouleurBadgeProf(i, 3));
         }
 
-        // CORRECTIF MUTATION HAUTE PRÉCISION (14 décimales)
         function decoderNoteEtCurseurs(notePleine) {
             if (!notePleine) return { noteGlobale: 0, sliders: [] };
             const chaineNote = Number(notePleine).toFixed(14);
@@ -214,84 +213,3 @@
                 tNotes.push(input ? parseFloat(input.value) : 3);
                 tQuestions.push(inputQ ? inputQ.value : "");
                 tJournal.push(inputJ ? inputJ.value : "");
-            }
-
-            const inputFB = document.getElementById('feedback-global-prof');
-            notesFormateurLocales[groupeCible] = { sliders: tNotes, questions: tQuestions, journal: tJournal, feedback: inputFB ? inputFB.innerHTML : "" };
-
-            localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
-        }
-
-        function changerDeCibleFormateur(nouvelleCible) {
-            const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            if (ciblePrecedente && evaluateurActuel) synchroniserNotesLocales(ciblePrecedente, evaluateurActuel);
-            restituerSlidersPourCible(nouvelleCible);
-            ciblePrecedente = nouvelleCible;
-        }
-
-        function changerDeFormateurVotant(nouveauEvaluateur) {
-            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
-            if (evaluateurPrecedent && cibleActuelle) synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
-            evaluateurPrecedent = nouveauEvaluateur;
-            chargerNotesExistantes();
-        }
-
-        function restituerSlidersPourCible(cible) {
-            const blocExistante = notesFormateurLocales[cible];
-            const isOldFormat = Array.isArray(blocExistante);
-
-            for (let i = 0; i < listeCriteresProf.length; i++) {
-                let val = 3, question = "", journal = "";
-
-                if (blocExistante) {
-                    val = isOldFormat ? blocExistante[i] : (blocExistante.sliders ? blocExistante.sliders[i] : 3);
-                    question = (!isOldFormat && blocExistante.questions) ? blocExistante.questions[i] : "";
-                    journal = (!isOldFormat && blocExistante.journal) ? blocExistante.journal[i] : "";
-                }
-
-                const input = document.getElementById(`prof-crit-${i}`);
-                if (input) {
-                    input.value = val;
-                    mettreAJourCouleurBadgeProf(i, val);
-                }
-                
-                const inputQ = document.getElementById(`prof-questions-${i}`);
-                if (inputQ) inputQ.value = question;
-                
-                const inputJ = document.getElementById(`prof-journal-${i}`);
-                if (inputJ) inputJ.value = journal;
-            }
-
-            const inputFB = document.getElementById('feedback-global-prof');
-            if (inputFB) inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
-        }
-
-        async function enregistrerNoteFormateur() {
-            const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            const groupeCible = document.getElementById('select-sujet-evalue').value;
-            
-            if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur."); return; }
-            if (!groupeCible) return;
-
-            synchroniserNotesLocales(groupeCible, evaluateurActuel);
-            const dataTarget = notesFormateurLocales[groupeCible];
-            const tableauNotes = dataTarget.sliders || dataTarget;
-
-            const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
-            let empreinteDecimale = "";
-            tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
-
-            const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
-
-            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', evaluateurActuel).eq('sujet', groupeCible);
-
-            const { error } = await db.from('evaluations').insert([{ session_id: idSessionDashboard, groupe_votant: evaluateurActuel, sujet: groupeCible, note: noteCompletePayload }]);
-
-            if (error) alert("❌ Erreur : " + error.message);
-            else alert(`🎉 Évaluation enregistrée par ${evaluateurActuel} pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
-        }
-
-        window.onload = initFormulaire;
-    </script>
-</body>
-</html>
