@@ -213,3 +213,122 @@
                 tNotes.push(input ? parseFloat(input.value) : 3);
                 tQuestions.push(inputQ ? inputQ.value : "");
                 tJournal.push(inputJ ? inputJ.value : "");
+            }
+
+            const inputFB = document.getElementById('feedback-global-prof');
+            notesFormateurLocales[groupeCible] = { sliders: tNotes, questions: tQuestions, journal: tJournal, feedback: inputFB ? inputFB.innerHTML : "" };
+
+            localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
+        }
+
+        function changerDeCibleFormateur(nouvelleCible) {
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
+            if (ciblePrecedente && evaluateurActuel) synchroniserNotesLocales(ciblePrecedente, evaluateurActuel);
+            restituerSlidersPourCible(nouvelleCible);
+            ciblePrecedente = nouvelleCible;
+        }
+
+        function changerDeFormateurVotant(nouveauEvaluateur) {
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            if (evaluateurPrecedent && cibleActuelle) synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
+            evaluateurPrecedent = nouveauEvaluateur;
+            chargerNotesExistantes();
+        }
+
+        function restituerSlidersPourCible(cible) {
+            const blocExistante = notesFormateurLocales[cible];
+            const isOldFormat = Array.isArray(blocExistante);
+
+            for (let i = 0; i < listeCriteresProf.length; i++) {
+                let val = 3, question = "", journal = "";
+
+                if (blocExistante) {
+                    val = isOldFormat ? blocExistante[i] : (blocExistante.sliders ? blocExistante.sliders[i] : 3);
+                    question = (!isOldFormat && blocExistante.questions) ? blocExistante.questions[i] : "";
+                    journal = (!isOldFormat && blocExistante.journal) ? blocExistante.journal[i] : "";
+                }
+
+                const input = document.getElementById(`prof-crit-${i}`);
+                if (input) {
+                    input.value = val;
+                    mettreAJourCouleurBadgeProf(i, val);
+                }
+                
+                const inputQ = document.getElementById(`prof-questions-${i}`);
+                if (inputQ) inputQ.value = question;
+                
+                const inputJ = document.getElementById(`prof-journal-${i}`);
+                if (inputJ) inputJ.value = journal;
+            }
+
+            const inputFB = document.getElementById('feedback-global-prof');
+            if (inputFB) inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
+        }
+
+        // NOUVELLE LOGIQUE GLOBALE : Enregistrement de toutes les équipes en un seul clic
+        async function enregistrerToutesLesNotesFormateur() {
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
+            if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur avant de valider."); return; }
+
+            // Étape 1 : Forcer d'abord la capture de l'équipe actuellement affichée à l'écran
+            const groupeActuel = document.getElementById('select-sujet-evalue').value;
+            if (groupeActuel) {
+                synchroniserNotesLocales(groupeActuel, evaluateurActuel);
+            }
+
+            const listeSujetsEvalues = Object.keys(notesFormateurLocales);
+            if (listeSujetsEvalues.length === 0) {
+                alert("❌ Aucune note n'a été saisie pour le moment.");
+                return;
+            }
+
+            const paquetInsertions = [];
+
+            // Étape 2 : Parcourir l'ensemble de la mémoire pour formater chaque ligne d'évaluation
+            listeSujetsEvalues.forEach(nomSujet => {
+                const dataTarget = notesFormateurLocales[nomSujet];
+                const tableauNotes = dataTarget.sliders || (Array.isArray(dataTarget) ? dataTarget : null);
+
+                if (tableauNotes && tableauNotes.length > 0) {
+                    const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
+                    let empreinteDecimale = "";
+                    tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
+
+                    const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
+
+                    paquetInsertions.push({
+                        session_id: idSessionDashboard,
+                        groupe_votant: evaluateurActuel,
+                        sujet: nomSujet,
+                        note: noteCompletePayload
+                    });
+                }
+            });
+
+            if (paquetInsertions.length === 0) { alert("❌ Aucune note valide trouvée."); return; }
+
+            // Étape 3 : Nettoyer toutes les anciennes lignes de CE formateur pour CETTE session
+            const { error: deleteError } = await db.from('evaluations')
+                .delete()
+                .eq('session_id', idSessionDashboard)
+                .eq('groupe_votant', evaluateurActuel);
+
+            if (deleteError) {
+                alert("❌ Erreur lors du nettoyage de la base de données : " + deleteError.message);
+                return;
+            }
+
+            // Étape 4 : Insérer en bloc (Bulk insert) toutes les grilles d'évaluation validées
+            const { error: insertError } = await db.from('evaluations').insert(paquetInsertions);
+
+            if (insertError) {
+                alert("❌ Erreur lors de l'enregistrement : " + insertError.message);
+            } else {
+                alert(`🎉 Succès total ! Toutes vos grilles d'évaluations (${paquetInsertions.length}) ont été sauvegardées pour la session par ${evaluateurActuel}.`);
+            }
+        }
+
+        window.onload = initFormulaire;
+    </script>
+</body>
+</html>
