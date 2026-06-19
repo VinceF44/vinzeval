@@ -20,7 +20,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
-                    <select id="select-groupe-votant" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500"></select>
+                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500"></select>
                 </div>
 
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
@@ -76,6 +76,7 @@
 
         let listeCriteres = [];
         let ciblePrecedente = ""; 
+        let votantPrecedent = "";
         let memoireEvaluations = {};
 
         async function initEvaluationPage() {
@@ -124,7 +125,9 @@
 
                     document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
                     document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
+                    
                     ciblePrecedente = document.getElementById('select-sujet-evalue').value;
+                    votantPrecedent = document.getElementById('select-groupe-votant').value;
                 }
 
                 const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
@@ -132,8 +135,8 @@
                     listeCriteres = crits;
                     genererCurseursCriteres();
                     
-                    // RESTAURATION DU CACHE LOCAL
-                    const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}`);
+                    // RESTAURATION DU CACHE DU PREMIER VOTANT PAR DÉFAUT
+                    const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
                     if (cacheSauvegarde) {
                         memoireEvaluations = JSON.parse(cacheSauvegarde);
                         if (ciblePrecedente) {
@@ -161,25 +164,56 @@
             `).join('');
         }
 
-        function enregistrerEtatCurseursEnContinu(cibleForcee) {
-            const cibleActuelle = cibleForcee || document.getElementById('select-sujet-evalue').value;
-            if (!cibleActuelle) return;
+        // COEUR DU CORRECTIF : Sauvegarde partitionnée par votant et sujet précis
+        function sauvegarderCacheSpecifique(votant, cible) {
+            if (!votant || !cible) return;
             
-            if (!memoireEvaluations[cibleActuelle]) memoireEvaluations[cibleActuelle] = {};
+            if (!memoireEvaluations[cible]) memoireEvaluations[cible] = {};
             listeCriteres.forEach((c, index) => {
                 const input = document.getElementById(`eval-crit-${index}`);
-                if (input) memoireEvaluations[cibleActuelle][index] = parseFloat(input.value);
+                if (input) memoireEvaluations[cible][index] = parseFloat(input.value);
             });
             
-            localStorage.setItem(`cache_vote_${idSessionEvaluation}`, JSON.stringify(memoireEvaluations));
+            localStorage.setItem(`cache_vote_${idSessionEvaluation}_${votant}`, JSON.stringify(memoireEvaluations));
         }
 
+        function enregistrerEtatCurseursEnContinu() {
+            const votantActuel = document.getElementById('select-groupe-votant').value;
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            sauvegarderCacheSpecifique(votantActuel, cibleActuelle);
+        }
+
+        // EVENEMENT 1 : Changement de cible à évaluer
         function changerDeCibleEvaluation(nouvelleCible) {
+            const votantActuel = document.getElementById('select-groupe-votant').value;
             if (ciblePrecedente) {
-                enregistrerEtatCurseursEnContinu(ciblePrecedente);
+                sauvegarderCacheSpecifique(votantActuel, ciblePrecedente);
             }
             restituerCurseursDepuisMemoire(nouvelleCible);
             ciblePrecedente = nouvelleCible;
+        }
+
+        // EVENEMENT 2 : Changement de groupe qui remplit le formulaire (Ton besoin actuel)
+        function changerDeGroupeVotant(nouveauVotant) {
+            // 1. Sauvegarder les curseurs actuels sous l'ancien profil évaluateur avant de switcher
+            if (votantPrecedent && ciblePrecedente) {
+                sauvegarderCacheSpecifique(votantPrecedent, ciblePrecedente);
+            }
+
+            // 2. Charger le cache hermétique appartenant au NOUVEAU votant
+            const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${nouveauVotant}`);
+            if (cacheSauvegarde) {
+                memoireEvaluations = JSON.parse(cacheSauvegarde);
+            } else {
+                memoireEvaluations = {}; // Espace vierge si ce groupe n'a pas encore voté
+            }
+
+            // 3. Mettre à jour l'IHM visuelle pour la cible sélectionnée
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            restituerCurseursDepuisMemoire(cibleActuelle);
+
+            // 4. Mémoriser le nouveau votant comme pivot
+            votantPrecedent = nouveauVotant;
         }
 
         function restituerCurseursDepuisMemoire(cible) {
@@ -236,7 +270,8 @@
             const { error } = await db.from('evaluations').insert(paquetInsertions);
 
             if (!error) {
-                localStorage.removeItem(`cache_vote_${idSessionEvaluation}`);
+                // NETTOYAGE UNIQUE DU CACHE DE CE GROUPE VOTANT APRÈS SUCCÈS
+                localStorage.removeItem(`cache_vote_${idSessionEvaluation}_${groupeVotant}`);
 
                 document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
                 document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
