@@ -20,8 +20,8 @@
             </div>
         </div>
 
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md">
-            <h2 class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
+        <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
+            <h2 id="titre-formulaire" class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
                 <span>✨</span> Configurer et Générer une Session
             </h2>
             
@@ -35,7 +35,7 @@
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Un critère par ligne) :</label>
-                        <textarea id="criteres-session" rows="8" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[160px] focus:border-[#3b82f6] transition-all"></textarea>
+                        <textarea id="criteres-session" rows="6" placeholder="Ex: Technique : Maîtrise du code&#10;Posture : Clarté orale&#10;Support : Visuels des slides" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
                         <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Sautez à la ligne pour chaque nouveau critère.</p>
                     </div>
                 </div>
@@ -52,17 +52,27 @@
                         </div>
                     </div>
                     
-                    <div class="flex-1 flex flex-col">
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
-                        <textarea id="liste-apprenants-brute" rows="8" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[160px] max-h-[300px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                        <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Ils seront automatiquement répartis équitablement.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
+                            <textarea id="liste-apprenants-brute" rows="4" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[100px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ils seront automatiquement répartis équitablement.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
+                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[80px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ces profils disposeront du formulaire d'évaluation dédié.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                🚀 Générer la session complète
-            </button>
+            <div id="conteneur-boutons-action">
+                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
+                    🚀 Générer la session complète
+                </button>
+            </div>
         </div>
 
         <div class="space-y-3">
@@ -81,6 +91,7 @@
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
+        let idSessionEnCoursModification = null;
 
         async function initAdmin() {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -89,7 +100,11 @@
 
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            if (error) return;
+            
+            if (error) {
+                alert("❌ Erreur de connexion Supabase : " + error.message);
+                return;
+            }
 
             const conteneurActives = document.getElementById('liste-sessions-actives');
             const conteneurTerminees = document.getElementById('liste-sessions-terminees');
@@ -97,23 +112,37 @@
             conteneurActives.innerHTML = "";
             conteneurTerminees.innerHTML = "";
 
+            if (!sessions || sessions.length === 0) {
+                conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
+                conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
+                return;
+            }
+
             let countActives = 0, countTerminees = 0;
 
             sessions.forEach(s => {
+                // SÉCURISATION : Si le nom est vide ou corrompu, on applique un fallback pour éviter le crash net
+                const nomValide = s.nom || "Session sans nom";
+                // Échappement blindé contre les guillemets simples ET doubles pour préserver l'attribut HTML onclick
+                const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
                 if (s.statut !== 'terminee') {
                     countActives++;
                     conteneurActives.innerHTML += `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
-                            <div>
-                                <div class="font-bold text-slate-100 text-base tracking-tight">${s.nom}</div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
+                            <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
+                                <div class="font-bold text-slate-100 text-base tracking-tight truncate">${nomValide}</div>
                                 <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="text-white text-xs font-bold py-2 px-3.5 rounded-lg transition-all bg-[#2563eb] hover:bg-[#1d4ed8]">🗳️ Lien Vote</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="text-slate-900 text-xs font-bold py-2 px-3.5 rounded-lg transition-all hover:brightness-110 active:scale-[0.97] bg-[#fe9a00]">📊 Dashboard</a>
-                                <button onclick="cloturerSession('${s.id}')" class="bg-[#030712] text-red-400 hover:text-white hover:bg-red-950/40 text-xs py-2 px-3.5 rounded-lg border border-red-900/30 transition-all cursor-pointer active:scale-[0.97]">🔒 Clôturer</button>
-                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#030712] text-slate-400 hover:text-slate-200 text-xs py-2 px-3.5 rounded-lg border border-slate-800 transition-all cursor-pointer active:scale-[0.97]">👥 Dupliquer</button>
-                                <button onclick="supprimerSession('${s.id}')" class="bg-[#030712] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3.5 rounded-lg border border-red-900/40 transition-all cursor-pointer active:scale-[0.97]">🗑️ Supprimer</button>
+                            <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
+                                <a href="vote.html?session_id=${s.id}" target="_blank" title="Évaluation Apprenant(e)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
+                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" title="Évaluation Formateur(trice)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
+                                <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
+                                <button onclick="entrerEnModeModification('${s.id}')" title="Modifier toute la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">✏️</button>
+                                <button onclick="cloturerSession('${s.id}')" title="Clôturer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 hover:text-white border-red-900/30 transition-all text-xs cursor-pointer">🔒</button>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">👥</button>
+                                <button onclick="supprimerSession('${s.id}')" title="Supprimer définitivement" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white border-red-900/40 transition-all text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -122,13 +151,13 @@
                     conteneurTerminees.innerHTML += `
                         <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
                             <div>
-                                <div class="font-medium text-slate-400 text-base">🗃️ ${s.nom}</div>
+                                <div class="font-medium text-slate-400 text-base">🗃️ ${nomValide}</div>
                                 <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
                             </div>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="bg-[#101828] text-slate-400 hover:text-slate-200 text-xs py-2 px-4 rounded-lg border border-slate-800 transition-all">👁️ Consulter Dashboard</a>
-                                <button onclick="dupliquerSession('${s.id}', '${s.nom}')" class="bg-[#101828] text-slate-500 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">👥 Dupliquer</button>
-                                <button onclick="supprimerSession('${s.id}')" class="bg-[#101828] text-red-500 hover:text-white hover:bg-red-600 text-xs py-2 px-3 rounded-lg border border-slate-800 transition-all cursor-pointer">🗑️ Supprimer</button>
+                            <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
+                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard Archivé" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer depuis l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
+                                <button onclick="supprimerSession('${s.id}')" title="Supprimer l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white transition-all text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -139,17 +168,151 @@
             if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
         }
 
+        async function entrerEnModeModification(idSession) {
+            idSessionEnCoursModification = idSession;
+            
+            const zoneConfigurateur = document.getElementById('zone-configurateur');
+            zoneConfigurateur.classList.remove('border-slate-800');
+            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
+            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition active</span> — Modification profonde de la session`;
+
+            const { data: session } = await db.from('sessions').select('nom').eq('id', idSession).single();
+            const { data: crits } = await db.from('criteres').select('nom').eq('session_id', idSession);
+            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
+            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
+            const { data: apps } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
+
+            if(session) document.getElementById('nouveau-nom-session').value = session.nom;
+            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.nom).join('\n');
+            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
+            
+            if(grps && grps.length > 0) {
+                document.getElementById('nb-groupes').value = grps.length;
+                const premierNom = grps[0].nom;
+                const match = premierNom.match(/^(.*?)(\d+)$/);
+                if (match) document.getElementById('prefixe-groupes').value = match[1];
+            }
+            if(apps) document.getElementById('liste-apprenants-brute').value = apps.map(a => a.prenom).join('\n');
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-emerald-600 border border-emerald-500/20 hover:bg-emerald-700 active:scale-[0.99]">
+                        💾 Enregistrer les modifications
+                    </button>
+                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer text-slate-400 bg-[#030712] border border-slate-800 hover:text-slate-200 hover:bg-slate-900">
+                        Annuler
+                    </button>
+                </div>
+            `;
+
+            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function annulerModeModification() {
+            idSessionEnCoursModification = null;
+            
+            const zoneConfigurateur = document.getElementById('zone-configurateur');
+            zoneConfigurateur.classList.remove('border-emerald-500/40', 'bg-[#101828]/95');
+            zoneConfigurateur.classList.add('border-slate-800');
+            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
+
+            document.getElementById('nouveau-nom-session').value = "";
+            document.getElementById('criteres-session').value = "";
+            document.getElementById('liste-apprenants-brute').value = "";
+            document.getElementById('liste-evaluateurs-brute').value = "";
+            document.getElementById('nb-groupes').value = "3";
+            document.getElementById('prefixe-groupes').value = "Groupe ";
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `
+                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
+                    🚀 Générer la session complète
+                </button>
+            `;
+        }
+
+        async function sauvegarderModificationsSession() {
+            if (!idSessionEnCoursModification) return;
+
+            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const criteresRaw = document.getElementById('criteres-session').value.trim();
+            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
+            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+
+            if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
+
+            const { error: errSess } = await db.from('sessions').update({ nom: nomSession }).eq('id', idSessionEnCoursModification);
+            if (errSess) { alert("Échec modification session: " + errSess.message); return; }
+
+            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
+
+            if (criteresRaw) {
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
+                if (arrCriteres.length > 0) {
+                    const payloadCriteres = arrCriteres.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom }));
+                    await db.from('criteres').insert(payloadCriteres);
+                }
+            }
+
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom }));
+                    await db.from('evaluateurs').insert(payloadEvaluateurs);
+                }
+            }
+
+            const listeNomsGroupes = [];
+            const payloadGroupes = [];
+            for (let i = 1; i <= nbGroupes; i++) {
+                const nomDuGroupe = `${prefixe}${i}`;
+                listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
+            if (errGrp) { alert("Erreur génération groupes : " + errGrp.message); return; }
+
+            const mapNomVersIdGroupe = {};
+            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            if (apprenantsRaw) {
+                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
+                if (listeApprenants.length > 0) {
+                    for (let i = listeApprenants.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
+                    }
+                    const payloadApprenants = listeApprenants.map((prenom, index) => {
+                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
+                        return {
+                            session_id: idSessionEnCoursModification,
+                            prenom: prenom,
+                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
+                        };
+                    });
+                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
+                    if (errApp) alert("Attention : Échec de la répartition : " + errApp.message);
+                }
+            }
+
+            alert("✏️ Session entièrement mise à jour et reconfigurée avec succès !");
+            annulerModeModification();
+            chargerSessions();
+        }
+
         async function genererSessionComplete() {
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
 
-            if (!nomSession) {
-                alert("Erreur : Le nom de la session est obligatoire.");
-                return;
-            }
+            if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
 
             const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
             if (errSess) { alert("Échec création session: " + errSess.message); return; }
@@ -159,6 +322,14 @@
                 if (arrCriteres.length > 0) {
                     const payloadCriteres = arrCriteres.map(nom => ({ session_id: session.id, nom: nom }));
                     await db.from('criteres').insert(payloadCriteres);
+                }
+            }
+
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom }));
+                    await db.from('evaluateurs').insert(payloadEvaluateurs);
                 }
             }
 
@@ -202,6 +373,7 @@
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
             document.getElementById('liste-apprenants-brute').value = "";
+            document.getElementById('liste-evaluateurs-brute').value = "";
             chargerSessions();
         }
 
@@ -231,15 +403,9 @@
         async function supprimerSession(idSession) {
             if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
 
-            // Supabase gère normalement la suppression en cascade (ON DELETE CASCADE) si les clés étrangères sont configurées ainsi.
-            // Par sécurité maximale, on supprime directement la session de la table principale.
             const { error } = await db.from('sessions').delete().eq('id', idSession);
-            
-            if (error) {
-                alert("Erreur lors de la suppression : " + error.message);
-            } else {
-                chargerSessions();
-            }
+            if (error) alert("Erreur lors de la suppression : " + error.message);
+            else chargerSessions();
         }
 
         window.onload = initAdmin;
