@@ -128,9 +128,10 @@
             await chargerDonneesDashboard();
         }
 
+        // CORRECTIF MUTATION HAUTE PRÉCISION (14 décimales pour absorber tous les critères)
         function decoderNoteEtCurseurs(notePleine) {
             if (!notePleine) return { noteGlobale: 0, sliders: [] };
-            const chaineNote = parseFloat(notePleine).toFixed(10);
+            const chaineNote = Number(notePleine).toFixed(14);
             const parties = chaineNote.split('.');
             if (parties.length < 2) return { noteGlobale: notePleine, sliders: [] };
             
@@ -140,7 +141,10 @@
             
             for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
                 let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
-                if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
+                if (bloc.length === 2) {
+                    if (bloc === "00") break; // Fin de l'empreinte, reste du padding à blanc
+                    curseursRestitues.push(parseInt(bloc, 10) / 10);
+                }
             }
             return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
@@ -246,7 +250,6 @@
                     noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)).toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
                 }
 
-                // RENDU NETTOYÉ : Les colonnes d'affichage brut de l'auto-évaluation et de la moyenne donnée ont été supprimées
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
