@@ -6,7 +6,6 @@
     <title>Dashboard Master — Logique Multi-Jury Collaborative</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
@@ -22,27 +21,22 @@
             </button>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 grid grid-cols-1 lg:grid-cols-3 gap-6 shadow-xl items-center">
-            
-            <div class="space-y-3 lg:col-span-1">
-                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">🎯 Sélection de l'équipe</h2>
-                <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe pour comparer la moyenne des évaluateurs, l'auto-évaluation, et afficher le détail de toutes ses grilles ci-dessous.</p>
-                <select id="select-groupe-formateur" onchange="mettreAjourGraphiqueRadar_SansResetCurseurs()" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-amber-500 cursor-pointer transition-all"></select>
-            </div>
-            
-            <div class="lg:col-span-2 flex justify-center items-center w-full py-2">
-                <div style="position: relative; width: 350px; height: 350px; max-w: 100%;">
-                    <canvas id="radarChart"></canvas>
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="space-y-1 max-w-xl">
+                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">季 Équipe à analyser</h2>
+                    <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe dans le menu pour inspecter instantanément le détail de toutes les grilles d'évaluation (Jury, Auto-évaluation et Pairs) qu'elle a reçues.</p>
+                </div>
+                <div class="w-full md:w-72 shrink-0">
+                    <select id="select-groupe-formateur" onchange="mettreAjourDetailsEvaluations(this.value)" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white font-semibold focus:outline-none focus:border-amber-500 cursor-pointer transition-all"></select>
                 </div>
             </div>
         </div>
 
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
-            <div class="border-b border-gray-800 pb-3 flex justify-between items-end">
-                <div>
-                    <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Notes et critères attribués à l'équipe actuellement sélectionnée ci-dessus.</p>
-                </div>
+            <div class="border-b border-gray-800 pb-3">
+                <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Notes et critères attribués à l'équipe actuellement sélectionnée ci-dessus.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -86,8 +80,6 @@
         let evaluationsSession = [];
         let listeCriteresProf = [];
         let nomsEvaluateursInscrits = [];
-        let notesFormateurLocales = {}; 
-        let monRadarChart = null;
 
         async function initDashboard() {
             if (!idSessionDashboard) return;
@@ -96,7 +88,7 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
 
-            const { data: evs } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard);
+            const { data: evs = [] } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard);
             nomsEvaluateursInscrits = evs ? evs.map(e => e.nom) : [];
             if(nomsEvaluateursInscrits.length === 0) nomsEvaluateursInscrits = ["Formateur Principal", "Formateur"];
 
@@ -126,7 +118,6 @@
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
             if(critsProf && critsProf.length > 0) listeCriteresProf = critsProf;
 
-            creerGraphiqueRadarVide();
             await chargerDonneesDashboard();
         }
 
@@ -154,40 +145,17 @@
             const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
             if (!error && evals) {
                 evaluationsSession = [];
-                notesFormateurLocales = {};
-                
                 const tpsCount = listeCriteresProf.length;
-                const totalSlidersFormateurs = {};
-                const countFormateursParSujet = {};
 
                 evals.forEach(e => {
                     let rawNote = e.note;
                     const extraction = decoderNoteEtCurseurs(rawNote);
                     
                     if (nomsEvaluateursInscrits.includes(e.groupe_votant) || e.groupe_votant === 'Formateur') {
-                        let sliders = extraction.sliders;
-                        if (sliders.length !== tpsCount) {
-                            const noteSur5 = (rawNote / 20) * 5;
-                            const valeurArrondie = Math.round(noteSur5 * 2) / 2;
-                            sliders = Array(tpsCount).fill(valeurArrondie);
-                        }
-
-                        if (!totalSlidersFormateurs[e.sujet]) {
-                            totalSlidersFormateurs[e.sujet] = Array(tpsCount).fill(0);
-                            countFormateursParSujet[e.sujet] = 0;
-                        }
-                        for(let i=0; i<tpsCount; i++) { totalSlidersFormateurs[e.sujet][i] += sliders[i]; }
-                        countFormateursParSujet[e.sujet]++;
-
                         evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: true });
                     } else {
                         evaluationsSession.push({ ...e, note: extraction.noteGlobale, note_brute: rawNote, estProf: false });
                     }
-                });
-
-                Object.keys(totalSlidersFormateurs).forEach(sujet => {
-                    const c = countFormateursParSujet[sujet] || 1;
-                    notesFormateurLocales[sujet] = totalSlidersFormateurs[sujet].map(val => val / c);
                 });
 
                 calculerEtAfficherTout();
@@ -259,89 +227,10 @@
                     </tr>
                 `;
             });
-            mettreAjourGraphiqueRadar_SansResetCurseurs();
-        }
 
-        function creerGraphiqueRadarVide() {
-            const canvas = document.getElementById('radarChart');
-            if (!canvas) return;
-            
-            monRadarChart = new Chart(canvas, {
-                type: 'radar',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'Moyenne Jury 👨‍🏫', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.08)', borderWidth: 2, pointBackgroundColor: '#f59e0b' },
-                        { label: 'Auto-Éval 🟦', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderWidth: 2, pointBackgroundColor: '#3b82f6' },
-                        { label: 'Moyenne Pairs 🟪', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.08)', borderWidth: 2, pointBackgroundColor: '#a855f7' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Laisse le wrapper HTML forcer le carré de 350px
-                    scales: { 
-                        r: { 
-                            min: 0, 
-                            max: 5, 
-                            ticks: { stepSize: 1, color: '#475569', backdropColor: 'transparent' }, 
-                            grid: { color: '#334155' }, 
-                            angleLines: { color: '#334155' }, 
-                            pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } } 
-                        } 
-                    },
-                    plugins: { 
-                        legend: { 
-                            position: 'top',
-                            labels: { color: '#f8fafc', font: { size: 11 } } 
-                        } 
-                    }
-                }
-            });
-        }
-
-        function mettreAjourGraphiqueRadar_SansResetCurseurs() {
-            if(!monRadarChart) return;
-            const groupeAffiche = document.getElementById('select-groupe-formateur').value;
-            if(!groupeAffiche) return;
-
-            const notesProfDonneesChart = notesFormateurLocales[groupeAffiche] || Array(listeCriteresProf.length).fill(null);
-            
-            let autoEvalSliders = Array(listeCriteresProf.length).fill(null);
-            let notesDonneesAccumulateur = Array(listeCriteresProf.length).fill(0);
-            let countNotesDonnees = 0;
-
-            evaluationsSession.forEach(e => {
-                if(e.sujet === groupeAffiche && !e.estProf) {
-                    const extraction = decoderNoteEtCurseurs(e.note_brute);
-                    let sliders = extraction.sliders;
-                    
-                    if(sliders.length !== listeCriteresProf.length) {
-                        sliders = Array(listeCriteresProf.length).fill((e.note / 20) * 5);
-                    }
-
-                    if(e.groupe_votant === groupeAffiche) {
-                        autoEvalSliders = sliders; 
-                    } else {
-                        for(let i=0; i<listeCriteresProf.length; i++) {
-                            notesDonneesAccumulateur[i] += sliders[i];
-                        }
-                        countNotesDonnees++;
-                    }
-                }
-            });
-
-            let moyennePairsSliders = Array(listeCriteresProf.length).fill(null);
-            if(countNotesDonnees > 0) {
-                moyennePairsSliders = notesDonneesAccumulateur.map(val => val / countNotesDonnees);
-            }
-
-            monRadarChart.data.labels = listeCriteresProf.map(c => c.nom);
-            monRadarChart.data.datasets[0].data = notesProfDonneesChart;
-            monRadarChart.data.datasets[1].data = autoEvalSliders;
-            monRadarChart.data.datasets[2].data = moyennePairsSliders;
-            monRadarChart.update();
-
-            mettreAjourDetailsEvaluations(groupeAffiche);
+            // Forcer le rafraîchissement des cartes détaillées pour le groupe sélectionné
+            const groupeActuel = document.getElementById('select-groupe-formateur').value;
+            if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
