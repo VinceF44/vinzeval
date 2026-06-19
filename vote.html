@@ -9,17 +9,14 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center">
 
-    <!-- LARGEUR OPTIMISÉE PC PORTABLE (max-w-5xl) & ULTRA RESPONSIVE MOBILE (w-full) -->
     <div id="bloc-principal-evaluation" class="w-full max-w-5xl bg-gray-900 p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
-        <!-- ÉCRAN FORMULAIRE (Saisie) -->
         <div id="ecran-formulaire" class="space-y-6">
             <div class="border-b border-gray-800 pb-4">
                 <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
                 <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
             </div>
 
-            <!-- SÉLECTEURS : 1 COLONNE SUR MOBILE, 2 COLONNES SUR PC PORTABLE -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
@@ -31,31 +28,24 @@
                     <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-blue-900/50 text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
                 </div>
             </div>
-            
-            <p class="text-[11px] text-gray-500 bg-gray-950/30 p-2 rounded-lg border border-gray-800/40">💡 Notez l'équipe à tour de rôle. Vos curseurs, bloc-notes et feedbacks enrichis se sauvegardent en continu dans le navigateur (anti-perte).</p>
 
             <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
                 <!-- Généré dynamiquement en JS -->
             </div>
 
-            <!-- ZONE DE FEEDBACK GLOBAL AVEC LISTE À PUCES ACTIVÉE -->
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions Jury :</label>
-                
                 <div class="flex flex-col rounded-xl overflow-hidden border border-gray-800 focus-within:border-blue-500 transition-all">
-                    <!-- Barre d'outils d'édition rapide avec puces -->
                     <div class="flex items-center gap-1 bg-gray-950 p-2 border-b border-gray-800 select-none">
-                        <button type="button" onclick="appliquerFormatText('bold')" title="Gras (Ctrl+B)" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
-                        <button type="button" onclick="appliquerFormatText('underline')" title="Souligner (Ctrl+U)" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
-                        <button type="button" onclick="appliquerFormatText('insertUnorderedList')" title="Liste à puces" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
+                        <button type="button" onclick="appliquerFormatText('bold')" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
+                        <button type="button" onclick="appliquerFormatText('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
+                        <button type="button" onclick="appliquerFormatText('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                     </div>
-                    <!-- Zone d'écriture (Correction du style des listes de Tailwind via les classes directes [&_ul]) -->
-                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation de ce groupe (Sauts de lignes, puces, gras et souligné disponibles)..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
+                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-gray-950/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
                 </div>
             </div>
 
-            <!-- BOUTON DE SOUMISSION FINALE -->
             <div class="pt-2">
                 <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
                     🚀 Envoyer toutes nos évaluations
@@ -63,29 +53,17 @@
             </div>
         </div>
 
-        <!-- ÉCRAN RAPPORT FINAL -->
         <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
                 <h2 class="text-2xl font-black text-white">Évaluations Terminées !</h2>
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
-            
             <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
-                <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">
-                    📊 Résumé de votre session
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Équipes évaluées au total :</span>
-                    <span id="rapport-nb-groupes" class="font-bold text-white font-mono text-base">0</span>
-                </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Statut de votre auto-évaluation :</span>
-                    <span id="rapport-auto-statut" class="font-bold font-mono">Vérification...</span>
-                </div>
+                <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">📊 Résumé de votre session</div>
+                <div class="flex justify-between items-center text-sm"><span class="text-gray-400">Équipes évaluées au total :</span><span id="rapport-nb-groupes" class="font-bold text-white font-mono text-base">0</span></div>
+                <div class="flex justify-between items-center text-sm"><span class="text-gray-400">Statut auto-évaluation :</span><span id="rapport-auto-statut" class="font-bold font-mono">Vérification...</span></div>
             </div>
-
-            <p class="text-xs text-gray-500 italic">Excellent travail. Vos données ont été centralisées en temps réel pour le calcul du Dashboard formateur.</p>
         </div>
 
     </div>
@@ -103,31 +81,21 @@
         let votantPrecedent = "";
         let memoireEvaluations = {};
 
-        function appliquerFormatText(commande) {
-            document.execCommand(commande, false, null);
-        }
+        function appliquerFormatText(commande) { document.execCommand(commande, false, null); }
 
         async function initEvaluationPage() {
             try {
                 if (!idSessionEvaluation) {
-                    document.getElementById('titre-session-evaluation').innerText = "❌ Aucune session spécifiée dans l'URL (?session_id=...)";
+                    document.getElementById('titre-session-evaluation').innerText = "❌ Aucune session spécifiée";
                     return;
                 }
                 
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                const { data: s, error: errSession } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
-                if (errSession) { alert("❌ Erreur Supabase : " + errSession.message); return; }
-
+                const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
                 if (s) {
                     if (s.statut === 'terminee') {
-                        document.body.innerHTML = `
-                            <div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center space-y-4 shadow-2xl">
-                                <div class="text-4xl">🔒</div>
-                                <h1 class="text-xl font-black text-white">Session Clôturée</h1>
-                                <p class="text-sm text-gray-400">Le formulaire pour la session <strong>${s.nom}</strong> a été fermé.</p>
-                            </div>
-                        `;
+                        document.body.innerHTML = `<div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center shadow-2xl"><div class="text-4xl">🔒</div><h1 class="text-xl font-black text-white">Session Clôturée</h1></div>`;
                         return;
                     }
                     document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
@@ -139,18 +107,9 @@
                 if (g && g.length > 0) {
                     const membresParIdGroupe = {};
                     g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
-                    if (apps) {
-                        apps.forEach(student => {
-                            if (membresParIdGroupe[student.groupe_id]) membresParIdGroupe[student.groupe_id].push(student.prenom);
-                        });
-                    }
+                    if (apps) apps.forEach(student => { if (membresParIdGroupe[student.groupe_id]) membresParIdGroupe[student.groupe_id].push(student.prenom); });
 
-                    const optionsHtml = g.map(grp => {
-                        const listePrenoms = membresParIdGroupe[grp.id];
-                        const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
-                        return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
-                    }).join('');
-
+                    const optionsHtml = g.map(grp => `<option value="${grp.nom}">${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}</option>`).join('');
                     document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
                     document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
                     
@@ -166,46 +125,73 @@
                     const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
                     if (cacheSauvegarde) {
                         memoireEvaluations = JSON.parse(cacheSauvegarde);
-                        if (ciblePrecedente) {
-                            restituerCurseursDepuisMemoire(ciblePrecedente);
-                        }
+                        if (ciblePrecedente) restituerCurseursDepuisMemoire(ciblePrecedente);
                     }
                 }
+            } catch (errorGlobal) { alert("💥 Erreur : " + errorGlobal.message); }
+        }
 
-            } catch (errorGlobal) {
-                alert("💥 Erreur critique : " + errorGlobal.message);
+        // NOUVELLE FONCTION : Gestion dynamique de la couleur des macarons
+        function mettreAJourCouleurBadge(index, valeur) {
+            const badge = document.getElementById(`badge-note-app-${index}`);
+            if(!badge) return;
+            valeur = parseFloat(valeur);
+            badge.innerText = valeur;
+            
+            // Base du macaron
+            badge.className = "flex items-center justify-center w-12 h-12 rounded-xl font-black text-xl border shadow-lg transition-colors duration-300 ";
+            
+            if (valeur < 2.5) {
+                badge.className += "bg-red-500/10 text-red-400 border-red-500/30";
+            } else if (valeur <= 3.5) {
+                badge.className += "bg-amber-500/10 text-amber-400 border-amber-500/30";
+            } else {
+                badge.className += "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
             }
         }
 
         function genererCurseursCriteres() {
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
-                <div class="bg-gray-950/30 p-4 rounded-xl border border-gray-800/40 space-y-3">
-                    <div class="flex justify-between text-xs font-semibold">
-                        <span class="text-gray-300">🎯 ${c.nom}</span>
-                        <span id="v-v-${index}" class="text-blue-400 font-bold font-mono">3 / 5</span>
-                    </div>
-                    <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
-                        oninput="document.getElementById('v-v-${index}').innerText = this.value + ' / 5'; enregistrerEtatCurseursEnContinu();" 
-                        class="w-full accent-blue-500 h-1 bg-gray-950 rounded-lg appearance-none cursor-pointer">
+                <div class="bg-gray-950/40 p-5 rounded-xl border border-gray-800/60 shadow-inner space-y-4">
                     
-                    <!-- RESTRUCTURATION ADAPTATIVE : 1 COL SUR MOBILE, 2 COL SUR LAPTOP PC -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    <!-- EN-TÊTE : TITRE + MACARON GÉANT -->
+                    <div class="flex justify-between items-center gap-4">
+                        <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                        <div id="badge-note-app-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
+                    </div>
+
+                    <!-- BARRE DE NOTATION AMÉLIORÉE AVEC REPÈRES -->
+                    <div class="relative pt-2 pb-4">
+                        <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                            oninput="mettreAJourCouleurBadge(${index}, this.value); enregistrerEtatCurseursEnContinu();" 
+                            class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-blue-500 relative z-10 focus:outline-none">
+                        
+                        <!-- Repères 1 à 5 sous la barre -->
+                        <div class="flex justify-between px-1.5 text-[11px] text-gray-500 mt-2 font-mono font-bold select-none">
+                            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CHAMPS TEXTES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
-                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Saut de ligne libre pour lister vos questions..." class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[70px]"></textarea>
+                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="2" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[60px]"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Journal / Notes personnelles :</label>
-                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="3" placeholder="Saut de ligne libre pour votre prise de notes..." class="w-full bg-gray-950 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[70px]"></textarea>
+                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Notes personnelles :</label>
+                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="2" placeholder="Ex: Bonne présentation, mais un peu rapide..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[60px]"></textarea>
                         </div>
                     </div>
                 </div>
             `).join('');
+            
+            // Initialiser les couleurs des badges
+            listeCriteres.forEach((_, i) => mettreAJourCouleurBadge(i, 3));
         }
 
         function sauvegarderCacheSpecifique(votant, cible) {
             if (!votant || !cible) return;
-            
             if (!memoireEvaluations[cible]) memoireEvaluations[cible] = { criteres: {}, feedback: "" };
             
             listeCriteres.forEach((c, index) => {
@@ -227,30 +213,22 @@
         }
 
         function enregistrerEtatCurseursEnContinu() {
-            const votantActuel = document.getElementById('select-groupe-votant').value;
-            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
-            sauvegarderCacheSpecifique(votantActuel, cibleActuelle);
+            sauvegarderCacheSpecifique(document.getElementById('select-groupe-votant').value, document.getElementById('select-sujet-evalue').value);
         }
 
         function changerDeCibleEvaluation(nouvelleCible) {
-            const votantActuel = document.getElementById('select-groupe-votant').value;
-            if (ciblePrecedente) {
-                sauvegarderCacheSpecifique(votantActuel, ciblePrecedente);
-            }
+            if (ciblePrecedente) sauvegarderCacheSpecifique(document.getElementById('select-groupe-votant').value, ciblePrecedente);
             restituerCurseursDepuisMemoire(nouvelleCible);
             ciblePrecedente = nouvelleCible;
         }
 
         function changerDeGroupeVotant(nouveauVotant) {
-            if (votantPrecedent && ciblePrecedente) {
-                sauvegarderCacheSpecifique(votantPrecedent, ciblePrecedente);
-            }
+            if (votantPrecedent && ciblePrecedente) sauvegarderCacheSpecifique(votantPrecedent, ciblePrecedente);
 
             const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${nouveauVotant}`);
             memoireEvaluations = cacheSauvegarde ? JSON.parse(cacheSauvegarde) : {};
 
-            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
-            restituerCurseursDepuisMemoire(cibleActuelle);
+            restituerCurseursDepuisMemoire(document.getElementById('select-sujet-evalue').value);
             votantPrecedent = nouveauVotant;
         }
 
@@ -259,22 +237,19 @@
 
             listeCriteres.forEach((c, index) => {
                 const blocDonnees = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
-                
                 const noteSauvegardee = blocDonnees ? (typeof blocDonnees === 'object' ? blocDonnees.note : blocDonnees) : 3;
-                const questionSauvegardee = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.questions : "";
-                const journalSauvegarde = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.journal : "";
 
                 const input = document.getElementById(`eval-crit-${index}`);
-                const label = document.getElementById(`v-v-${index}`);
-                const inputQ = document.getElementById(`questions-crit-${index}`);
-                const inputJ = document.getElementById(`journal-crit-${index}`);
-
-                if (input && label) {
+                if (input) {
                     input.value = noteSauvegardee;
-                    label.innerText = `${noteSauvegardee} / 5`;
+                    mettreAJourCouleurBadge(index, noteSauvegardee); // Restituer la couleur
                 }
-                if (inputQ) inputQ.value = questionSauvegardee;
-                if (inputJ) inputJ.value = journalSauvegarde;
+                
+                const inputQ = document.getElementById(`questions-crit-${index}`);
+                if (inputQ) inputQ.value = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.questions : "";
+                
+                const inputJ = document.getElementById(`journal-crit-${index}`);
+                if (inputJ) inputJ.value = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.journal : "";
             });
 
             const inputFB = document.getElementById('feedback-global');
@@ -286,10 +261,7 @@
             enregistrerEtatCurseursEnContinu();
 
             const { data: verifDejaFait } = await db.from('evaluations').select('id').eq('session_id', idSessionEvaluation).eq('groupe_votant', groupeVotant).limit(1);
-            if (verifDejaFait && verifDejaFait.length > 0) {
-                alert(`⚠️ Votre groupe (${groupeVotant}) a déjà transmis ses évaluations.`);
-                return;
-            }
+            if (verifDejaFait && verifDejaFait.length > 0) { alert(`⚠️ Votre groupe (${groupeVotant}) a déjà transmis ses évaluations.`); return; }
 
             const listeGroupesEvalues = Object.keys(memoireEvaluations);
             const paquetInsertions = [];
@@ -304,43 +276,31 @@
                     totalNotes += bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
                 });
 
-                const moyenneSur5 = totalNotes / listeCriteres.length;
-                const noteFinaleSur20 = (moyenneSur5 / 5) * 20;
-
                 if (nomSujet === groupeVotant) aFaitSonAutoEval = true;
 
                 paquetInsertions.push({
                     session_id: idSessionEvaluation,
                     groupe_votant: groupeVotant,
                     sujet: nomSujet,
-                    note: noteFinaleSur20
+                    note: (totalNotes / listeCriteres.length / 5) * 20
                 });
             });
 
             if (paquetInsertions.length === 0) { alert("❌ Aucune note saisie à transmettre."); return; }
-
             const { error } = await db.from('evaluations').insert(paquetInsertions);
 
             if (!error) {
                 localStorage.removeItem(`cache_vote_${idSessionEvaluation}_${groupeVotant}`);
-
                 document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
                 document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
                 
                 const baliseAutoEval = document.getElementById('rapport-auto-statut');
-                if (aFaitSonAutoEval) {
-                    baliseAutoEval.innerText = "Validée et Incluse ✅";
-                    baliseAutoEval.className = "font-bold text-emerald-400";
-                } else {
-                    baliseAutoEval.innerText = "Manquante ❌";
-                    baliseAutoEval.className = "font-bold text-red-400";
-                }
+                baliseAutoEval.innerText = aFaitSonAutoEval ? "Validée et Incluse ✅" : "Manquante ❌";
+                baliseAutoEval.className = aFaitSonAutoEval ? "font-bold text-emerald-400" : "font-bold text-red-400";
 
                 document.getElementById('ecran-formulaire').classList.add('hidden');
                 document.getElementById('ecran-rapport').classList.remove('hidden');
-            } else {
-                alert("❌ Erreur technique : " + error.message);
-            }
+            } else { alert("❌ Erreur technique : " + error.message); }
         }
 
         window.onload = initEvaluationPage;
