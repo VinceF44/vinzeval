@@ -21,7 +21,7 @@
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
-                <select id="select-evaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
+                <select id="select-evaluateur" onchange="changerDeFormateurVotant(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
                     <option value="" disabled selected>-- Choisissez votre nom --</option>
                 </select>
             </div>
@@ -56,6 +56,7 @@
         let listeCriteresProf = [];
         let notesFormateurLocales = {}; 
         let ciblePrecedente = "";
+        let evaluateurPrecedent = "";
 
         async function initFormulaire() {
             if (!idSessionDashboard) {
@@ -67,6 +68,7 @@
             const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
             if(s) document.getElementById('nom-session').innerText = s.nom;
 
+            // 1. Charger les évaluateurs créés dans l'admin
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
             const selectEval = document.getElementById('select-evaluateur');
             if(evals && evals.length > 0) {
@@ -74,7 +76,9 @@
             } else {
                 selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
             }
+            evaluateurPrecedent = selectEval.value;
 
+            // 2. Charger les groupes
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
             if(g && g.length > 0) {
                 groupesSession = g;
@@ -83,12 +87,14 @@
                 ciblePrecedente = selectGrp.value;
             }
 
+            // 3. Charger les critères
             const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
             if(critsProf && critsProf.length > 0) {
                 listeCriteresProf = critsProf;
                 genererSlidersHtml();
             }
 
+            // 4. Télécharger l'historique de départ
             await chargerNotesExistantes();
         }
 
@@ -120,7 +126,10 @@
         }
 
         async function chargerNotesExistantes() {
+            // A. Base de données Supabase (Fond officiel de la session)
             const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur');
+            notesFormateurLocales = {}; // Reset de l'état mémoire
+            
             if (data) {
                 data.forEach(e => {
                     const extraction = decoderNoteEtCurseurs(e.note);
@@ -130,18 +139,23 @@
                 });
             }
 
-            const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}`);
-            if (cacheSauvegarde) {
-                const notesDuCache = JSON.parse(cacheSauvegarde);
-                Object.assign(notesFormateurLocales, notesDuCache);
+            // B. Surcharge sélective par le cache du formateur actuellement actif
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
+            if (evaluateurActuel) {
+                const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${evaluateurActuel}`);
+                if (cacheSauvegarde) {
+                    const notesDuCache = JSON.parse(cacheSauvegarde);
+                    Object.assign(notesFormateurLocales, notesDuCache);
+                }
             }
 
             restituerSlidersPourCible(ciblePrecedente);
         }
 
-        function synchroniserNotesLocales(groupeForce) {
+        function synchroniserNotesLocales(groupeForce, evaluateurForce) {
+            const evaluateurCible = evaluateurForce || document.getElementById('select-evaluateur').value;
             const groupeCible = groupeForce || document.getElementById('select-sujet-evalue').value;
-            if (!groupeCible) return;
+            if (!groupeCible || !evaluateurCible) return;
             
             const tableauNotes = [];
             for(let i=0; i < listeCriteresProf.length; i++) {
@@ -150,15 +164,34 @@
             }
             notesFormateurLocales[groupeCible] = tableauNotes;
 
-            localStorage.setItem(`cache_formateur_${idSessionDashboard}`, JSON.stringify(notesFormateurLocales));
+            // Clé partitionnée hermétique par évaluateur
+            localStorage.setItem(`cache_formateur_${idSessionDashboard}_${evaluateurCible}`, JSON.stringify(notesFormateurLocales));
         }
 
+        // ÉVÉNEMENT 1 : Changement de groupe cible (sujet évalué)
         function changerDeCibleFormateur(nouvelleCible) {
-            if (ciblePrecedente) {
-                synchroniserNotesLocales(ciblePrecedente);
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
+            if (ciblePrecedente && evaluateurActuel) {
+                synchroniserNotesLocales(ciblePrecedente, evaluateurActuel);
             }
             restituerSlidersPourCible(nouvelleCible);
             ciblePrecedente = nouvelleCible;
+        }
+
+        // ÉVÉNEMENT 2 : Changement de Formateur Votant (Sécurise le multi-évaluateurs)
+        function changerDeFormateurVotant(nouveauEvaluateur) {
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            
+            // 1. On fige les notes actuelles sous l'ancien nom de formateur
+            if (evaluateurPrecedent && cibleActuelle) {
+                synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
+            }
+
+            // 2. On change de contexte de mémorisation
+            evaluateurPrecedent = nouveauEvaluateur;
+
+            // 3. On recharge la mémoire (DB + Cache isolé du nouveau formateur)
+            chargerNotesExistantes();
         }
 
         function restituerSlidersPourCible(cible) {
@@ -175,10 +208,13 @@
         }
 
         async function enregistrerNoteFormateur() {
+            const evaluateurActuel = document.getElementById('select-evaluateur').value;
             const groupeCible = document.getElementById('select-sujet-evalue').value;
+            
+            if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur avant de valider."); return; }
             if (!groupeCible) return;
 
-            synchroniserNotesLocales();
+            synchroniserNotesLocales(groupeCible, evaluateurActuel);
             const tableauNotes = notesFormateurLocales[groupeCible];
 
             const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
