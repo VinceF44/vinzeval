@@ -30,10 +30,11 @@
                 <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer"></select>
             </div>
         </div>
+        
+        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Vos curseurs, grilles de notes libres, questions et bilans formatés s'actualisent en changeant de cible.</p>
 
         <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
-            <!-- Chargé dynamiquement -->
-        </div>
+            </div>
 
         <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
             <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Recommandations Jury :</label>
@@ -43,8 +44,7 @@
                     <button type="button" onclick="appliquerFormatTextProf('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
                     <button type="button" onclick="appliquerFormatTextProf('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                 </div>
-                <!-- Zone de texte agrandie et aérée -->
-                <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance..." class="w-full bg-[#030712]/60 p-4 text-sm leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
+                <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance..." class="w-full bg-[#030712]/60 p-4 text-sm leading-relaxed text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
             </div>
         </div>
 
@@ -156,15 +156,25 @@
             listeCriteresProf.forEach((_, i) => mettreAJourCouleurBadgeProf(i, 3));
         }
 
+        // CORRECTIF MUTATION HAUTE PRÉCISION (14 décimales)
         function decoderNoteEtCurseurs(notePleine) {
-            const chaineNote = notePleine.toFixed(10);
+            if (!notePleine) return { noteGlobale: 0, sliders: [] };
+            const chaineNote = Number(notePleine).toFixed(14);
             const parties = chaineNote.split('.');
+            if (parties.length < 2) return { noteGlobale: notePleine, sliders: [] };
+            
+            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+            let chaineDecimaleEmpreinte = parties[1].substring(4);
             let curseursRestitues = [];
-            for (let i = 0; i < parties[1].substring(4).length; i += 2) {
-                let bloc = parties[1].substring(4).substring(i, i + 2);
-                if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
+            
+            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+                if (bloc.length === 2) {
+                    if (bloc === "00") break;
+                    curseursRestitues.push(parseInt(bloc, 10) / 10);
+                }
             }
-            return curseursRestitues;
+            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
 
         async function chargerNotesExistantes() {
@@ -176,9 +186,9 @@
             
             if (data) {
                 data.forEach(e => {
-                    const sliders = decoderNoteEtCurseurs(e.note);
-                    if (sliders.length === listeCriteresProf.length) {
-                        notesFormateurLocales[e.sujet] = { sliders: sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: "" };
+                    const extraction = decoderNoteEtCurseurs(e.note);
+                    if (extraction.sliders.length === listeCriteresProf.length) {
+                        notesFormateurLocales[e.sujet] = { sliders: extraction.sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: "" };
                     }
                 });
             }
@@ -264,7 +274,8 @@
             if (!groupeCible) return;
 
             synchroniserNotesLocales(groupeCible, evaluateurActuel);
-            const tableauNotes = notesFormateurLocales[groupeCible].sliders || notesFormateurLocales[groupeCible];
+            const dataTarget = notesFormateurLocales[groupeCible];
+            const tableauNotes = dataTarget.sliders || dataTarget;
 
             const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
             let empreinteDecimale = "";
