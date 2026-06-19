@@ -30,10 +30,7 @@
                 <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer"></select>
             </div>
         </div>
-        
-        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Vos curseurs, grilles de notes libres, questions et bilans formatés s'actualisent en changeant de cible.</p>
 
-        <!-- CONTENEUR DYNAMIQUE DES CRITÈRES -->
         <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
             <!-- Chargé dynamiquement -->
         </div>
@@ -46,7 +43,8 @@
                     <button type="button" onclick="appliquerFormatTextProf('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
                     <button type="button" onclick="appliquerFormatTextProf('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                 </div>
-                <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance (Sauts de lignes, puces, gras et souligné disponibles)..." class="w-full bg-[#030712]/60 p-3 text-xs text-white min-h-[120px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
+                <!-- Zone de texte agrandie et aérée -->
+                <div id="feedback-global-prof" contenteditable="true" oninput="synchroniserNotesLocales()" placeholder="Bilan général, points clés de la soutenance..." class="w-full bg-[#030712]/60 p-4 text-sm leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5"></div>
             </div>
         </div>
 
@@ -106,7 +104,6 @@
             await chargerNotesExistantes();
         }
 
-        // NOUVELLE FONCTION : Gestion dynamique de la couleur des macarons Formateur
         function mettreAJourCouleurBadgeProf(index, valeur) {
             const badge = document.getElementById(`badge-note-prof-${index}`);
             if(!badge) return;
@@ -128,13 +125,11 @@
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
                 <div class="bg-[#030712]/40 p-5 rounded-xl border border-slate-800/60 shadow-inner space-y-4">
                     
-                    <!-- EN-TÊTE : TITRE + MACARON GÉANT -->
                     <div class="flex justify-between items-center gap-4">
                         <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
                         <div id="badge-note-prof-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
 
-                    <!-- BARRE DE NOTATION AMÉLIORÉE AVEC REPÈRES -->
                     <div class="relative pt-2 pb-4">
                         <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="mettreAJourCouleurBadgeProf(${index}, this.value); synchroniserNotesLocales();" 
@@ -145,15 +140,14 @@
                         </div>
                     </div>
                     
-                    <!-- CHAMPS TEXTES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">❓ Questions à poser :</label>
-                            <textarea id="prof-questions-${index}" oninput="synchroniserNotesLocales()" rows="2" placeholder="Ex: Préciser l'architecture..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[60px]"></textarea>
+                            <textarea id="prof-questions-${index}" oninput="synchroniserNotesLocales()" rows="4" placeholder="Saut de ligne libre pour lister vos questions jury..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">📔 Prise de notes :</label>
-                            <textarea id="prof-journal-${index}" oninput="synchroniserNotesLocales()" rows="2" placeholder="Ex: Support visuel impeccable..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[60px]"></textarea>
+                            <textarea id="prof-journal-${index}" oninput="synchroniserNotesLocales()" rows="4" placeholder="Saut de ligne libre pour vos remarques à chaud..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-[#a855f7] transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                     </div>
                 </div>
@@ -248,7 +242,7 @@
                 const input = document.getElementById(`prof-crit-${i}`);
                 if (input) {
                     input.value = val;
-                    mettreAJourCouleurBadgeProf(i, val); // Restitue la couleur
+                    mettreAJourCouleurBadgeProf(i, val);
                 }
                 
                 const inputQ = document.getElementById(`prof-questions-${i}`);
