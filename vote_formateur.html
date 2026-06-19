@@ -7,208 +7,196 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#a855f7]/30">
+<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 flex items-center justify-center selection:bg-[#a855f7]/30">
 
-    <div class="max-w-3xl mx-auto space-y-6" id="formulaire-container">
+    <div class="w-full max-w-lg bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-md backdrop-blur-md">
+        <div class="border-b border-slate-800 pb-4">
+            <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
+                👩‍🏫 Espace Évaluation Formateur
+            </span>
+            <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+        </div>
+
+        <div class="space-y-4">
             <div>
-                <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#a855f7] border-[#a855f7]/30">
-                    👩‍🏫 Session Évaluation Formateur
-                </span>
-                <h1 id="nom-session" class="text-xl font-extrabold text-slate-100 mt-3 tracking-tight">Chargement de la session...</h1>
+                <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
+                <select id="select-evaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
+                    <option value="" disabled selected>-- Choisissez votre nom --</option>
+                </select>
+            </div>
+
+            <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
+                <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
+                <select id="select-sujet-evalue" onchange="changerDeCibleFormateur(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-purple-900/40 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
+                    </select>
+                <p class="text-[11px] text-slate-500 mt-1">💡 Vos curseurs se mettent à jour automatiquement si vous avez déjà noté ce groupe.</p>
+            </div>
+
+            <div id="conteneur-formateur-criteres" class="space-y-4 pt-2 border-t border-slate-800/60">
+                </div>
+
+            <div class="pt-4">
+                <button onclick="enregistrerNoteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-xs tracking-wider active:scale-[0.99]">
+                    💾 Valider et Enregistrer la note
+                </button>
             </div>
         </div>
-
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md">
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-800 pb-5">
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Votre profil Évaluateur / Formateur :</label>
-                    <select id="select-evaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
-                        <option value="" disabled selected class="text-slate-500">-- Choisissez votre nom --</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Groupe à évaluer :</label>
-                    <select id="select-groupe" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer">
-                        <option value="" disabled selected class="text-slate-500">-- Sélectionnez le groupe --</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-[#a855f7] flex items-center gap-2 pl-1">
-                    🎯 Barème et Critères d'évaluation
-                </h2>
-                <div id="conteneur-criteres" class="space-y-3">
-                    <p class="text-xs text-slate-500 italic pl-1">Chargement des critères...</p>
-                </div>
-            </div>
-
-            <div class="space-y-2 pt-2 border-t border-slate-800">
-                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 pl-1">Commentaires globaux & Conseils (Feedback) :</label>
-                <textarea id="commentaire-evaluation" rows="4" placeholder="Points forts, axes d'amélioration, posture orale..." class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#a855f7] transition-all min-h-[100px]"></textarea>
-            </div>
-
-            <button onclick="envoyerEvaluationFormateur()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#a855f7] border border-purple-500/20 hover:bg-[#9333ea] active:scale-[0.99]">
-                💾 Enregistrer et envoyer l'évaluation
-            </button>
-        </div>
-
     </div>
 
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
-        let sessionId;
-        const notesSelectionnees = {};
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const idSessionDashboard = urlParams.get('session_id');
+
+        let groupesSession = [];
+        let listeCriteresProf = [];
+        let notesFormateurLocales = {}; 
+        let ciblePrecedente = "";
 
         async function initFormulaire() {
+            if (!idSessionDashboard) {
+                document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant dans l'URL.</p>";
+                return;
+            }
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            // Récupération de l'id de session dans les paramètres d'URL
-            const params = new URLSearchParams(window.location.search);
-            sessionId = params.get('session_id');
+            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
+            if(s) document.getElementById('nom-session').innerText = s.nom;
 
-            if (!sessionId) {
-                document.getElementById('formulaire-container').innerHTML = `
-                    <div class="bg-red-950/20 border border-red-900/40 p-6 rounded-2xl text-center">
-                        <p class="text-red-400 font-medium text-sm">❌ ID de session absent ou invalide. Veuillez repasser par la console d'administration.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            chargerDonneesFormulaire();
-        }
-
-        async function chargerDonneesFormulaire() {
-            // 1. Récupérer les infos de la Session
-            const { data: session, error: errS } = await db.from('sessions').select('*').eq('id', sessionId).single();
-            if (errS || !session) {
-                document.getElementById('formulaire-container').innerHTML = `
-                    <div class="bg-red-950/20 border border-red-900/40 p-6 rounded-2xl text-center">
-                        <p class="text-red-400 font-medium text-sm">❌ Cette session n'existe pas ou a été supprimée.</p>
-                    </div>
-                `;
-                return;
-            }
-            document.getElementById('nom-session').innerText = session.nom;
-
-            // 2. Charger les Évaluateurs de cette session
-            const { data: evaluateurs } = await db.from('evaluateurs').select('*').eq('session_id', sessionId).order('nom');
+            // 1. Charger les évaluateurs créés dans l'admin
+            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
             const selectEval = document.getElementById('select-evaluateur');
-            if (evaluateurs && evaluateurs.length > 0) {
-                evaluateurs.forEach(e => {
-                    selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`;
-                });
+            if(evals && evals.length > 0) {
+                evals.forEach(e => { selectEval.innerHTML += `<option value="${e.nom}">${e.nom}</option>`; });
             } else {
-                selectEval.innerHTML += `<option value="Formateur Externe">Formateur par défaut (Aucun évaluateur inscrit)</option>`;
+                selectEval.innerHTML += `<option value="Formateur Principal">Formateur Principal</option>`;
             }
 
-            // 3. Charger les Groupes de cette session
-            const { data: groupes } = await db.from('groupes').select('*').eq('session_id', sessionId).order('nom');
-            const selectGrp = document.getElementById('select-groupe');
-            if (groupes && groupes.length > 0) {
-                groupes.forEach(g => {
-                    selectGrp.innerHTML += `<option value="${g.id}">${g.nom}</option>`;
-                });
-            } else {
-                selectGrp.innerHTML = `<option value="" disabled>Aucun groupe disponible</option>`;
+            // 2. Charger les groupes
+            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
+            if(g && g.length > 0) {
+                groupesSession = g;
+                const selectGrp = document.getElementById('select-sujet-evalue');
+                selectGrp.innerHTML = g.map(grp => `<option value="${grp.nom}">${grp.nom}</option>`).join('');
+                ciblePrecedente = selectGrp.value;
             }
 
-            // 4. Charger les Critères de cette session
-            const { data: criteres } = await db.from('criteres').select('*').eq('session_id', sessionId);
-            const conteneurCriteres = document.getElementById('conteneur-criteres');
-            conteneurCriteres.innerHTML = "";
+            // 3. Charger les critères
+            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+            if(critsProf && critsProf.length > 0) {
+                listeCriteresProf = critsProf;
+                genererSlidersHtml();
+            }
 
-            if (criteres && criteres.length > 0) {
-                criteres.forEach(c => {
-                    let boutonsNotesHTML = "";
-                    for (let note = 1; note <= 5; note++) {
-                        boutonsNotesHTML += `
-                            <button type="button" onclick="selectionnerNote('${c.id}', ${note}, this)" class="btn-note-${c.id} w-11 h-11 rounded-xl text-xs font-bold transition-all text-slate-400 bg-[#030712] border border-slate-800 hover:text-white hover:border-slate-700 cursor-pointer focus:outline-none">
-                                ${note}
-                            </button>
-                        `;
+            // 4. Télécharger l'historique existant pour pré-remplir les sliders
+            await chargerNotesExistantes() ;
+        }
+
+        function genererSlidersHtml() {
+            document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">🎯 ${c.nom}</span>
+                        <span id="v-f-${index}" class="text-amber-400 font-bold font-mono">3 / 5</span>
+                    </div>
+                    <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
+                        oninput="document.getElementById('v-f-${index}').innerText = this.value + ' / 5'; synchroniserNotesLocales();" 
+                        class="w-full accent-amber-500 h-1 bg-[#030712] rounded-lg appearance-none cursor-pointer">
+                </div>
+            `).join('');
+        }
+
+        function decoderNoteEtCurseurs(notePleine) {
+            const chaineNote = notePleine.toFixed(10);
+            const parties = chaineNote.split('.');
+            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+            let chaineDecimaleEmpreinte = parties[1].substring(4);
+            let curseursRestitues = [];
+            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+                if (bloc.length === 2 && bloc !== "00") curseursRestitues.push(parseInt(bloc, 10) / 10);
+            }
+            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+        }
+
+        async function chargerNotesExistantes() {
+            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur');
+            if (data) {
+                data.forEach(e => {
+                    const extraction = decoderNoteEtCurseurs(e.note);
+                    if (extraction.sliders.length === listeCriteresProf.length) {
+                        notesFormateurLocales[e.sujet] = extraction.sliders;
                     }
-
-                    conteneurCriteres.innerHTML += `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 critere-bloc" data-id="${c.id}">
-                            <div class="text-sm font-medium text-slate-200 tracking-tight">${c.nom}</div>
-                            <div class="flex gap-1.5 self-start sm:self-center">
-                                ${boutonsNotesHTML}
-                            </div>
-                        </div>
-                    `;
                 });
-            } else {
-                conteneurCriteres.innerHTML = `<p class="text-xs text-slate-500 italic p-1">Aucun critère d'évaluation configuré pour cette session.</p>`;
+                restituerSlidersPourCible(ciblePrecedente);
             }
         }
 
-        function selectionnerNote(critereId, note, element) {
-            notesSelectionnees[critereId] = note;
-            
-            // Réinitialiser les styles des boutons du même critère
-            document.querySelectorAll(`.btn-note-${critereId}`).forEach(btn => {
-                btn.classList.remove('bg-[#a855f7]', 'text-white', 'border-purple-500/40', 'shadow-md', 'shadow-purple-500/10');
-                btn.classList.add('text-slate-400', 'bg-[#030712]', 'border-slate-800');
-            });
-            
-            // Appliquer le style sélectionné au bouton cliqué
-            element.classList.remove('text-slate-400', 'bg-[#030712]', 'border-slate-800');
-            element.classList.add('bg-[#a855f7]', 'text-white', 'border-purple-500/40', 'shadow-md', 'shadow-purple-500/10');
+        function synchroniserNotesLocales() {
+            const groupeCible = document.getElementById('select-sujet-evalue').value;
+            if (!groupeCible) return;
+            const tableauNotes = [];
+            for(let i=0; i < listeCriteresProf.length; i++) {
+                tableauNotes.push(parseFloat(document.getElementById(`prof-crit-${i}`).value));
+            }
+            notesFormateurLocales[groupeCible] = tableauNotes;
         }
 
-        async function envoyerEvaluationFormateur() {
-            const evaluateur = document.getElementById('select-evaluateur').value;
-            const groupeId = document.getElementById('select-groupe').value;
-            const commentaire = document.getElementById('commentaire-evaluation').value.trim();
+        function changerDeCibleFormateur(nouvelleCible) {
+            synchroniserNotesLocales();
+            restituerSlidersPourCible(nouvelleCible);
+            ciblePrecedente = nouvelleCible;
+        }
 
-            if (!evaluateur) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur."); return; }
-            if (!groupeId) { alert("⚠️ Veuillez sélectionner le groupe à évaluer."); return; }
-
-            // Vérification que tous les critères affichés possèdent une note
-            const blocsCriteres = document.querySelectorAll('.critere-bloc');
-            if (blocsCriteres.length > 0) {
-                for (let bloc of blocsCriteres) {
-                    const idC = bloc.getAttribute('data-id');
-                    if (!notesSelectionnees[idC]) {
-                        alert("⚠️ Veuillez attribuer une note à l'ensemble des critères avant de valider.");
-                        return;
-                    }
+        function restituerSlidersPourCible(cible) {
+            const notesExistantes = notesFormateurLocales[cible];
+            for (let i = 0; i < listeCriteresProf.length; i++) {
+                const input = document.getElementById(`prof-crit-${i}`);
+                const label = document.getElementById(`v-f-${i}`);
+                if (input && label) {
+                    const val = (notesExistantes && notesExistantes[i] !== undefined) ? notesExistantes[i] : 3;
+                    input.value = val;
+                    label.innerText = val + " / 5";
                 }
             }
+        }
 
-            // Préparation des données d'envoi vers la table 'evaluations_formateurs'
-            const payload = {
-                session_id: sessionId,
-                evaluateur_nom: evaluateur,
-                groupe_id: groupeId,
-                notes: notesSelectionnees, // Enregistré au format JSON `{ "id_critere": note }`
-                commentaire: commentaire
-            };
+        async function enregistrerNoteFormateur() {
+            const groupeCible = document.getElementById('select-sujet-evalue').value;
+            if (!groupeCible) return;
 
-            const { error } = await db.from('evaluations_formateurs').insert([payload]);
+            synchroniserNotesLocales();
+            const tableauNotes = notesFormateurLocales[groupeCible];
+
+            const moyenneSur5 = tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length;
+            const moyenneSur20 = (moyenneSur5 / 5) * 20;
+
+            let empreinteDecimale = "";
+            tableauNotes.forEach(val => {
+                empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0');
+            });
+
+            const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
+
+            // Suppression de l'ancienne ligne
+            await db.from('evaluations').delete().eq('session_id', idSessionDashboard).eq('groupe_votant', 'Formateur').eq('sujet', groupeCible);
+
+            // Insertion de la note encodée
+            const { error } = await db.from('evaluations').insert([{
+                session_id: idSessionDashboard,
+                groupe_votant: 'Formateur',
+                sujet: groupeCible,
+                note: noteCompletePayload
+            }]);
 
             if (error) {
-                alert("❌ Échec de l'enregistrement : " + error.message);
+                alert("❌ Erreur : " + error.message);
             } else {
-                alert("🎉 Évaluation enregistrée avec succès !");
-                // Réinitialisation du formulaire pour le groupe suivant
-                document.getElementById('commentaire-evaluation').value = "";
-                document.getElementById('select-groupe').value = "";
-                // Reset graphique des notes
-                Object.keys(notesSelectionnees).forEach(idC => {
-                    delete notesSelectionnees[idC];
-                });
-                document.querySelectorAll('[class*="btn-note-"]').forEach(btn => {
-                    btn.classList.remove('bg-[#a855f7]', 'text-white', 'border-purple-500/40', 'shadow-md');
-                    btn.classList.add('text-slate-400', 'bg-[#030712]', 'border-slate-800');
-                });
+                alert(`🎉 Évaluation enregistrée pour le ${groupeCible} (${moyenneSur20.toFixed(2)}/20)`);
             }
         }
 
