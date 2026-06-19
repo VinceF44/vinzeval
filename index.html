@@ -24,8 +24,8 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
-                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">季 Équipe à analyser</h2>
-                    <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe dans le menu pour inspecter instantanément le détail de toutes les grilles d'évaluation (Jury, Auto-évaluation et Pairs) qu'elle a reçues.</p>
+                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">👑 Équipe à analyser</h2>
+                    <p class="text-xs text-gray-400 leading-relaxed">Sélectionnez une équipe. Les blocs ci-dessous afficheront ses notes Jury, son Auto-évaluation, ainsi que les notes **qu'elle a elle-même données** aux autres équipes (PAIRS).</p>
                 </div>
                 <div class="w-full md:w-72 shrink-0">
                     <select id="select-groupe-formateur" onchange="mettreAjourDetailsEvaluations(this.value)" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white font-semibold focus:outline-none focus:border-amber-500 cursor-pointer transition-all"></select>
@@ -36,7 +36,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Notes et critères attribués à l'équipe actuellement sélectionnée ci-dessus.</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations (Note d'oral reçue du jury, Auto-évaluation, et évaluations émises par cette équipe).</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -145,7 +145,6 @@
             const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
             if (!error && evals) {
                 evaluationsSession = [];
-                const tpsCount = listeCriteresProf.length;
 
                 evals.forEach(e => {
                     let rawNote = e.note;
@@ -228,19 +227,29 @@
                 `;
             });
 
-            // Forcer le rafraîchissement des cartes détaillées pour le groupe sélectionné
             const groupeActuel = document.getElementById('select-groupe-formateur').value;
             if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
         }
 
+        // CORRECTIF CLÉ : Pivot complet de la logique de filtrage et d'affichage des cartes PAIRS
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
             conteneur.innerHTML = '';
 
-            const evalsPourCeGroupe = evaluationsSession.filter(e => e.sujet === groupeAffiche);
+            // Sélection intelligente du dossier contextuel
+            const evalsAAfficher = evaluationsSession.filter(e => {
+                // 1. Les notes de Jury REÇUES par l'équipe
+                if (e.estProf && e.sujet === groupeAffiche) return true;
+                // 2. L'auto-évaluation REÇUE/ÉMISE par l'équipe sur elle-même
+                if (!e.estProf && e.sujet === groupeAffiche && e.groupe_votant === groupeAffiche) return true;
+                // 3. L'INVERSION DES PAIRS : Les notes ÉMISES PAR cette équipe VERS les autres
+                if (!e.estProf && e.groupe_votant === groupeAffiche && e.sujet !== groupeAffiche) return true;
+                return false;
+            });
 
-            evalsPourCeGroupe.sort((a, b) => {
+            // Tri ordonné : Jury -> Auto-Éval -> Grilles émises
+            evalsAAfficher.sort((a, b) => {
                 if (a.estProf && !b.estProf) return -1;
                 if (!a.estProf && b.estProf) return 1;
                 if (a.groupe_votant === a.sujet) return -1;
@@ -248,12 +257,12 @@
                 return 0;
             });
 
-            if (evalsPourCeGroupe.length === 0) {
-                conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-gray-500 italic text-sm">Aucune évaluation enregistrée pour cette équipe.</div>`;
+            if (evalsAAfficher.length === 0) {
+                conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-gray-500 italic text-sm">Aucune donnée enregistrée pour cette configuration.</div>`;
                 return;
             }
 
-            evalsPourCeGroupe.forEach(e => {
+            evalsAAfficher.forEach(e => {
                 const extraction = decoderNoteEtCurseurs(e.note_brute);
                 let sliders = extraction.sliders;
                 let contenuCriteres = '';
@@ -286,6 +295,12 @@
                     ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' 
                     : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                 
+                // AJUSTEMENT DU TITRE DE LA CARTE POUR INDIQUER LA CIBLE DE SA NOTE
+                let nomAffiche = e.groupe_votant;
+                if (!e.estProf && e.groupe_votant !== e.sujet) {
+                    nomAffiche = `Pour : ${e.sujet}`;
+                }
+                
                 let noteColor = e.note >= 10 ? 'text-white' : 'text-red-400';
 
                 conteneur.innerHTML += `
@@ -295,7 +310,7 @@
                                 <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
                                     ${typeLabel}
                                 </span>
-                                <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>
+                                <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${nomAffiche}</div>
                             </div>
                             <div class="text-right shrink-0 pl-2">
                                 <div class="text-xl font-black font-mono tracking-tighter ${noteColor}">${e.note.toFixed(2)}</div>
