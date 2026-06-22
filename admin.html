@@ -3,1196 +3,591 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Espace Zen Pro</title>
+    <title>Console Administration — Plateforme Collaborative</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 select-none">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-6">
         
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Espace Sécurisé</span>
+                    <span id="badge-role" class="bg-gray-800 text-gray-300 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-gray-700">Chargement...</span>
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tight mt-1">Console d'Administration</h1>
+                <p id="user-email" class="text-xs text-gray-400 font-mono"></p>
+            </div>
+            <button onclick="executerDeconnexion()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-gray-700 shadow transition cursor-pointer">
+                🚪 Se déconnecter
+            </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 border-b border-gray-800 pb-px">
+            <button onclick="changerOnglet('sessions')" id="tab-sessions" class="px-5 py-3 text-sm font-bold border-b-2 border-indigo-500 text-white transition cursor-pointer">📅 Sessions d'Évaluation</button>
+            <button onclick="changerOnglet('classes')" id="tab-classes" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">🏫 Classes & Organismes</button>
+            <button onclick="changerOnglet('annuaire')" id="tab-annuaire" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">📖 Annuaire Pédagogique</button>
+            <button onclick="changerOnglet('comptes')" id="tab-comptes" class="hidden px-5 py-3 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition cursor-pointer">👥 Gestion des Comptes</button>
+        </div>
+
+        <div id="panel-sessions" class="space-y-6">
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
+                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Créer une nouvelle session d'évaluation</h2>
+                <form onsubmit="creerSessionEvaluation(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400">Nom de l'évaluation</label>
+                        <input type="text" id="sess-nom" required placeholder="Ex: Soutenance Projet Fin d'Année" class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400">Type d'épreuve</label>
+                        <select id="sess-type" class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none focus:border-indigo-500">
+                            <option value="oral">🗣️ Épreuve Orale (Multi-Jury)</option>
+                            <option value="ecrit">✍️ Épreuve Écrite (Correction)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400">Classe cible</label>
+                        <select id="sess-formation" required class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none focus:border-indigo-500"></select>
+                    </div>
+                    <div class="space-y-1.5 md:col-span-2">
+                        <label class="text-xs font-bold text-gray-400">Date de l'évaluation</label>
+                        <input type="date" id="sess-date" required class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3.5 px-5 rounded-xl border border-indigo-500 shadow shadow-indigo-500/20 transition cursor-pointer">
+                        ➕ Générer la session
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Vos Sessions Actives</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-gray-400 font-mono uppercase text-[10px]">
+                                <th class="py-3 px-2">Nom de la session</th>
+                                <th class="py-3 px-2">Classe</th>
+                                <th class="py-3 px-2">Type</th>
+                                <th class="py-3 px-2">Date</th>
+                                <th class="py-3 px-2 text-right">Lien d'accès</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-sessions" class="divide-y divide-gray-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-classes" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl h-fit">
+                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Ajouter un Organisme de Formation</h2>
+                <form onsubmit="creerOrganisme(event)" class="flex gap-3 items-end">
+                    <div class="flex-1 space-y-1.5">
+                        <label class="text-xs font-bold text-gray-400">Nom de l'école / structure</label>
+                        <input type="text" id="org-nom" required placeholder="Ex: Campus ESG" class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3.5 px-4 rounded-xl cursor-pointer shadow">Créer</button>
+                </form>
+                <div class="border-t border-gray-800/60 pt-4 space-y-2" id="list-organismes"></div>
+            </div>
+
+            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl h-fit">
+                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Ajouter une Classe / Formation</h2>
+                <form onsubmit="creerFormation(event)" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-gray-400">Nom du cursus</label>
+                            <input type="text" id="form-nom" required placeholder="Ex: Bachelor 3" class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-bold text-gray-400">Rattaché à l'école</label>
+                            <select id="form-org" required class="w-full bg-gray-950 rounded-xl p-3 text-xs border border-gray-800 text-white focus:outline-none"></select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 rounded-xl cursor-pointer shadow">Ajouter la formation</button>
+                </form>
+                <div class="border-t border-gray-800/60 pt-4 space-y-2" id="list-formations"></div>
+            </div>
+        </div>
+
+        <div id="panel-annuaire" class="hidden bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Gestion de l'effectif des étudiants</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Sélectionnez une formation pour gérer sa liste d'élèves.</p>
+                </div>
+                <select id="annuaire-select-formation" onchange="chargerEtudiantsAnnuaire(this.value)" class="w-full sm:w-64 bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white"></select>
+            </div>
+
+            <form id="form-apprenant" onsubmit="creerOuModifierEtudiant(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end bg-gray-950 p-4 rounded-xl border border-gray-800/80">
+                <input type="hidden" id="annuaire-id-app" value="">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Prénom</label>
+                    <input type="text" id="annuaire-prenom" required class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Nom</label>
+                    <input type="text" id="annuaire-nom" required class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Email (Optionnel)</label>
+                    <input type="email" id="annuaire-email" class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white">
+                </div>
+                <button type="submit" id="btn-annuaire-submit" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3 px-4 rounded-xl shadow cursor-pointer">Enregistrer l'étudiant</button>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 font-mono uppercase text-[10px]">
+                            <th class="py-3 px-2">Prénom</th>
+                            <th class="py-3 px-2">Nom</th>
+                            <th class="py-3 px-2">Email</th>
+                            <th class="py-3 px-2 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-annuaire-corps" class="divide-y divide-gray-800/50"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-comptes" class="hidden bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-6">
             <div>
-                <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
-                <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0 mt-2 lg:mt-0">
-                <button onclick="basculerZoneAnnuaire()" class="flex items-center justify-center gap-2 bg-[#101828] hover:bg-slate-800 text-slate-200 text-sm font-bold py-3.5 px-5 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
-                    🗃️ Annuaire pédagogique
-                </button>
-                <button onclick="basculerZoneConfigurateur()" class="flex items-center justify-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold py-3.5 px-5 rounded-xl border border-blue-500/50 transition-all cursor-pointer shadow-lg active:scale-95">
-                    ✨ Configurer une session
-                </button>
-            </div>
-        </div>
-
-        <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
-            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
-                <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Annuaire pédagogique</h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants.</p>
-                </div>
-                <button onclick="basculerZoneAnnuaire()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
+                <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">Créer un compte d'accès</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Créez des accès pour vos collaborateurs. Les RPs peuvent créer des formateurs, le Super Admin peut tout créer.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
-                    <div class="space-y-3">
-                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
-                        <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
-                        </div>
-                    </div>
-                    <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
+            <form onsubmit="creerCompteCollaborateur(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end bg-gray-950 p-4 rounded-xl border border-gray-800">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Adresse Email</label>
+                    <input type="email" id="compte-email" required class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white">
                 </div>
-
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
-                    <div class="space-y-3">
-                        <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
-                        
-                        <div class="custom-dropdown-container relative w-full text-left">
-                            <input type="hidden" id="annuaire-select-org-pour-formation" value="">
-                            <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                <span id="annuaire-select-org-pour-formation-label" class="truncate pr-2">-- Sélectionner l'organisme --</span>
-                                <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-org-pour-formation-arrow">▼</span>
-                            </button>
-                            <div id="annuaire-select-org-pour-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                            <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
-                        </div>
-                    </div>
-                    <div id="annuaire-liste-formations" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3">
-                        <p class="text-slate-600 italic text-xs">Sélectionnez un organisme pour voir ses formations.</p>
-                    </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Mot de passe provisoire</label>
+                    <input type="password" id="compte-password" required placeholder="Min. 6 caractères" class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white">
                 </div>
-            </div>
-
-            <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
-                    <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
-                    
-                    <div class="grid grid-cols-2 gap-2 w-full sm:w-[550px] shrink-0">
-                        <div class="custom-dropdown-container relative w-full text-left">
-                            <input type="hidden" id="annuaire-select-org-pour-app" value="">
-                            <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                <span id="annuaire-select-org-pour-app-label" class="truncate pr-2">-- Organisme --</span>
-                                <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-org-pour-app-arrow">▼</span>
-                            </button>
-                            <div id="annuaire-select-org-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
-                        </div>
-
-                        <div class="custom-dropdown-container relative w-full text-left">
-                            <input type="hidden" id="annuaire-select-form-pour-app" value="">
-                            <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                <span id="annuaire-select-form-pour-app-label" class="truncate pr-2">-- Classe --</span>
-                                <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-form-pour-app-arrow">▼</span>
-                            </button>
-                            <div id="annuaire-select-form-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                                <button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-400">Rôle octroyé</label>
+                    <select id="compte-role" class="w-full bg-gray-900 rounded-xl p-2.5 text-xs border border-gray-800 text-white"></select>
                 </div>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-3 px-4 rounded-xl shadow cursor-pointer">Générer l'accès</button>
+            </form>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
-                    <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                    <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-sm font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
-                </div>
-
-                <div id="annuaire-liste-apprenants" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-slate-600 italic text-xs col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 font-mono uppercase text-[10px]">
+                            <th class="py-3 px-2">Utilisateur</th>
+                            <th class="py-3 px-2">Rôle</th>
+                            <th class="py-3 px-2">Création</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-comptes-corps" class="divide-y divide-gray-800/50"></tbody>
+                </table>
             </div>
         </div>
 
-        <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
-            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
-                <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
-                    <span>✨</span> Configurer et Générer une Session
-                </h2>
-                <button onclick="basculerZoneConfigurateur()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="flex flex-col justify-between space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="sm:col-span-1">
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
-                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type d'évaluation :</label>
-                            <div class="custom-dropdown-container relative w-full text-left">
-                                <input type="hidden" id="type-session" value="oral">
-                                <button type="button" onclick="toggleDropdown('type-session')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
-                                    <span id="type-session-label" class="truncate pr-2">🗣️ Évaluation Orale</span>
-                                    <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="type-session-arrow">▼</span>
-                                </button>
-                                <div id="type-session-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                                    <button type="button" onclick="selectOption('type-session', 'oral', '🗣️ Évaluation Orale')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🗣️ Évaluation Orale</button>
-                                    <button type="button" onclick="selectOption('type-session', 'ecrit', '✍️ Évaluation Écrite')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">✍️ Évaluation Écrite</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Date de la session :</label>
-                            <input type="date" id="date-session" onclick="this.showPicker()" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col">
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Format : Titre Court : Description Longue) :</label>
-                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex flex-col justify-between space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nombre de Groupes :</label>
-                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Préfixe des Groupes :</label>
-                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Organisme :</label>
-                                <div class="custom-dropdown-container relative w-full text-left">
-                                    <input type="hidden" id="select-organisme" value="">
-                                    <button type="button" onclick="toggleDropdown('select-organisme')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
-                                        <span id="select-organisme-label" class="truncate pr-2">-- Organisme --</span>
-                                        <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-organisme-arrow">▼</span>
-                                    </button>
-                                    <div id="select-organisme-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Formation / Classe :</label>
-                                <div class="custom-dropdown-container relative w-full text-left">
-                                    <input type="hidden" id="select-formation" value="">
-                                    <button type="button" onclick="toggleDropdown('select-formation')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
-                                        <span id="select-formation-label" class="truncate pr-2">-- Choisir --</span>
-                                        <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-formation-arrow">▼</span>
-                                    </button>
-                                    <div id="select-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                                        <button type="button" onclick="selectOption('select-formation', '', '-- Choisir --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisir --</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📢 Faire l'appel (Cocher les présents) :</label>
-                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-sm font-sans min-h-[110px] max-h-[200px] overflow-y-auto flex flex-wrap gap-2">
-                                <p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="2" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[50px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="conteneur-boutons-action">
-                <button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session complète
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="lg:col-span-2">
-                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">🔍 Moteur de recherche transversal :</label>
-                    <input type="text" id="recherche-session-globale" oninput="filtrerEtAfficherSessions()" placeholder="Rechercher par élève, formateur, intitulé, date (JJ/MM/AAAA), type..." class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#2563eb] transition-all">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📅 Filtrer par période :</label>
-                    <div class="custom-dropdown-container relative w-full text-left">
-                        <input type="hidden" id="filtre-periode-selection" value="toutes">
-                        <button type="button" onclick="toggleDropdown('filtre-periode-selection')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#2563eb] transition-all cursor-pointer shadow-sm">
-                            <span id="filtre-periode-selection-label" class="truncate pr-2">📆 Toutes les dates</span>
-                            <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="filtre-periode-selection-arrow">▼</span>
-                        </button>
-                        <div id="filtre-periode-selection-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                            <button type="button" onclick="selectOption('filtre-periode-selection', 'toutes', '📆 Toutes les dates')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">📆 Toutes les dates</button>
-                            <button type="button" onclick="selectOption('filtre-periode-selection', 'aujourdhui', '🌞 Aujourd\'hui uniquement')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🌞 Aujourd'hui uniquement</button>
-                            <button type="button" onclick="selectOption('filtre-periode-selection', 'mois', '🗓️ Mois en cours')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🗓️ Mois en cours</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-3 relative z-10">
-            <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
-            <div id="liste-sessions-avenir" class="space-y-4"></div>
-        </div>
-
-        <div class="space-y-3 pt-4 border-t border-slate-800 relative z-10">
-            <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours (Actives)</h2>
-            <div id="liste-sessions-actives" class="space-y-4"></div>
-        </div>
-
-        <div class="space-y-3 pt-4 border-t border-slate-800 relative z-10">
-            <h2 class="text-sm font-black text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique (Terminées)</h2>
-            <div id="liste-sessions-terminees" class="space-y-4"></div>
-        </div>
     </div>
 
-    <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
                 <div class="flex-1 pt-1">
                     <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
-                    <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
-                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#2563eb] transition-all" />
+                    <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
                 </div>
             </div>
-            <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
-                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
-                <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
+            <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end gap-3" id="ui-modal-actions">
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors">Annuler</button>
+                <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md">OK</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CAPTURE GLOBALE DES ERREURS SILENCIEUSES POUR AIDER AU DÉBOGAGE
-        window.onerror = function(msg, url, line) { alert("🚨 Erreur Système : \n" + msg + "\nLigne: " + line); };
-        window.onunhandledrejection = function(event) { alert("🚨 Erreur Base de données : \n" + (event.reason.message || event.reason)); };
-
-        const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        let db;
-        let idSessionEnCoursModification = null;
-
-        let idOrgEnCoursModif = null;
-        let idFormEnCoursModif = null;
-        let idAppEnCoursModif = null;
-
-        let cacheSessionsGlobal = [];
-        let globalOrganismes = [];
-        let globalFormations = [];
-
-        function toggleDropdown(id) {
-            const menu = document.getElementById(id + '-menu');
-            const arrow = document.getElementById(id + '-arrow');
-            
-            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                if (m.id !== id + '-menu') m.classList.add('hidden');
-            });
-            document.querySelectorAll('.dropdown-arrow').forEach(a => {
-                if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)';
-            });
-
-            if(menu) {
-                const isHidden = menu.classList.toggle('hidden');
-                if(arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
-            }
-        }
-
-        function selectOption(dropdownId, value, label) {
-            const hiddenInput = document.getElementById(dropdownId);
-            const labelSpan = document.getElementById(dropdownId + '-label');
-            if(!hiddenInput) return;
-
-            const valeurChangee = hiddenInput.value !== String(value);
-            hiddenInput.value = value;
-            if(labelSpan) labelSpan.innerText = label;
-            
-            toggleDropdown(dropdownId);
-            
-            if (valeurChangee) {
-                if (dropdownId === 'annuaire-select-org-pour-formation') annuaireChangementOrgPourForm(value);
-                else if (dropdownId === 'annuaire-select-org-pour-app') annuaireFiltrerFormations(value);
-                else if (dropdownId === 'annuaire-select-form-pour-app') annuaireChangementFormPourApp(value);
-                else if (dropdownId === 'select-organisme') chargerFormationsFiltrees(value);
-                else if (dropdownId === 'select-formation') chargerApprenantsFiltres(value);
-                else if (dropdownId === 'filtre-periode-selection') filtrerEtAfficherSessions();
-            }
-        }
-
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-dropdown-container')) {
-                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
-                document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
-            }
-        });
-
-        function basculerZoneAnnuaire() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            ann.classList.toggle('hidden'); if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
-        }
-
-        function basculerZoneConfigurateur() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            conf.classList.toggle('hidden'); if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
-        }
-
-        function toggleGroupCollapse(targetId, iconId) {
-            const target = document.getElementById(targetId);
-            const icon = document.getElementById(iconId);
-            if (target && icon) {
-                const isHidden = target.classList.toggle('hidden');
-                icon.innerText = isHidden ? '▶' : '▼';
-            }
-        }
-
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
-                    try {
-                        const modal = document.getElementById('ui-modal');
-                        const box = document.getElementById('ui-modal-box');
-                        const title = document.getElementById('ui-modal-title');
-                        const msg = document.getElementById('ui-modal-message');
-                        const icon = document.getElementById('ui-modal-icon');
-                        const input = document.getElementById('ui-modal-input');
-                        const btnCancel = document.getElementById('ui-btn-cancel');
-                        const btnConfirm = document.getElementById('ui-btn-confirm');
+                    const modal = document.getElementById('ui-modal');
+                    const box = document.getElementById('ui-modal-box');
+                    const title = document.getElementById('ui-modal-title');
+                    const msg = document.getElementById('ui-modal-message');
+                    const icon = document.getElementById('ui-modal-icon');
+                    const btnCancel = document.getElementById('ui-btn-cancel');
+                    const btnConfirm = document.getElementById('ui-btn-confirm');
 
-                        title.innerText = options.title || 'Information';
-                        msg.innerHTML = options.message || '';
-                        
-                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    title.innerText = options.title || 'Information';
+                    msg.innerHTML = options.message || '';
+                    icon.innerText = options.type === 'error' ? '❌' : (options.type === 'success' ? '✅' : '⚠️');
+                    
+                    if (options.isConfirm) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
+                    btnConfirm.className = options.type === 'error' ? "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700" : "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700";
 
-                        if (options.isPrompt) {
-                            input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
-                        } else { input.classList.add('hidden'); }
+                    const cleanup = () => {
+                        modal.classList.add('hidden');
+                        btnConfirm.onclick = null; btnCancel.onclick = null;
+                    };
 
-                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
-                        btnConfirm.innerText = options.confirmText || 'OK';
+                    btnConfirm.onclick = () => { cleanup(); resolve(true); };
+                    btnCancel.onclick = () => { cleanup(); resolve(false); };
 
-                        const cleanup = () => {
-                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                            setTimeout(() => modal.classList.add('hidden'), 200);
-                            btnConfirm.onclick = null; btnCancel.onclick = null;
-                        };
-
-                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
-                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
-
-                        modal.classList.remove('hidden'); void modal.offsetWidth;
-                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
-                    } catch (err) {
-                        // SÉCURITÉ : Si l'interface modale HTML est cassée, on force un Pop-up classique
-                        if(options.isConfirm) resolve(window.confirm(options.message));
-                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
-                        else { window.alert(options.message); resolve(true); }
-                    }
+                    modal.classList.remove('hidden');
                 });
             },
-            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
-            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
+            alert: function(message, type = 'info') { return this.show({ message, type, isConfirm: false }); },
+            confirm: function(message, title = 'Confirmation') { return this.show({ message, type: 'warning', title, isConfirm: true }); }
         };
 
-        async function initAdmin() {
+        const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let userConnecte = null;
+        let roleConnecte = null;
+        let idAppEnCoursModif = null;
+
+        // VERIFICATION DE SECURITE DE LA SESSION AU DEMARRAGE
+        window.onload = async function() {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) {
+                window.location.href = "login.html";
+                return;
+            }
+            userConnecte = session.user;
+            document.getElementById('user-email').innerText = userConnecte.email;
+
+            const { data: profil } = await db.from('profils').select('*').eq('id', userConnecte.id).single();
+            if(!profil) { window.location.href = "login.html"; return; }
+            
+            roleConnecte = profil.role;
+            document.getElementById('badge-role').innerText = roleConnecte;
+
+            // Ajustement de l'affichage de l'onglet Comptes selon le rôle
+            if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
+                document.getElementById('tab-comptes').classList.remove('hidden');
+                configurerFormulaireComptes();
+            }
+
+            await initialiserDonneesBase();
+        };
+
+        async function executerDeconnexion() {
+            await db.auth.signOut();
+            window.location.href = "login.html";
+        }
+
+        function changerOnglet(onglet) {
+            ['sessions', 'classes', 'annuaire', 'comptes'].forEach(p => {
+                const panel = document.getElementById(`panel-${p}`);
+                const tab = document.getElementById(`tab-${p}`);
+                if(panel) panel.classList.add('hidden');
+                if(tab) {
+                    tab.classList.remove('border-indigo-500', 'text-white');
+                    tab.classList.add('border-transparent', 'text-gray-400');
+                }
+            });
+            document.getElementById(`panel-${onglet}`).classList.remove('hidden');
+            document.getElementById(`tab-${onglet}`).classList.add('border-indigo-500', 'text-white');
+        }
+
+        async function initialiserDonneesBase() {
+            await chargerOrganismesEtFormations();
+            await chargerSessions();
+            if(roleConnecte === 'super_admin' || roleConnecte === 'rp') await chargerListeComptes();
+        }
+
+        // ==========================================
+        // GESTION DES SESSIONS (FILTRÉES PAR PROPRIÉTAIRE / RÔLE)
+        // ==========================================
+        async function chargerSessions() {
             try {
-                db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                document.getElementById('date-session').valueAsDate = new Date();
+                let requete = db.from('sessions').select('*, formations(nom)');
                 
-                const { data: orgs, error: errO } = await db.from('organismes').select('*').order('nom');
-                if (errO) throw errO;
-                globalOrganismes = orgs || [];
+                // Restriction RLS logique côté client en attendant l'activation totale sur Supabase
+                if (roleConnecte === 'formateur') {
+                    requete = requete.eq('proprietaire_id', userConnecte.id);
+                } else if (roleConnecte === 'rp') {
+                    // Le RP voit ses sessions + celles des formateurs qu'il a créés
+                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', userConnecte.id);
+                    const listIds = [userConnecte.id, ...(formateurs ? formateurs.map(f => f.id) : [])];
+                    requete = requete.in('proprietaire_id', listIds);
+                }
+
+                const { data: sess, error } = await requete.order('date_session', { ascending: false });
+                if (error) throw error;
+
+                const corps = document.getElementById('table-sessions');
+                corps.innerHTML = '';
                 
-                const { data: forms, error: errF } = await db.from('formations').select('*').order('nom');
-                if (errF) throw errF;
-                globalFormations = forms || [];
-                
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                
+                if(!sess || sess.length === 0) {
+                    corps.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-600 italic">Aucune session active enregistrée.</td></tr>`;
+                    return;
+                }
+
+                sess.forEach(s => {
+                    const dt = s.date_session.split('-').reverse().join('/');
+                    const urlVisuelle = `${window.location.origin}/index.html?session_id=${s.id}`;
+                    corps.innerHTML += `
+                        <tr class="border-b border-gray-800/40 hover:bg-gray-900/20 font-sans">
+                            <td class="py-3 px-2 font-bold text-white">${s.nom}</td>
+                            <td class="py-3 px-2 text-gray-300">${s.formations ? s.formations.nom : 'Indéfinie'}</td>
+                            <td class="py-3 px-2 uppercase text-[10px] font-bold font-mono text-indigo-400">${s.type}</td>
+                            <td class="py-3 px-2 text-gray-400 font-mono">${dt}</td>
+                            <td class="py-3 px-2 text-right">
+                                <a href="${urlVisuelle}" target="_blank" class="bg-indigo-950/60 text-indigo-400 border border-indigo-900/50 hover:bg-indigo-900/50 px-3 py-1.5 rounded-lg text-[11px] font-bold transition">🔗 Ouvrir Dashboard</a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(err) { await UIModal.alert("Erreur chargement sessions : " + err.message, "error"); }
+        }
+
+        async function creerSessionEvaluation(e) {
+            e.preventDefault();
+            const nom = document.getElementById('sess-nom').value.trim();
+            const type = document.getElementById('sess-type').value;
+            const formId = document.getElementById('sess-formation').value;
+            const date = document.getElementById('sess-date').value;
+
+            try {
+                // Création de la session en liant l'utilisateur comme proprietaire_id
+                const { data: s, error: errS } = await db.from('sessions').insert([{
+                    nom, type, date_session: date, formation_id: formId, proprietaire_id: userConnecte.id
+                }]).select().single();
+                if (errS) throw errS;
+
+                // Duplication des élèves (Snapshot de Session)
+                const { data: masterApps } = await db.from('apprenants_master').select('*').eq('formation_id', formId);
+                if (masterApps && masterApps.length > 0) {
+                    const rowApps = masterApps.map(a => ({
+                        prenom: `${a.prenom.trim()} ${a.nom.trim()}`,
+                        email: a.email || null,
+                        session_id: s.id
+                    }));
+                    await db.from('apprenants').insert(rowApps);
+                }
+
+                // Génération automatique des Grilles d'évaluation de critères
+                const { data: masterCrits } = await db.from('criteres_master').select('*').eq('formation_id', formId);
+                if (masterCrits && masterCrits.length > 0) {
+                    const rowCrits = masterCrits.map(c => ({
+                        nom: c.nom, description: c.description, session_id: s.id
+                    }));
+                    await db.from('criteres').insert(rowCrits);
+                }
+
+                document.getElementById('sess-nom').value = "";
                 await chargerSessions();
-            } catch(e) {
-                console.error(e);
-                await UIModal.alert("Connexion à la base de données échouée : " + e.message, "error");
+                await UIModal.alert("La session, le snapshot apprenants et les critères ont été initialisés !", "success");
+            } catch (err) { await UIModal.alert("Erreur génération de session : " + err.message, "error"); }
+        }
+
+        // ==========================================
+        // GESTION STRUCTURES (CLASSES / FORMATIONS / ORGANISMES)
+        // ==========================================
+        async function chargerOrganismesEtFormations() {
+            try {
+                const { data: orgs } = await db.from('organismes').select('*').order('nom');
+                const { data: forms } = await db.from('formations').select('*, organismes(nom)').order('nom');
+
+                const selectFormSess = document.getElementById('sess-formation');
+                const selectFormAnnu = document.getElementById('annuaire-select-formation');
+                const selectFormOrg = document.getElementById('form-org');
+
+                selectFormSess.innerHTML = '';
+                selectFormAnnu.innerHTML = '<option value="">-- Choisir une classe --</option>';
+                selectFormOrg.innerHTML = '';
+
+                if (orgs) {
+                    document.getElementById('list-organismes').innerHTML = orgs.map(o => `<div class="bg-gray-950 p-2.5 rounded-xl border border-gray-800 text-xs font-bold text-gray-300">🏢 ${o.nom}</div>`).join('');
+                    selectFormOrg.innerHTML = orgs.map(o => `<option value="${o.id}">${o.nom}</option>`).join('');
+                }
+
+                if (forms) {
+                    document.getElementById('list-formations').innerHTML = forms.map(f => `<div class="bg-gray-950 p-2.5 rounded-xl border border-gray-800 text-xs text-gray-300 flex justify-between"><span>📁 <b>${f.nom}</b></span> <span class="text-gray-600 font-mono text-[10px] uppercase">${f.organismes ? f.organismes.nom : 'Sans école'}</span></div>`).join('');
+                    
+                    const options = forms.map(f => `<option value="${f.id}">${f.nom} (${f.organismes ? f.organismes.nom : '?'})</option>`).join('');
+                    selectFormSess.innerHTML = options;
+                    selectFormAnnu.innerHTML += options;
+                }
+            } catch(err) { console.error(err); }
+        }
+
+        async function creerOrganisme(e) {
+            e.preventDefault();
+            const nom = document.getElementById('org-nom').value.trim();
+            await db.from('organismes').insert([{ nom }]);
+            document.getElementById('org-nom').value = "";
+            await chargerOrganismesEtFormations();
+        }
+
+        async function creerFormation(e) {
+            e.preventDefault();
+            const nom = document.getElementById('form-nom').value.trim();
+            const orgId = document.getElementById('form-org').value;
+            await db.from('formations').insert([{ nom, organisme_id: orgId }]);
+            document.getElementById('form-nom').value = "";
+            await chargerOrganismesEtFormations();
+        }
+
+        // ==========================================
+        // GESTION DE L'ANNUAIRE PEDAGOGIQUE
+        // ==========================================
+        async function chargerEtudiantsAnnuaire(formId) {
+            if(!formId) { document.getElementById('table-annuaire-corps').innerHTML = ''; return; }
+            try {
+                const { data: apps, error } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
+                if (error) throw error;
+
+                const corps = document.getElementById('table-annuaire-corps');
+                corps.innerHTML = '';
+
+                if(!apps || apps.length === 0) {
+                    corps.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-600 italic">Aucun étudiant dans cette classe.</td></tr>`;
+                    return;
+                }
+
+                apps.forEach(a => {
+                    corps.innerHTML += `
+                        <tr class="border-b border-gray-800/40 hover:bg-gray-900/10">
+                            <td class="py-2.5 px-2 font-bold text-white">${a.prenom}</td>
+                            <td class="py-2.5 px-2 text-slate-300 uppercase font-bold">${a.nom}</td>
+                            <td class="py-2.5 px-2 text-gray-400 font-mono">${a.email || '--'}</td>
+                            <td class="py-2.5 px-2 text-right">
+                                <button onclick="chargerFicheEtudiantPourModif(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${a.email || ""}')" class="text-blue-400 hover:underline mr-3 cursor-pointer">Modifier</button>
+                                <button onclick="supprimerEtudiant(${a.id})" class="text-red-500 hover:underline cursor-pointer">Supprimer</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(err) { console.error(err); }
+        }
+
+        function chargerFicheEtudiantPourModif(id, prenom, nom, email) {
+            idAppEnCoursModif = id;
+            document.getElementById('annuaire-id-app').value = id;
+            document.getElementById('annuaire-prenom').value = prenom;
+            document.getElementById('annuaire-nom').value = nom;
+            document.getElementById('annuaire-email').value = email;
+            document.getElementById('btn-annuaire-submit').innerText = "Modifier la fiche";
+        }
+
+        async function creerOuModifierEtudiant(e) {
+            e.preventDefault();
+            const formId = document.getElementById('annuaire-select-formation').value;
+            if(!formId) return;
+
+            const prenom = document.getElementById('annuaire-prenom').value.trim();
+            const nom = document.getElementById('annuaire-nom').value.trim();
+            const email = document.getElementById('annuaire-email').value.trim();
+
+            if (idAppEnCoursModif) {
+                // Modification dans l'annuaire général
+                await db.from('apprenants_master').update({ prenom, nom, email: email || null }).eq('id', idAppEnCoursModif);
+                // Cascading sur l'e-mail des sessions en cours
+                await db.from('apprenants').update({ email: email || null }).eq('prenom', `${prenom} ${nom}`);
+                idAppEnCoursModif = null;
+                document.getElementById('btn-annuaire-submit').innerText = "Enregistrer l'étudiant";
+            } else {
+                // Ajout classique
+                await db.from('apprenants_master').insert([{ prenom, nom, email: email || null, formation_id: formId }]);
+            }
+
+            document.getElementById('annuaire-prenom').value = "";
+            document.getElementById('annuaire-nom').value = "";
+            document.getElementById('annuaire-email').value = "";
+            await chargerEtudiantsAnnuaire(formId);
+        }
+
+        async function supprimerEtudiant(id) {
+            const ok = await UIModal.confirm("Voulez-vous retirer cet élève de l'annuaire général ?");
+            if(ok) {
+                await db.from('apprenants_master').delete().eq('id', id);
+                await chargerEtudiantsAnnuaire(document.getElementById('annuaire-select-formation').value);
             }
         }
 
-        function renderDropdownsOrganismes() {
-            let htmlOpts = `<button type="button" onclick="selectOption('select-organisme', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
-            let htmlOptsAnnForm = `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '', '-- Sélectionner l\\'organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Sélectionner l'organisme --</button>`;
-            let htmlOptsAnnApp = `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
-            
-            globalOrganismes.forEach(o => {
-                const safeNom = o.nom.replace(/'/g, "\\'");
-                htmlOpts += `<button type="button" onclick="selectOption('select-organisme', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                htmlOptsAnnForm += `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                htmlOptsAnnApp += `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-            });
-            
-            document.getElementById('select-organisme-menu').innerHTML = htmlOpts;
-            document.getElementById('annuaire-select-org-pour-formation-menu').innerHTML = htmlOptsAnnForm;
-            document.getElementById('annuaire-select-org-pour-app-menu').innerHTML = htmlOptsAnnApp;
+        // ==========================================
+        // GESTION DES ACCÈS COMPTES COMPLETS DÉDIÉS
+        // ==========================================
+        function configurerFormulaireComptes() {
+            const select = document.getElementById('compte-role');
+            select.innerHTML = '';
+            if (roleConnecte === 'super_admin') {
+                select.innerHTML += `<option value="rp">Responsable Pédagogique (RP)</option>`;
+            }
+            select.innerHTML += `<option value="formateur">Formateur / Évaluateur</option>`;
         }
 
-        function chargerFormationsFiltrees(organismeId) {
-            const selectFormHidden = document.getElementById('select-formation');
-            const selectFormLabel = document.getElementById('select-formation-label');
-            const selectFormMenu = document.getElementById('select-formation-menu');
-            const conteneurAppel = document.getElementById('liste-appel-checkbox');
-            
-            selectFormHidden.value = "";
-            selectFormLabel.innerText = "-- Choisir --";
-            let html = `<button type="button" onclick="selectOption('select-formation', '', '-- Choisir --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisir --</button>`;
-            conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-            
-            if (!organismeId) { selectFormMenu.innerHTML = html; return; }
-            
-            const filtered = globalFormations.filter(f => f.organisme_id == organismeId);
-            filtered.forEach(f => {
-                const safeNom = f.nom.replace(/'/g, "\\'");
-                html += `<button type="button" onclick="selectOption('select-formation', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
-            });
-            selectFormMenu.innerHTML = html;
-        }
-
-        function annuaireChangementOrgPourForm(organismeId) { afficherListeFormations(organismeId); }
-
-        function annuaireFiltrerFormations(organismeId) {
-            const hiddenInput = document.getElementById('annuaire-select-form-pour-app');
-            const labelSpan = document.getElementById('annuaire-select-form-pour-app-label');
-            const menuContainer = document.getElementById('annuaire-select-form-pour-app-menu');
-            const conteneurApp = document.getElementById('annuaire-liste-apprenants');
-            
-            hiddenInput.value = "";
-            labelSpan.innerText = "-- Classe --";
-            let html = `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>`;
-            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
-            
-            if (!organismeId) { menuContainer.innerHTML = html; return; }
-            
-            const filtered = globalFormations.filter(f => f.organisme_id == organismeId);
-            filtered.forEach(f => {
-                const safeNom = f.nom.replace(/'/g, "\\'");
-                html += `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
-            });
-            menuContainer.innerHTML = html;
-        }
-
-        function annuaireChangementFormPourApp(formationId) { afficherListeApprenantsMaster(formationId); }
-
-        async function chargerApprenantsFiltres(formationId) {
+        async function chargerListeComptes() {
             try {
-                const conteneurAppel = document.getElementById('liste-appel-checkbox');
-                if (!formationId) {
-                    conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-                    return;
+                let requete = db.from('profils').select('*');
+                if (roleConnecte === 'rp') {
+                    requete = requete.eq('createur_id', userConnecte.id);
                 }
-                const { data, error } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
+                const { data: users, error } = await requete.order('date_creation', { ascending: false });
                 if (error) throw error;
+
+                const corps = document.getElementById('table-comptes-corps');
+                corps.innerHTML = '';
                 
-                if (data && data.length > 0) {
-                    conteneurAppel.innerHTML = data.map(app => `
-                        <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
-                            <input type="checkbox" name="apprenant-present" data-name="${app.prenom} ${app.nom}" data-email="${app.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
-                            <div class="leading-tight">
-                                <span class="font-semibold text-slate-200 block text-sm font-sans">${app.prenom} ${app.nom}</span>
-                                ${app.email ? `<span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${app.email}</span>` : ''}
-                            </div>
-                        </label>
-                    `).join('');
-                } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic text-sm">Aucun apprenant enregistré.</p>`; }
-            } catch(e) { await UIModal.alert("Erreur base de données : " + e.message, "error"); }
-        }
-
-        function afficherListeOrganismes(data) {
-            const conteneur = document.getElementById('annuaire-liste-organismes');
-            if(data && data.length > 0) {
-                conteneur.innerHTML = data.map(o => `
-                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
-                        <span class="truncate font-medium text-slate-300">${o.nom}</span>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="entrerModifOrganisme(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
-                            <button onclick="supprimerOrganismeMaster(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucun organisme enregistré.</p>`; }
-        }
-
-        function afficherListeFormations(orgId) {
-            const conteneur = document.getElementById('annuaire-liste-formations');
-            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
-            
-            const filtered = globalFormations.filter(f => f.organisme_id == orgId);
-            if(filtered.length > 0) {
-                conteneur.innerHTML = filtered.map(f => `
-                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
-                        <span class="truncate font-medium text-slate-300">${f.nom}</span>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="entrerModifFormation(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
-                            <button onclick="supprimerFormationMaster(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucune formation pour cet organisme.</p>`; }
-        }
-
-        async function afficherListeApprenantsMaster(formId) {
-            try {
-                const conteneur = document.getElementById('annuaire-liste-apprenants');
-                if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
-                const { data, error } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
-                if (error) throw error;
-
-                if(data && data.length > 0) {
-                    conteneur.innerHTML = data.map(a => `
-                        <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-sm font-sans hover:border-slate-800 transition-all shadow-sm">
-                            <div class="truncate pr-2">
-                                <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
-                                <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
-                            </div>
-                            <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
-                                <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
-            } catch(e) { await UIModal.alert("Erreur : " + e.message, "error"); }
-        }
-
-        async function chargerSessions() {
-            try {
-                const { data: sessions, error: errS } = await db.from('sessions').select('*');
-                const { data: evalVotes, error: errV } = await db.from('evaluations').select('session_id');
-
-                if (errS || errV) throw new Error((errS?.message || "") + " " + (errV?.message || ""));
-
-                const sessionsVerrouillees = new Set((evalVotes || []).map(e => e.session_id));
-                const rawList = sessions || [];
-
-                const t = new Date();
-                const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-
-                const backgroundUpdates = [];
-
-                rawList.forEach(s => {
-                    let nvStatut = s.statut;
-                    if (s.date_session) {
-                        if (s.date_session < todayStr) nvStatut = 'terminee';
-                        else if (s.date_session > todayStr) nvStatut = 'a_venir';
-                        else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
-                    }
-
-                    if (s.statut !== nvStatut) {
-                        backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
-                        s.statut = nvStatut;
-                    }
-                    
-                    s.verrouillee = sessionsVerrouillees.has(s.id);
-                });
-
-                if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
-
-                rawList.sort((a, b) => {
-                    if (a.date_session !== b.date_session) {
-                        return (a.date_session || "").localeCompare(b.date_session || "");
-                    }
-                    return b.id - a.id;
-                });
-
-                cacheSessionsGlobal = rawList;
-                if (cacheSessionsGlobal.length === 0) {
-                    document.getElementById('zone-configurateur').classList.remove('hidden');
+                if (users) {
+                    users.forEach(u => {
+                        const dateC = new Date(u.date_creation).toLocaleDateString('fr-FR');
+                        corps.innerHTML += `
+                            <tr class="border-b border-gray-800/40 hover:bg-gray-900/10 font-sans">
+                                <td class="py-2.5 px-2 font-bold text-white">${u.email}</td>
+                                <td class="py-2.5 px-2 uppercase font-mono text-[10px] text-indigo-400 font-bold">${u.role}</td>
+                                <td class="py-2.5 px-2 text-gray-500 font-mono">${dateC}</td>
+                            </tr>
+                        `;
+                    });
                 }
-                filtrerEtAfficherSessions();
-            } catch(e) { await UIModal.alert("Erreur lors du chargement des sessions : " + e.message, "error"); }
+            } catch(err) { console.error(err); }
         }
 
-        function filtrerEtAfficherSessions() {
-            const rechercheTexte = document.getElementById('recherche-session-globale').value.toLowerCase().trim();
-            const periodeSelection = document.getElementById('filtre-periode-selection').value;
+        async function creerCompteCollaborateur(e) {
+            e.preventDefault();
+            const email = document.getElementById('compte-email').value.trim();
+            const password = document.getElementById('compte-password').value;
+            const role = document.getElementById('compte-role').value;
 
-            const t = new Date();
-            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-            const currentMonthStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
-
-            const sessionsFiltrees = cacheSessionsGlobal.filter(s => {
-                if (s.date_session) {
-                    if (periodeSelection === 'aujourdhui' && s.date_session !== todayStr) return false;
-                    if (periodeSelection === 'mois' && !s.date_session.startsWith(currentMonthStr)) return false;
-                }
-
-                if (rechercheTexte !== "") {
-                    const nomSess = (s.nom || "").toLowerCase();
-                    const typeSess = (s.type === "ecrit" ? "écrit" : "oral").toLowerCase();
-                    
-                    const formationObj = globalFormations.find(f => f.id === s.formation_id);
-                    const formationNom = formationObj ? formationObj.nom.toLowerCase() : "";
-                    const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
-                    const organismeNom = orgObj ? orgObj.nom.toLowerCase() : "";
-                    
-                    let dateFormateeFr = "";
-                    if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
-
-                    return nomSess.includes(rechercheTexte) || typeSess.includes(rechercheTexte) ||
-                           formationNom.includes(rechercheTexte) || organismeNom.includes(rechercheTexte) ||
-                           dateFormateeFr.includes(rechercheTexte);
-                }
-                return true;
-            });
-
-            const arrAvenir = []; const arrActives = []; const arrTerminees = [];
-            sessionsFiltrees.forEach(s => {
-                if (s.statut === 'terminee') arrTerminees.push(s);
-                else if (s.statut === 'a_venir') arrAvenir.push(s);
-                else arrActives.push(s);
-            });
-
-            regrouperEtAfficherSessionsParGroupe(arrAvenir, 'liste-sessions-avenir', false);
-            regrouperEtAfficherSessionsParGroupe(arrActives, 'liste-sessions-actives', false);
-            regrouperEtAfficherSessionsParGroupe(arrTerminees, 'liste-sessions-terminees', true);
-        }
-
-        function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive) {
-            const conteneur = document.getElementById(conteneurId);
-            if (!conteneur) return; conteneur.innerHTML = "";
-
-            if (!sessionsList || sessionsList.length === 0) {
-                conteneur.innerHTML = `
-                    <div class="bg-[#101828]/40 border border-slate-800/60 rounded-xl p-6 text-center select-none">
-                        <span class="text-2xl mb-2 block">📭</span>
-                        <p class="text-sm font-bold text-slate-300">Aucune session enregistrée.</p>
-                        <p class="text-xs text-slate-500 mt-1">Les sessions correspondantes s'afficheront ici.</p>
-                    </div>
-                `;
+            if (password.length < 6) {
+                await UIModal.alert("Le mot de passe doit faire au moins 6 caractères.", "error");
                 return;
             }
 
-            const mapGroupements = {};
-            sessionsList.forEach(s => {
-                const formationObj = globalFormations.find(f => f.id === s.formation_id);
-                const nomClasse = formationObj ? formationObj.nom : "Sans affectation";
-                const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
-                const nomOrg = orgObj ? orgObj.nom : "Manuel";
-                
-                const cleGroupement = `${nomOrg} : ${nomClasse}`;
-                if (!mapGroupements[cleGroupement]) mapGroupements[cleGroupement] = [];
-                mapGroupements[cleGroupement].push(s);
-            });
-
-            let groupCounter = 0;
-            for (const [cleGroupement, tableauSessions] of Object.entries(mapGroupements)) {
-                groupCounter++;
-                const blockTargetId = `collapse-${conteneurId}-${groupCounter}`;
-                const blockIconId = `icon-${conteneurId}-${groupCounter}`;
-
-                const forceCollapse = (conteneurId === 'liste-sessions-avenir');
-                const hiddenStyleClass = forceCollapse ? 'hidden' : '';
-                const arrowIndicator = forceCollapse ? '▶' : '▼';
-
-                let htmlBlocClasse = `
-                    <div class="space-y-2 bg-[#101828]/30 p-3 rounded-xl border border-slate-900/60">
-                        <div onclick="toggleGroupCollapse('${blockTargetId}', '${blockIconId}')" class="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5 cursor-pointer hover:text-white transition-all select-none">
-                            <span id="${blockIconId}" class="text-[10px] font-mono text-[#fe9a00]">${arrowIndicator}</span>
-                            📁 ${cleGroupement} (${tableauSessions.length} session${tableauSessions.length > 1 ? 's' : ''})
-                        </div>
-                        <div id="${blockTargetId}" class="${hiddenStyleClass} space-y-2 pl-1.5 border-l border-slate-800/80">
-                `;
-
-                tableauSessions.forEach(s => {
-                    const nomValide = s.nom || "Soutenance";
-                    const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-
-                    const badgeType = s.type === 'ecrit' 
-                        ? `<span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
-
-                    let dateSess = s.date_session;
-                    if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
-                    else { dateSess = "--/--/----"; }
-
-                    const tagDate = `<span class="text-slate-400 font-mono text-[11px] ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
-
-                    let liensVotesHtml = "";
-                    if (s.statut === 'active') {
-                        liensVotesHtml = `
-                            <a href="vote.html?session_id=${s.id}" target="_blank" title="Lien vote apprenants" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                            <a href="vote_formateur.html?session_id=${s.id}" target="_blank" title="Lien évaluation formateur" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
-                        `;
-                    }
-
-                    let boutonEdition = "";
-                    if (s.verrouillee) {
-                        boutonEdition = `<button title="Édition bloquée : des évaluations ont déjà été soumises" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800/30 border border-slate-700/30 text-slate-600 cursor-not-allowed text-sm">🚫</button>`;
-                    } else {
-                        boutonEdition = `<button onclick="entrerEnModeModification('${s.id}')" title="Faire l'appel et modifier les groupes" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>`;
-                    }
-
-                    let boutonActionStatut = "";
-                    if (s.statut === 'a_venir') {
-                        boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>`;
-                    } else if (s.statut === 'active') {
-                        boutonActionStatut = `<button onclick="cloturerSession('${s.id}')" title="Clôturer et archiver la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-sm cursor-pointer">🔒</button>`;
-                    }
-
-                    if (!estArchive) {
-                        htmlBlocClasse += `
-                            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
-                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
-                                </div>
-                                <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                    ${liensVotesHtml}
-                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
-                                    <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                    ${boutonEdition}
-                                    ${boutonActionStatut}
-                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
-                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        htmlBlocClasse += `
-                            <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
-                                <div>
-                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
-                                    <span class="bg-[#030712] text-slate-500 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
-                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
-                                    <button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>
-                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-sm cursor-pointer">👥</button>
-                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    }
+            try {
+                // INSCRIPTION ISOLÉE SANS PERTE DE SESSION DE L'ADMINISTRAREUR
+                const authIsoleClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                    auth: { persistSession: false }
                 });
 
-                htmlBlocClasse += `</div></div>`; conteneur.innerHTML += htmlBlocClasse;
+                const { data: authData, error: authError } = await authIsoleClient.auth.signUp({ email, password });
+                if (authError) throw authError;
+
+                if (authData.user) {
+                    // Injection forcée du rôle et du lien parent (createur_id)
+                    const { error: profError } = await db.from('profils').insert([{
+                        id: authData.user.id,
+                        email: email,
+                        role: role,
+                        createur_id: userConnecte.id
+                    }]);
+                    if (profError) throw profError;
+                }
+
+                document.getElementById('compte-email').value = "";
+                document.getElementById('compte-password').value = "";
+                await chargerListeComptes();
+                await UIModal.alert(`Accès ${role.toUpperCase()} généré avec succès !`, "success");
+            } catch (err) {
+                await UIModal.alert("Erreur lors de la création d'accès : " + err.message, "error");
             }
         }
-
-        function extraireApprenantsPresents() {
-            const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
-            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
-        }
-
-        async function genererSessionComplete() {
-            try {
-                const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-                const typeSession = document.getElementById('type-session').value;
-                const dateSession = document.getElementById('date-session').value;
-                const formationId = document.getElementById('select-formation').value;
-                const criteresRaw = document.getElementById('criteres-session').value.trim();
-                const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
-                const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-                const listApprenantsPresents = extraireApprenantsPresents();
-
-                if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
-                if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-                if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent dans le registre d'appel.", "warning", "Appel incomplet");
-
-                const t = new Date();
-                const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-                let statutSession = 'active';
-                if (dateSession < todayStr) statutSession = 'terminee';
-                else if (dateSession > todayStr) statutSession = 'a_venir';
-
-                const { data: session, error: errSess } = await db.from('sessions').insert([{ 
-                    nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
-                }]).select().single();
-                if (errSess) throw errSess;
-
-                if (criteresRaw) {
-                    const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                    if (arrCriteres.length > 0) {
-                        const { error: eCrit } = await db.from('criteres').insert(arrCriteres.map(ligne => {
-                            const idx = ligne.indexOf(':'); let nom = ligne, description = "";
-                            if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
-                            return { session_id: session.id, nom: nom, description: description };
-                        }));
-                        if(eCrit) throw eCrit;
-                    }
-                }
-
-                if (evaluateursRaw) {
-                    const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                    if (arrEvaluateurs.length > 0) {
-                        const { error: eEval } = await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
-                        if(eEval) throw eEval;
-                    }
-                }
-
-                const listeNomsGroupes = []; const payloadGroupes = [];
-                for (let i = 1; i <= nbGroupes; i++) {
-                    const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
-                    payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
-                }
-                const { data: groupesInseres, error: eGrp } = await db.from('groupes').insert(payloadGroupes).select();
-                if(eGrp) throw eGrp;
-                
-                const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-                for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
-                }
-
-                const { error: eApp } = await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                    session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
-                })));
-                if(eApp) throw eApp;
-
-                await UIModal.alert("La session a été générée avec succès ! Les groupes ont été constitués.", "success", "Session Créée");
-                
-                document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
-                document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
-                document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
-                document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-                document.getElementById('liste-evaluateurs-brute').value = "";
-                
-                document.getElementById('zone-configurateur').classList.add('hidden');
-                await chargerSessions();
-            } catch (e) { await UIModal.alert("Erreur lors de la génération : " + e.message, "error"); }
-        }
-
-        async function entrerEnModeModification(idSession) {
-            try {
-                idSessionEnCoursModification = idSession;
-                const zoneConfigurateur = document.getElementById('zone-configurateur');
-                
-                zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
-                zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-                document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de l'appel / session`;
-
-                const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
-                const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
-                const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
-                const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-                const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
-
-                if(session) {
-                    document.getElementById('nouveau-nom-session').value = session.nom;
-                    const typeVal = session.type || 'oral';
-                    document.getElementById('type-session').value = typeVal;
-                    document.getElementById('type-session-label').innerText = typeVal === 'oral' ? '🗣️ Évaluation Orale' : '✍️ Évaluation Écrite';
-                    document.getElementById('date-session').value = session.date_session || '';
-                }
-                if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
-                if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
-                
-                if(grps && grps.length > 0) {
-                    document.getElementById('nb-groupes').value = grps.length;
-                    const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
-                }
-                
-                if(apps) {
-                    document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
-                    document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Mode Édition --";
-                    document.getElementById('select-formation-menu').innerHTML = `<button type="button" class="w-full text-left block px-4 py-2.5 text-sm text-gray-500 rounded-lg">-- Mode Édition --</button>`;
-                    
-                    document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                        <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
-                            <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
-                            <div class="leading-tight">
-                                <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
-                                <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
-                            </div>
-                        </label>
-                    `).join('');
-                }
-
-                document.getElementById('conteneur-boutons-action').innerHTML = `
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                        <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Mettre à jour l'appel et les groupes</button>
-                        <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
-                    </div>
-                `;
-                window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
-            } catch(e) { await UIModal.alert("Erreur ouverture mode édition : " + e.message, "error"); }
-        }
-
-        function annulerModeModification() {
-            idSessionEnCoursModification = null; const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.className = "hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30";
-            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
-
-            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
-            document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
-            document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-            document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
-
-            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
-        }
-
-        async function sauvegarderModificationsSession() {
-            try {
-                if (!idSessionEnCoursModification) return;
-                const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-                const typeSession = document.getElementById('type-session').value;
-                const dateSession = document.getElementById('date-session').value;
-                const criteresRaw = document.getElementById('criteres-session').value.trim();
-                const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
-                const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-                const listApprenantsPresents = extraireApprenantsPresents();
-
-                if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
-                if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-
-                const t = new Date();
-                const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-                let statutSession = 'active';
-                if (dateSession < todayStr) statutSession = 'terminee';
-                else if (dateSession > todayStr) statutSession = 'a_venir';
-
-                const { error: e1 } = await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
-                if (e1) throw e1;
-                await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
-                await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
-                await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
-                await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
-
-                if (criteresRaw) {
-                    const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                    if (arrCriteres.length > 0) {
-                        await db.from('criteres').insert(arrCriteres.map(ligne => {
-                            const idx = ligne.indexOf(':'); let nom = ligne, description = "";
-                            if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
-                            return { session_id: idSessionEnCoursModification, nom: nom, description: description };
-                        }));
-                    }
-                }
-
-                if (evaluateursRaw) {
-                    const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                    if (arrEvaluateurs.length > 0) {
-                        await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
-                    }
-                }
-
-                const listeNomsGroupes = []; const payloadGroupes = [];
-                for (let i = 1; i <= nbGroupes; i++) {
-                    const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
-                    payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
-                }
-                const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
-                const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-                for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
-                }
-
-                await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                    session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
-                })));
-
-                await UIModal.alert("Appel et groupes mis à jour avec succès !", "success");
-                annulerModeModification(); await chargerSessions();
-            } catch(e) { await UIModal.alert("Erreur de sauvegarde : " + e.message, "error"); }
-        }
-
-        async function creerOuModifierOrganismeMaster() {
-            try {
-                const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-                if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-                
-                if (idOrgEnCoursModif) {
-                    const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                    if (error) throw error;
-                    idOrgEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('organismes').insert([{ nom: nom }]);
-                    if (error) throw error;
-                    input.value = "";
-                }
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme enregistré.", "success");
-            } catch(e) { await UIModal.alert("Erreur organisme : " + e.message, "error"); }
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            try {
-                if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('organismes').delete().eq('id', id);
-                if (error) throw error;
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme supprimé.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierFormationMaster() {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
-                if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
-                if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
-                
-                if (idFormEnCoursModif) {
-                    const { error } = await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                    if(error) throw error;
-                    idFormEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
-                    if(error) throw error;
-                    input.value = "";
-                }
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Formation mise à jour.", "success");
-            } catch(e) { await UIModal.alert("Erreur formation : " + e.message, "error"); }
-        }
-
-        async function supprimerFormationMaster(id, nom) {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
-                const { error } = await db.from('formations').delete().eq('id', id);
-                if (error) throw error;
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Classe supprimée.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierApprenantMaster() {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
-                if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
-                if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
-                
-                if (idAppEnCoursModif) {
-                    // 1. Mise à jour dans l'annuaire général (apprenants_master)
-                    const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
-                    if (error) throw error;
-
-                    // 2. REPARATION DU BUG : On propage le nouvel email sur toutes les sessions déjà générées où cet élève apparaît
-                    const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
-                    await db.from('apprenants').update({ email: e.value.trim() || null }).eq('prenom', nomCompletInstancie);
-
-                    idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                    document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
-                } else {
-                    // Création classique (Premier enregistrement)
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), email: e.value.trim() || null, formation_id: formId }]);
-                    if (error) throw error;
-                    p.value = ""; n.value = ""; e.value = "";
-                }
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Fiche apprenant enregistrée et synchronisée sur les sessions !", "success");
-            } catch(err) { await UIModal.alert("Erreur apprenant : " + err.message, "error"); }
-        }
-
-        async function supprimerApprenantMaster(id) {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('apprenants_master').delete().eq('id', id);
-                if (error) throw error;
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Apprenant retiré.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
-        }
-
-        async function changerStatutSessionDirect(idSession, nvStatut) {
-            try {
-                const { error } = await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); 
-                if (error) throw error;
-                await chargerSessions();
-                await UIModal.alert("Statut mis à jour.", "success");
-            } catch(e) { await UIModal.alert("Erreur de statut : " + e.message, "error"); }
-        }
-
-        async function cloturerSession(idSession) {
-            try {
-                if (!(await UIModal.confirm("Fermer définitivement cette session ? Elle sera déplacée dans les archives.", "Clôture", "warning"))) return;
-                const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); 
-                if (error) throw error;
-                await chargerSessions();
-                await UIModal.alert("Session clôturée et archivée.", "success");
-            } catch(e) { await UIModal.alert("Erreur de clôture : " + e.message, "error"); }
-        }
-
-        async function dupliquerSession(idSessionSource, nomActuel) {
-            try {
-                const nouveauNom = await UIModal.prompt("Définir le nom de la copie :", `${nomActuel} - Copie`); if (!nouveauNom) return;
-                const { data: src, error: e1 } = await db.from('sessions').select('type, date_session, formation_id').eq('id', idSessionSource).single();
-                if(e1) throw e1;
-                const { data: nv, error: e2 } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'a_venir', type: src.type, date_session: src.date_session, formation_id: src.formation_id }]).select().single();
-                if(e2) throw e2;
-
-                const { data: crits, error: e3 } = await db.from('criteres').select('nom, description').eq('session_id', idSessionSource);
-                if(e3) throw e3;
-                if (crits && crits.length > 0) { 
-                    const { error: e4 } = await db.from('criteres').insert(crits.map(c => ({ session_id: nv.id, nom: c.nom, description: c.description }))); 
-                    if(e4) throw e4;
-                }
-                
-                await chargerSessions();
-                await UIModal.alert("Session dupliquée.", "success");
-            } catch(e) { await UIModal.alert("Erreur de duplication : " + e.message, "error"); }
-        }
-
-        async function supprimerSession(idSession) {
-            try {
-                if (!(await UIModal.confirm("Suppression définitive de la session ?", "Suppression Critique", "error"))) return;
-                const { error } = await db.from('sessions').delete().eq('id', idSession); 
-                if (error) throw error;
-                await chargerSessions();
-                await UIModal.alert("Session supprimée avec succès.", "success");
-            } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
-        }
-
-        window.onload = initAdmin;
     </script>
 </body>
 </html>
