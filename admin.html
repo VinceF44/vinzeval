@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DE LA CONSOLE AVEC LES DEUX BOUTONS ALIGNÉS -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
@@ -27,6 +28,7 @@
             </div>
         </div>
 
+        <!-- TIROIR 1 : L'ANNUAIRE PÉDAGOGIQUE -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -37,6 +39,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -48,10 +51,12 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
+                <!-- GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         
+                        <!-- DROPDOWN CUSTOM : ORG POUR FORMATION -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-formation" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -72,12 +77,15 @@
                 </div>
             </div>
 
+            <!-- REGISTRE APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
                     
+                    <!-- LARGEUR ÉLARGIE À 550PX POUR ÉVITER LE TEXTE SUR 2 LIGNES -->
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-[550px] shrink-0">
                         
+                        <!-- DROPDOWN CUSTOM : ORG POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -87,6 +95,7 @@
                             <div id="annuaire-select-org-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                         </div>
 
+                        <!-- DROPDOWN CUSTOM : CLASSE POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-form-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -113,6 +122,7 @@
             </div>
         </div>
 
+        <!-- TIROIR 2 : LE CONFIGURATEUR DE SESSIONS -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
@@ -216,6 +226,7 @@
             </div>
         </div>
 
+        <!-- BLOC DE RECHERCHE ET FILTRE PAR PÉRIODE -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -240,6 +251,7 @@
             </div>
         </div>
 
+        <!-- BLOCS TEMPORELS DE TIMELINE -->
         <div class="space-y-3 relative z-10">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -256,6 +268,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -333,6 +346,28 @@
                 document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
             }
         });
+
+        // RESTAURATION DES FONCTIONS DE BASCULE INTERFACE MANQUANTES
+        function basculerZoneAnnuaire() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            ann.classList.toggle('hidden'); if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
+        }
+
+        function basculerZoneConfigurateur() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            conf.classList.toggle('hidden'); if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
+        }
+
+        function toggleGroupCollapse(targetId, iconId) {
+            const target = document.getElementById(targetId);
+            const icon = document.getElementById(iconId);
+            if (target && icon) {
+                const isHidden = target.classList.toggle('hidden');
+                icon.innerText = isHidden ? '▶' : '▼';
+            }
+        }
 
         const UIModal = {
             show: function(options) {
@@ -555,12 +590,12 @@
                 s.apprenants_cache = apprenantsList.filter(a => a.session_id === s.id);
             });
 
-            // DOUBLE CLASSEMENT CHRONOLOGIQUE PAR DATE + PLUS RÉCENTE EN HAUT DU MÊME JOUR
+            // CLASSEMENT DOUBLE : DATE ASCpuis ID DESC (DERNIÈRE CRÉÉE EN HAUT)
             rawList.sort((a, b) => {
                 if (a.date_session !== b.date_session) {
                     return (a.date_session || "").localeCompare(b.date_session || "");
                 }
-                return isNaN(a.id) || isNaN(b.id) ? String(b.id).localeCompare(String(a.id)) : b.id - a.id;
+                return b.id - a.id;
             });
 
             cacheSessionsGlobal = rawList;
@@ -590,7 +625,6 @@
                     
                     const formationObj = globalFormations.find(f => f.id === s.formation_id);
                     const formationNom = formationObj ? formationObj.nom.toLowerCase() : "";
-                    
                     const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
                     const organismeNom = orgObj ? orgObj.nom.toLowerCase() : "";
                     
@@ -688,7 +722,6 @@
                         `;
                     }
 
-                    // CORRECTION ICI : boutonActionStatut est maintenant déclaré et calculé proprement
                     let boutonActionStatut = "";
                     if (s.statut === 'a_venir') {
                         boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>`;
@@ -719,10 +752,214 @@
             }
         }
 
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold py-2.5 px-3 rounded-xl cursor-pointer";
+        function extraireApprenantsPresents() {
+            const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
+            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
+        }
+
+        async function genererSessionComplete() {
+            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const typeSession = document.getElementById('type-session').value;
+            const dateSession = document.getElementById('date-session').value;
+            const formationId = document.getElementById('select-formation').value;
+            const criteresRaw = document.getElementById('criteres-session').value.trim();
+            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+            const listApprenantsPresents = extraireApprenantsPresents();
+
+            if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
+            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
+            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent.", "warning", "Appel incomplet");
+
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+            let statutSession = 'active';
+            if (dateSession < todayStr) statutSession = 'terminee';
+            else if (dateSession > todayStr) statutSession = 'a_venir';
+
+            const { data: session, error: errSess } = await db.from('sessions').insert([{ 
+                nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
+            }]).select().single();
+            if (errSess) return await UIModal.alert("Échec de création : " + errSess.message, "error");
+
+            if (criteresRaw) {
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
+                if (arrCriteres.length > 0) {
+                    await db.from('criteres').insert(arrCriteres.map(ligne => {
+                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
+                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
+                        return { session_id: session.id, nom: nom, description: description };
+                    }));
+                }
+            }
+
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
+                }
+            }
+
+            const listeNomsGroupes = []; const payloadGroupes = [];
+            for (let i = 1; i <= nbGroupes; i++) {
+                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
+            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
+            }
+
+            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
+                session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+            })));
+
+            await UIModal.alert("La session a été générée avec succès !", "success", "Session Créée");
+            
+            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
+            document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
+            document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            document.getElementById('liste-evaluateurs-brute').value = "";
+            
+            document.getElementById('zone-configurateur').classList.add('hidden');
+            await chargerSessions();
+        }
+
+        async function entrerEnModeModification(idSession) {
+            idSessionEnCoursModification = idSession;
+            const zoneConfigurateur = document.getElementById('zone-configurateur');
+            
+            zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
+            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
+            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de la session`;
+
+            const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
+            const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
+            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
+            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
+            const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
+
+            if(session) {
+                document.getElementById('nouveau-nom-session').value = session.nom;
+                const typeVal = session.type || 'oral';
+                document.getElementById('type-session').value = typeVal;
+                document.getElementById('type-session-label').innerText = typeVal === 'oral' ? '🗣️ Évaluation Orale' : '✍️ Évaluation Écrite';
+                document.getElementById('date-session').value = session.date_session || '';
+            }
+            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
+            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
+            
+            if(grps && grps.length > 0) {
+                document.getElementById('nb-groupes').value = grps.length;
+                const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
+            }
+            
+            if(apps) {
+                document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
+                document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Mode Édition --";
+                document.getElementById('select-formation-menu').innerHTML = `<button type="button" class="w-full text-left block px-4 py-2.5 text-sm text-gray-500 rounded-lg">-- Mode Édition --</button>`;
+                
+                document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
+                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
+                        <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
+                        <div class="leading-tight">
+                            <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
+                            <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
+                        </div>
+                    </label>
+                `).join('');
+            }
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Enregistrer les modifications</button>
+                    <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
+                </div>
+            `;
+            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function annulerModeModification() {
+            idSessionEnCoursModification = null; const zoneConfigurateur = document.getElementById('zone-configurateur');
+            zoneConfigurateur.className = "hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all";
+            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
+
+            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
+            document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
+            document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
+        }
+
+        async function sauvegarderModificationsSession() {
+            if (!idSessionEnCoursModification) return;
+            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const typeSession = document.getElementById('type-session').value;
+            const dateSession = document.getElementById('date-session').value;
+            const criteresRaw = document.getElementById('criteres-session').value.trim();
+            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+            const listApprenantsPresents = extraireApprenantsPresents();
+
+            if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
+            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
+
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+            let statutSession = 'active';
+            if (dateSession < todayStr) statutSession = 'terminee';
+            else if (dateSession > todayStr) statutSession = 'a_venir';
+
+            await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
+            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
+
+            if (criteresRaw) {
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
+                if (arrCriteres.length > 0) {
+                    await db.from('criteres').insert(arrCriteres.map(ligne => {
+                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
+                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
+                        return { session_id: idSessionEnCoursModification, nom: nom, description: description };
+                    }));
+                }
+            }
+
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
+                }
+            }
+
+            const listeNomsGroupes = []; const payloadGroupes = [];
+            for (let i = 1; i <= nbGroupes; i++) {
+                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
+            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
+            }
+
+            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
+                session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+            })));
+
+            await UIModal.alert("Session reconfigurée avec succès !", "success");
+            annulerModeModification(); await chargerSessions();
         }
 
         async function creerOuModifierOrganismeMaster() {
@@ -740,7 +977,7 @@
             globalOrganismes = orgs || [];
             renderDropdownsOrganismes();
             afficherListeOrganismes(globalOrganismes);
-            await UIModal.alert("Organisme enregistré avec succès.", "success");
+            await UIModal.alert("Organisme enregistré.", "success");
         }
 
         async function supprimerOrganismeMaster(id, nom) {
@@ -753,9 +990,9 @@
             await UIModal.alert("Organisme supprimé.", "success");
         }
 
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
+        function entrerModifOrganisme(id, nom) {
+            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
+            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
         }
 
         async function creerOuModifierFormationMaster() {
@@ -786,12 +1023,9 @@
             await UIModal.alert("Classe supprimée.", "success");
         }
 
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
+        function entrerModifFormation(id, nom) {
+            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
+            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
         }
 
         async function creerOuModifierApprenantMaster() {
@@ -819,9 +1053,23 @@
             await UIModal.alert("Apprenant retiré.", "success");
         }
 
+        function entrerModifApprenant(id, prenom, nom, email) {
+            idAppEnCoursModif = id;
+            document.getElementById('annuaire-prenom-app').value = prenom;
+            document.getElementById('annuaire-nom-app').value = nom;
+            document.getElementById('annuaire-email-app').value = email;
+            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
+        }
+
         async function changerStatutSessionDirect(idSession, nvStatut) {
             await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); await chargerSessions();
             await UIModal.alert("Statut mis à jour.", "success");
+        }
+
+        async function cloturerSession(idSession) {
+            if (!(await UIModal.confirm("Fermer définitivement cette session ?", "Clôture", "warning"))) return;
+            await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); await chargerSessions();
+            await UIModal.alert("Session clôturée et archivée.", "success");
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
