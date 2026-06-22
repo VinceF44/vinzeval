@@ -18,6 +18,59 @@
                 </span>
                 <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
             </div>
+            <div class="flex items-center gap-2 self-stretch sm:self-auto">
+                <button onclick="basculerZoneAnnuaire()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
+                    🗃️ Ouvrir / Fermer l'Annuaire
+                </button>
+            </div>
+        </div>
+
+        <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-5 shadow-xl transition-all">
+            <div class="border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master (Organismes, Classes, Apprenants)</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">Alimentez directement votre référentiel global ici. Les modifications s'appliquent instantanément.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Ajouter un Organisme</div>
+                    <div class="space-y-2">
+                        <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                        <button onclick="creerOrganismeMaster()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold py-2 px-3 rounded-lg border border-slate-700 transition cursor-pointer">Enregistrer l'organisme</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Ajouter une Formation / Groupe</div>
+                    <div class="space-y-2">
+                        <select id="annuaire-select-org-pour-formation" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <option value="">-- Sélectionner l'organisme --</option>
+                        </select>
+                        <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                        <button onclick="creerFormationMaster()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold py-2 px-3 rounded-lg border border-slate-700 transition cursor-pointer">Enregistrer le groupe</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
+                    <div class="text-xs font-bold uppercase text-slate-400">👤 3. Ajouter un Apprenant</div>
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                                <option value="">-- Organisme --</option>
+                            </select>
+                            <select id="annuaire-select-form-pour-app" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                                <option value="">-- Classe --</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <input type="text" id="annuaire-nom-app" placeholder="Nom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                        </div>
+                        <input type="email" id="annuaire-email-app" placeholder="Adresse email académique" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                        <button onclick="creerApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-lg transition hover:bg-[#e08b00] cursor-pointer">Insérer l'apprenant dans l'annuaire</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
@@ -123,14 +176,25 @@
             chargerSessions();
         }
 
+        // DESIGN ERGONOMIQUE : Basculer l'affichage coulissant de l'annuaire master
+        function basculerZoneAnnuaire() {
+            const zone = document.getElementById('zone-annuaire-master');
+            zone.classList.toggle('hidden');
+        }
+
+        // SYNC COMPLET : Charge les organismes dans TOUS les sélecteurs de l'application
         async function chargerOrganismes() {
             const { data } = await db.from('organismes').select('*').order('nom');
             if (data) {
-                document.getElementById('select-organisme').innerHTML = `<option value="">-- Organisme --</option>` + 
-                    data.map(o => `<option value="${o.id}">${o.nom}</option>`).join('');
+                const optionsHtml = data.map(o => `<option value="${o.id}">${o.nom}</option>`).join('');
+                
+                document.getElementById('select-organisme').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
+                document.getElementById('annuaire-select-org-pour-formation').innerHTML = `<option value="">-- Sélectionner l'organisme --</option>` + optionsHtml;
+                document.getElementById('annuaire-select-org-pour-app').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
             }
         }
 
+        // SYNC EN CASCADE : Charge les formations liées à un organisme pour le configurateur principal
         async function chargerFormationsFiltrees(organismeId) {
             const selectForm = document.getElementById('select-formation');
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
@@ -144,7 +208,17 @@
             }
         }
 
-        // MODIFICATION : Récupération et affichage de l'e-mail dans l'interface d'appel
+        // SYNC EN CASCADE : Charge les formations liées à un organisme dans l'outil d'annuaire
+        async function annuaireFiltrerFormations(organismeId) {
+            const selectForm = document.getElementById('annuaire-select-form-pour-app');
+            selectForm.innerHTML = `<option value="">-- Classe --</option>`;
+            if (!organismeId) return;
+            const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
+            if (data) {
+                selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
+            }
+        }
+
         async function chargerApprenantsFiltres(formationId) {
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             if (!formationId) {
@@ -168,6 +242,77 @@
                 conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré dans cette classe.</p>`;
             }
         }
+
+        // ==========================================
+        //  FONCTIONS D'INSERTION DIRECTE (ANNUAIRE)
+        // ==========================================
+
+        async function creerOrganismeMaster() {
+            const input = document.getElementById('annuaire-nom-organisme');
+            const nom = input.value.trim();
+            if (!nom) return alert("Saisissez un nom d'organisme.");
+
+            const { error } = await db.from('organismes').insert([{ nom: nom }]);
+            if (error) alert("Erreur : " + error.message);
+            else {
+                input.value = "";
+                await chargerOrganismes();
+                alert("🏢 Organisme enregistré avec succès !");
+            }
+        }
+
+        async function creerFormationMaster() {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            const input = document.getElementById('annuaire-nom-formation');
+            const nom = input.value.trim();
+
+            if (!orgId) return alert("Sélectionnez un organisme d'affectation.");
+            if (!nom) return alert("Saisissez un nom pour la formation / classe.");
+
+            const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
+            if (error) alert("Erreur : " + error.message);
+            else {
+                input.value = "";
+                // Met à jour les sélecteurs du configurateur si l'organisme est identique
+                const orgPrincipal = document.getElementById('select-organisme').value;
+                if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
+                alert("🏫 Classe / Groupe créé(e) avec succès !");
+            }
+        }
+
+        async function creerApprenantMaster() {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            const inputPrenom = document.getElementById('annuaire-prenom-app');
+            const inputNom = document.getElementById('annuaire-nom-app');
+            const inputEmail = document.getElementById('annuaire-email-app');
+
+            const prenom = inputPrenom.value.trim();
+            const nom = inputNom.value.trim();
+            const email = inputEmail.value.trim();
+
+            if (!formId) return alert("Sélectionnez la formation cible.");
+            if (!prenom || !nom) return alert("Le prénom et le nom sont obligatoires.");
+
+            const { error } = await db.from('apprenants_master').insert([{ 
+                prenom: prenom, 
+                nom: nom, 
+                email: email || null, 
+                formation_id: formId 
+            }]);
+
+            if (error) alert("Erreur : " + error.message);
+            else {
+                inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
+                // Actualise en continu la table d'appel si le formateur travaille déjà sur cette classe
+                const formPrincipal = document.getElementById('select-formation').value;
+                if (formPrincipal === formId) chargerApprenantsFiltres(formId);
+                alert(`👤 ${prenom} ${nom} a rejoint la base master !`);
+            }
+        }
+
+        // ==========================================
+        //         FONCTIONS SESSIONS CLASSIQUES
+        // ==========================================
 
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
@@ -304,7 +449,6 @@
             `;
         }
 
-        // MODIFICATION : Extraction couplée du nom complet et de l'e-mail depuis les data-attributes
         function extraireApprenantsPresents() {
             const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
             return Array.from(cases).map(c => ({
@@ -365,13 +509,11 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // Mélange des objets apprenants
             for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
             }
 
-            // MODIFICATION : Injection de la clé email lors de la modification
             const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
                 const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
                 return {
@@ -435,13 +577,11 @@
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            // Mélange des objets
             for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
             }
 
-            // MODIFICATION : Transfert de la donnée e-mail vers la session d'évaluation active
             const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
                 const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
                 return {
