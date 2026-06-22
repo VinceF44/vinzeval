@@ -11,16 +11,18 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE OPTIMISÉ (AFFICHAGE SÉQUENTIEL DES INFOS DE SESSION) -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
-                <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
+                <h1 id="nom-session" class="text-xl md:text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
             <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0">
                 🔄 Rafraîchir les données
             </button>
         </div>
 
+        <!-- ZONE DE SÉLECTION DE L'ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -33,6 +35,7 @@
             </div>
         </div>
 
+        <!-- RÉCAPITULATIF DÉTAILLÉ DES GRILLES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -44,6 +47,7 @@
             </div>
         </div>
 
+        <!-- TABLEAU DE BORD PRINCIPAL AVEC BARRE DE RECHERCHE ET TRI -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -73,6 +77,7 @@
         </div>
     </div>
 
+    <!-- FENÊTRE POP-UP (MODAL) LARGE POUR FEEDBACKS LONGS -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -103,7 +108,6 @@
         let nomsEvaluateursInscrits = [];
         let membresParNomGroupe = {};
 
-        // MEMOIRES LOCALES DISTINCTES DES BONUS ET DES MALUS INDIVIDUELS
         let cacheBonusIndividuels = {};
         let cacheMalusIndividuels = {};
         let listeFeedbacksCartesCourantes = [];
@@ -112,20 +116,41 @@
         let colonneTriActuelle = 'prenom';
         let ordreTriActuel = 'asc';
 
+        // FONCTION COMPAGNON : Raccourcit "Jean Dupont" en "Jean D."
+        function formaterPrenomInitiale(nomComplet) {
+            if (!nomComplet) return "";
+            const parties = nomComplet.trim().split(/\s+/);
+            if (parties.length <= 1) return nomComplet;
+            const prenom = parties[0];
+            const nom = parties.slice(1).join(" ");
+            const initiale = nom.charAt(0).toUpperCase();
+            return `${prenom} ${initiale}.`;
+        }
+
         async function initDashboard() {
             if (!idSessionDashboard) return;
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            // Chargement des bonus
             const sauvegardeBonus = localStorage.getItem(`bonus_invest_${idSessionDashboard}`);
             if (sauvegardeBonus) cacheBonusIndividuels = JSON.parse(sauvegardeBonus);
 
-            // NOUVEAUTÉ : Chargement de la mémoire des malus locaux
             const sauvegardeMalus = localStorage.getItem(`malus_invest_${idSessionDashboard}`);
             if (sauvegardeMalus) cacheMalusIndividuels = JSON.parse(sauvegardeMalus);
 
-            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
-            if(s) document.getElementById('nom-session').innerText = `📊 Session Master : ${s.nom}`;
+            // OPTIMISATION 2 : Appel couplé pour lister le type, la date, la classe et l'organisme d'un coup
+            const { data: s } = await db.from('sessions').select('nom, type, date_session, formations(nom, organismes(nom))').eq('id', idSessionDashboard).single();
+            if(s) {
+                const typeText = s.type === 'ecrit' ? 'Évaluation Écrite' : 'Évaluation Orale';
+                const organismeNom = s.formations && s.formations.organismes ? s.formations.organismes.nom : 'Organisme';
+                const formationNom = s.formations ? s.formations.nom : 'Formation';
+                
+                let dateFormatee = "--/--/----";
+                if (s.date_session) {
+                    const [y, m, d] = s.date_session.split('-');
+                    dateFormatee = `${d}/${m}/${y}`;
+                }
+                document.getElementById('nom-session').innerText = `${s.nom} — ${typeText} — ${organismeNom} — ${formationNom} — ${dateFormatee}`;
+            }
 
             const { data: evs = [] } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard);
             nomsEvaluateursInscrits = evs ? evs.map(e => e.nom) : [];
@@ -157,9 +182,11 @@
                     });
                 }
 
+                // OPTIMISATION 1 : Application du format court "Jean D." dans la liste déroulante des groupes
                 document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => {
-                    const listePrenoms = membresParIdGroupe[grp.id];
-                    const parenthesesMembres = (listePrenoms && listePrenoms.length > 0) ? ` (${listePrenoms.join(', ')})` : '';
+                    const listePrenoms = membresParIdGroupe[grp.id] || [];
+                    const listeFormattee = listePrenoms.map(formaterPrenomInitiale);
+                    const parenthesesMembres = (listeFormattee.length > 0) ? ` (${listeFormattee.join(', ')})` : '';
                     return `<option value="${grp.nom}">${grp.nom}${parenthesesMembres}</option>`;
                 }).join('');
             }
@@ -290,14 +317,13 @@
 
                 let noteFinaleCalculée = noteProfSur20 !== null ? Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)) : -1;
                 
-                // CRITÈRE DE MODIFICATION : Application croisée ou exclusive du bonus (+1) ou du malus (-1)
                 if (noteFinaleCalculée !== -1) {
                     if (aUnBonusIndiv) noteFinaleCalculée = Math.min(20, noteFinaleCalculée + 1);
                     if (aUnMalusIndiv) noteFinaleCalculée = Math.max(0, noteFinaleCalculée - 1);
                 }
 
                 listeCalculeePourTri.push({
-                    prenom: app.prenom,
+                    prenom: app.prenom, // Reste Prénom + Nom complet pour la grande matrice
                     nomGroupe: nomGroupe,
                     ptAuto: ptAuto,
                     textAuto: textAuto,
@@ -371,11 +397,11 @@
                     ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' 
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
-                // NOUVEAU STYLE : Bouton Malus dynamique (Rouge actif / gris inactif)
                 const malusStyle = item.hasMalus
                     ? 'text-red-400 bg-red-500/20 border-red-500/40'
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
+                // PROTECTION : Ici item.prenom reste complet (Prénom + Nom)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">
@@ -396,7 +422,6 @@
                                     <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">
                                         ⚠️
                                     </button>
-                                    
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
                                         <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
                                         <div class="text-red-200/80 text-[10px]">Retirer un point discrétionnaire de -1.00 point pour sanctionner un manque total de participation ou de travail au sein du groupe.</div>
@@ -407,7 +432,6 @@
                                     <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">
                                         ★
                                     </button>
-                                    
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
                                         <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
                                         <div class="text-amber-200/80 text-[10px]">Attribuer un bonus individuel discrétionnaire de +1.00 point pour récompenser la participation et l'engagement de cet(te) apprenant(e).</div>
@@ -420,7 +444,6 @@
             });
         }
 
-        // ACTION DE MODIFICATION : BASCULER LE BONUS ET NETTOYER LE MALUS SI COCHÉ
         function basculerBonusIndividuel(prenomApprenant) {
             if(cacheBonusIndividuels[prenomApprenant] === true) {
                 delete cacheBonusIndividuels[prenomApprenant];
@@ -428,13 +451,11 @@
                 cacheBonusIndividuels[prenomApprenant] = true;
                 if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant];
             }
-            
             localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
             localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
             calculerEtAfficherTout();
         }
 
-        // NOUVEAUTÉ : ACTION DE PILOTAGE DU MALUS INDIVIDUEL ET DESENGAGEMENT DU BONUS
         function basculerMalusIndividuel(prenomApprenant) {
             if(cacheMalusIndividuels[prenomApprenant] === true) {
                 delete cacheMalusIndividuels[prenomApprenant];
@@ -442,7 +463,6 @@
                 cacheMalusIndividuels[prenomApprenant] = true;
                 if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant];
             }
-            
             localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
             localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
             calculerEtAfficherTout();
@@ -469,6 +489,7 @@
             document.getElementById('modal-feedback').classList.add('hidden');
         }
 
+        // OPTIMISATION 1 : Injection du format "Jean D." dans le descriptif des cartes de grilles
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -514,7 +535,6 @@
                             <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
                                 <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
                                 <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5}</span>
-                                
                                 <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
                                     <div class="font-bold text-white mb-1">🎯 ${crit.nom}</div>
                                     <div class="text-slate-400 text-[10px]">${textDescriptionBulle}</div>
@@ -540,11 +560,13 @@
                 if (!e.estProf) {
                     if (e.groupe_votant !== e.sujet) {
                         const listeP = membresParNomGroupe[e.sujet] || [];
-                        const parents = listeP.length > 0 ? ` (${listeP.join(', ')})` : '';
+                        const listeFormattee = listeP.map(formaterPrenomInitiale); // <- APPLICATION ICI
+                        const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
                         nomAffiche = `Pour : ${e.sujet}${parents}`;
                     } else {
                         const listeP = membresParNomGroupe[e.groupe_votant] || [];
-                        const parents = listeP.length > 0 ? ` (${listeP.join(', ')})` : '';
+                        const listeFormattee = listeP.map(formaterPrenomInitiale); //  <- APPLICATION ICI
+                        const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
                         nomAffiche = `${e.groupe_votant}${parents}`;
                     }
                 }
@@ -592,7 +614,6 @@
                                 <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}')" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
                                     💬 Lire le feedback
                                 </button>
-                                
                                 <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
                                     <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1 flex items-center gap-1">💬 Feedback</div>
                                     <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
