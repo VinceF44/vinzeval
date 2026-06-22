@@ -36,7 +36,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations (Note d'oral reçue du jury, Auto-évaluation, et évaluations émises par cette équipe).</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère pour afficher sa description complète.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -80,6 +80,7 @@
         let evaluationsSession = [];
         let listeCriteresProf = [];
         let nomsEvaluateursInscrits = [];
+        let membresParNomGroupe = {}; // Dictionnaire global pour lier les prénoms aux noms des équipes
 
         async function initDashboard() {
             if (!idSessionDashboard) return;
@@ -98,12 +99,21 @@
             if(g) {
                 groupesSession = g;
                 const membresParIdGroupe = {};
-                g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
+                g.forEach(grp => { 
+                    membresParIdGroupe[grp.id] = []; 
+                    membresParNomGroupe[grp.nom] = []; 
+                });
 
                 if (apps) {
                     apps.forEach(student => {
                         if (membresParIdGroupe[student.groupe_id]) {
                             membresParIdGroupe[student.groupe_id].push(student.prenom);
+                            
+                            // On peuple l'index par nom textuel de groupe
+                            const matchingGroup = g.find(item => item.id === student.groupe_id);
+                            if(matchingGroup) {
+                                membresParNomGroupe[matchingGroup.nom].push(student.prenom);
+                            }
                         }
                     });
                 }
@@ -115,7 +125,7 @@
                 }).join('');
             }
 
-            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
             if(critsProf && critsProf.length > 0) listeCriteresProf = critsProf;
 
             await chargerDonneesDashboard();
@@ -141,7 +151,6 @@
             return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
 
-        // CORRECTIF DE STABILITÉ ET RETOUR VISUEL DU BOUTON
         async function chargerDonneesDashboard() {
             const btn = document.getElementById('btn-refresh');
             if(btn) {
@@ -153,7 +162,7 @@
             
             if (error) {
                 if(btn) { btn.innerHTML = "❌ Erreur de synchro"; btn.disabled = false; }
-                alert("❌ Erreur de synchronisation Supabase : " + error.message);
+                alert("❌ Erreur de synchronisation : " + error.message);
                 return;
             }
 
@@ -173,7 +182,6 @@
 
                 calculerEtAfficherTout();
 
-                // Petit effet de validation de réussite sur le bouton
                 if(btn) {
                     btn.innerHTML = "✅ Données à jour !";
                     setTimeout(() => {
@@ -291,9 +299,13 @@
                         if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                         else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
+                        // INFOBULLE OPTIMISÉE : Utilise la description si elle existe, sinon le nom
+                        const texteDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : crit.nom;
+
+                        // CODE MIS À JOUR : Titre court et curseur help pour le mouseover
                         contenuCriteres += `
-                            <div class="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0">
-                                <span class="text-gray-400 truncate pr-2" title="${crit.nom}">${crit.nom}</span>
+                            <div class="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none" title="${texteDescriptionBulle}">
+                                <span class="text-gray-400 truncate pr-2 font-medium">Critère ${idx + 1} : ${crit.nom}</span>
                                 <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5}</span>
                             </div>
                         `;
@@ -312,9 +324,18 @@
                     ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' 
                     : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                 
+                // CODE MIS À JOUR : Injection automatique des prénoms dans les en-têtes de cartes apprenants
                 let nomAffiche = e.groupe_votant;
-                if (!e.estProf && e.groupe_votant !== e.sujet) {
-                    nomAffiche = `Pour : ${e.sujet}`;
+                if (!e.estProf) {
+                    if (e.groupe_votant !== e.sujet) {
+                        const listeP = membresParNomGroupe[e.sujet] || [];
+                        const parents = listeP.length > 0 ? ` (${listeP.join(', ')})` : '';
+                        nomAffiche = `Pour : ${e.sujet}${parents}`;
+                    } else {
+                        const listeP = membresParNomGroupe[e.groupe_votant] || [];
+                        const parents = listeP.length > 0 ? ` (${listeP.join(', ')})` : '';
+                        nomAffiche = `${e.groupe_votant}${parents}`;
+                    }
                 }
                 
                 let noteColor = e.note >= 10 ? 'text-white' : 'text-red-400';
