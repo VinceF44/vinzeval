@@ -1103,17 +1103,24 @@
                 if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
                 
                 if (idAppEnCoursModif) {
+                    // 1. Mise à jour dans l'annuaire général (apprenants_master)
                     const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
                     if (error) throw error;
+
+                    // 2. REPARATION DU BUG : On propage le nouvel email sur toutes les sessions déjà générées où cet élève apparaît
+                    const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
+                    await db.from('apprenants').update({ email: e.value.trim() || null }).eq('prenom', nomCompletInstancie);
+
                     idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
                     document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
                 } else {
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
+                    // Création classique (Premier enregistrement)
+                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), email: e.value.trim() || null, formation_id: formId }]);
                     if (error) throw error;
                     p.value = ""; n.value = ""; e.value = "";
                 }
                 await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Fiche apprenant enregistrée.", "success");
+                await UIModal.alert("Fiche apprenant enregistrée et synchronisée sur les sessions !", "success");
             } catch(err) { await UIModal.alert("Erreur apprenant : " + err.message, "error"); }
         }
 
