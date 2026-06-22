@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DE LA CONSOLE -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
@@ -27,6 +28,7 @@
             </div>
         </div>
 
+        <!-- TIROIR 1 : L'ANNUAIRE PÉDAGOGIQUE -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -37,6 +39,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -48,6 +51,7 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
+                <!-- GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
@@ -65,6 +69,7 @@
                 </div>
             </div>
 
+            <!-- REGISTRE APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
@@ -91,6 +96,7 @@
             </div>
         </div>
 
+        <!-- TIROIR 2 : LE CONFIGURATEUR DE SESSIONS -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
@@ -100,7 +106,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="sm:col-span-1">
@@ -176,6 +181,31 @@
             </div>
         </div>
 
+        <!-- RESTRUCTURATION : NOUVEAU BLOC DE FILTRES ET BARRE DE RECHERCHE GLOBAL SESSIONS -->
+        <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2">
+                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">🔍 Moteur de recherche transversal :</label>
+                    <input type="text" id="recherche-session-globale" oninput="filtrerEtAfficherSessions()" placeholder="Rechercher par élève, formateur, intitulé, date (JJ/MM/AAAA), type..." class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-[#2563eb] transition-all">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📅 Filtrer par période :</label>
+                    <select id="filtre-periode-selection" onchange="filtrerEtAfficherSessions()" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#2563eb] transition-all cursor-pointer">
+                        <option value="toutes">📆 Toutes les dates</option>
+                        <option value="aujourdhui">🌞 Aujourd'hui uniquement</option>
+                        <option value="mois">pt Mois en cours</option>
+                    </select>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400">🏢 Sélection rapide du site / Organisme (Jour J) :</label>
+                <div id="boutons-filtres-organismes" class="flex flex-wrap gap-2">
+                    <!-- Généré dynamiquement en JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCS TEMPORELS DE SESSIONS -->
         <div class="space-y-3">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -192,6 +222,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -203,7 +234,7 @@
                 </div>
             </div>
             <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
-                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
                 <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
             </div>
         </div>
@@ -218,6 +249,10 @@
         let idOrgEnCoursModif = null;
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
+
+        // INDEX LOCAL CACHÉ POUR RECHERCHE INSTANTANÉE EN CASCADE
+        let cacheSessionsGlobal = [];
+        let organismeQuickFiltreId = null; 
 
         const UIModal = {
             show: function(options) {
@@ -267,15 +302,13 @@
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
             const conf = document.getElementById('zone-configurateur');
-            ann.classList.toggle('hidden');
-            if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
+            ann.classList.toggle('hidden'); if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
         }
 
         function basculerZoneConfigurateur() { 
             const ann = document.getElementById('zone-annuaire-master');
             const conf = document.getElementById('zone-configurateur');
-            conf.classList.toggle('hidden');
-            if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
+            conf.classList.toggle('hidden'); if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
         }
 
         function toggleGroupCollapse(targetId, iconId) {
@@ -307,7 +340,31 @@
                 document.getElementById('annuaire-select-org-pour-formation').innerHTML = `<option value="">-- Sélectionner l'organisme --</option>` + optionsHtml;
                 document.getElementById('annuaire-select-org-pour-app').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
                 afficherListeOrganismes(data);
+                
+                // INJECTION DES BOUTONS DE COMMUTATION RAPIDE JOUR J
+                genererBoutonsFiltreOrganismes(data);
             }
+        }
+
+        function genererBoutonsFiltreOrganismes(organismes) {
+            const conteneur = document.getElementById('boutons-filters-organismes');
+            if (!conteneur) return;
+            let html = `<button onclick="filtrerParBoutonSite(null)" id="btn-site-all" class="px-3.5 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer bg-blue-600 text-white border-blue-500 shadow-sm">🌍 Tous les sites</button>`;
+            organismes.forEach(o => {
+                html += `<button onclick="filtrerParBoutonSite(${o.id})" id="btn-site-${o.id}" class="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all cursor-pointer shadow-sm">🏢 ${o.nom}</button>`;
+            });
+            conteneur.innerHTML = html;
+        }
+
+        function filtrerParBoutonSite(idSite) {
+            organismeQuickFiltreId = idSite;
+            const boutons = document.querySelectorAll('[id^="btn-site-"]');
+            boutons.forEach(b => b.className = "px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all cursor-pointer shadow-sm");
+            
+            const btnActif = document.getElementById(idSite === null ? 'btn-site-all' : `btn-site-${idSite}`);
+            if(btnActif) btnActif.className = "px-3.5 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer bg-blue-600 text-white border-blue-500 shadow-sm";
+            
+            filtrerEtAfficherSessions();
         }
 
         async function chargerFormationsFiltrees(organismeId) {
@@ -328,7 +385,6 @@
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
             conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
             if (!organismeId) return;
-            // CORRIGÉ : 'organismeId' au lieu de la faute 'organismesId'
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
             if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
         }
@@ -399,8 +455,8 @@
                             <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                         <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-xs cursor-pointer">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-xs cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
@@ -498,47 +554,91 @@
         }
 
         // ========================================================
-        //  FONCTION UNIQUE DE CHARGEMENT ET AUTOMATISATION (CORRIGÉE)
+        //  REQUÊTE SUPABASE LARGE UNIQUE & INTÉGRATION DE CACHE
         // ========================================================
         async function chargerSessions() {
-            const { data: sessions, error } = await db.from('sessions').select('*, formations(nom)').order('date_session', { ascending: true });
+            // BESOIN 3 : Extension de la jointure pour aspirer apprenants et évaluateurs pour le filtre textuel
+            const { data: sessions, error } = await db.from('sessions')
+                .select('*, formations(id, nom, organisme_id, organismes(nom)), evaluateurs(nom), apprenants(prenom)')
+                .order('date_session', { ascending: true });
+                
             if (error) {
                 await UIModal.alert("Erreur technique Supabase : " + error.message, "error");
                 return;
             }
 
-            const list = sessions || [];
+            cacheSessionsGlobal = sessions || [];
 
-            // Sécurité UX : Si la base est totalement vide, on ouvre automatiquement le configurateur
-            if (list.length === 0) {
+            if (cacheSessionsGlobal.length === 0) {
                 document.getElementById('zone-configurateur').classList.remove('hidden');
             }
+            filtrerEtAfficherSessions();
+        }
+
+        // BESOIN 2 & 3 : LOGIQUE DE FILTRAGE INSTANTANÉE SANS HIT RÉSEAU
+        function filtrerEtAfficherSessions() {
+            const rechercheTexte = document.getElementById('recherche-session-globale').value.toLowerCase().trim();
+            const periodeSelection = document.getElementById('filtre-periode-selection').value;
 
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+            const currentMonthStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
 
+            const sessionsFiltrees = cacheSessionsGlobal.filter(s => {
+                // 1. Commutateur Jour J Organisme (Besoin 2)
+                if (organismeQuickFiltreId !== null && s.formations && s.formations.organisme_id !== organismeQuickFiltreId) {
+                    return false;
+                }
+
+                // 2. Filtre de Période Temporelle
+                if (s.date_session) {
+                    if (periodeSelection === 'aujourdhui' && s.date_session !== todayStr) return false;
+                    if (periodeSelection === 'mois' && !s.date_session.startsWith(currentMonthStr)) return false;
+                }
+
+                // 3. Moteur de Recherche Global (Besoin 3)
+                if (rechercheTexte !== "") {
+                    const nomSess = (s.nom || "").toLowerCase();
+                    const typeSess = (s.type === "ecrit" ? "écrit" : "oral").toLowerCase();
+                    const formationNom = s.formations && s.formations.nom ? s.formations.nom.toLowerCase() : "";
+                    const organismeNom = s.formations && s.formations.organismes && s.formations.organismes.nom ? s.formations.organismes.nom.toLowerCase() : "";
+                    
+                    // Conversion de la date brute YYYY-MM-DD au format lisible français DD/MM/YYYY pour matcher la saisie
+                    let dateFormateeFr = "";
+                    if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
+
+                    const evaluateursNoms = (s.evaluateurs || []).map(e => (e.nom || "").toLowerCase()).join(" ");
+                    const apprenantsNoms = (s.apprenants || []).map(a => (a.prenom || "").toLowerCase()).join(" ");
+
+                    const matchGlobal = nomSess.includes(rechercheTexte) ||
+                                        typeSess.includes(rechercheTexte) ||
+                                        formationNom.includes(rechercheTexte) ||
+                                        organismeNom.includes(rechercheTexte) ||
+                                        dateFormateeFr.includes(rechercheTexte) ||
+                                        evaluateursNoms.includes(rechercheTexte) ||
+                                        apprenantsNoms.includes(rechercheTexte);
+
+                    if (!matchGlobal) return false;
+                }
+
+                return true;
+            });
+
+            // Dispatch temporel automatique
             const arrAvenir = []; const arrActives = []; const arrTerminees = [];
-            const backgroundUpdates = [];
-
-            list.forEach(s => {
+            sessionsFiltrees.forEach(s => {
                 let nvStatut = s.statut;
                 if (s.date_session) {
                     if (s.date_session < todayStr) nvStatut = 'terminee';
                     else if (s.date_session > todayStr) nvStatut = 'a_venir';
                     else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
                 }
-
-                if (s.statut !== nvStatut) {
-                    backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
-                    s.statut = nvStatut;
-                }
+                s.statut = nvStatut;
 
                 if (s.statut === 'terminee') arrTerminees.push(s);
                 else if (s.statut === 'a_venir') arrAvenir.push(s);
                 else arrActives.push(s);
             });
-
-            if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
             regrouperEtAfficherSessionsParGroupe(arrAvenir, 'liste-sessions-avenir', false);
             regrouperEtAfficherSessionsParGroupe(arrActives, 'liste-sessions-actives', false);
@@ -547,29 +647,32 @@
 
         function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive) {
             const conteneur = document.getElementById(conteneurId);
-            if (!conteneur) return;
-            conteneur.innerHTML = "";
+            if (!conteneur) return; conteneur.innerHTML = "";
 
             if (!sessionsList || sessionsList.length === 0) {
                 conteneur.innerHTML = `
                     <div class="bg-[#101828]/40 border border-slate-800/60 rounded-xl p-6 text-center select-none">
                         <span class="text-2xl mb-2 block">📭</span>
-                        <p class="text-sm font-bold text-slate-300">Aucune session enregistrée.</p>
-                        <p class="text-xs text-slate-500 mt-1">Les sessions correspondantes s'afficheront ici.</p>
+                        <p class="text-sm font-bold text-slate-300">Aucune session trouvée.</p>
+                        <p class="text-xs text-slate-500 mt-1">Ajustez vos filtres ou créez une session.</p>
                     </div>
                 `;
                 return;
             }
 
+            // BESOIN 1 : Remodelage de la clé pour injecter l'organisme à la place du mot "Classe"
             const mapGroupements = {};
             sessionsList.forEach(s => {
-                const nomClasse = (s.formations && s.formations.nom) ? s.formations.nom : "Sans affectation (Manuel)";
-                if (!mapGroupements[nomClasse]) mapGroupements[nomClasse] = [];
-                mapGroupements[nomClasse].push(s);
+                const nomOrg = (s.formations && s.formations.organismes && s.formations.organismes.nom) ? s.formations.organismes.nom : "Manuel";
+                const nomClasse = (s.formations && s.formations.nom) ? s.formations.nom : "Sans affectation";
+                const cleGroupement = `${nomOrg} : ${nomClasse}`; // Devient "CCI : Développeur Web"
+                
+                if (!mapGroupements[cleGroupement]) mapGroupements[cleGroupement] = [];
+                mapGroupements[cleGroupement].push(s);
             });
 
             let groupCounter = 0;
-            for (const [nomClasse, tableauSessions] of Object.entries(mapGroupements)) {
+            for (const [cleGroupement, tableauSessions] of Object.entries(mapGroupements)) {
                 groupCounter++;
                 const blockTargetId = `collapse-${conteneurId}-${groupCounter}`;
                 const blockIconId = `icon-${conteneurId}-${groupCounter}`;
@@ -580,9 +683,10 @@
 
                 let htmlBlocClasse = `
                     <div class="space-y-2 bg-[#101828]/30 p-3 rounded-xl border border-slate-900/60">
+                        <!-- AFFICHAGE DU REGROUPEMENT CELLULAIRE MODIFIÉ -->
                         <div onclick="toggleGroupCollapse('${blockTargetId}', '${blockIconId}')" class="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5 cursor-pointer hover:text-white transition-all select-none">
                             <span id="${blockIconId}" class="text-[10px] font-mono text-[#fe9a00]">${arrowIndicator}</span>
-                            📁 Classe : ${nomClasse} (${tableauSessions.length} session${tableauSessions.length > 1 ? 's' : ''})
+                            📁 ${cleGroupement} (${tableauSessions.length} session${tableauSessions.length > 1 ? 's' : ''})
                         </div>
                         <div id="${blockTargetId}" class="${hiddenStyleClass} space-y-2 pl-1.5 border-l border-slate-800/80">
                 `;
