@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DE LA CONSOLE AVEC LES DEUX BOUTONS ALIGNÉS -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
@@ -28,7 +27,6 @@
             </div>
         </div>
 
-        <!-- TIROIR 1 : L'ANNUAIRE PÉDAGOGIQUE -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -39,7 +37,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -51,12 +48,10 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <!-- GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         
-                        <!-- DROPDOWN CUSTOM : ORG POUR FORMATION -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-formation" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -77,15 +72,11 @@
                 </div>
             </div>
 
-            <!-- REGISTRE APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
                     
-                    <!-- LARGEUR ÉLARGIE À 550PX POUR ÉVITER LE TEXTE SUR 2 LIGNES -->
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-[550px] shrink-0">
-                        
-                        <!-- DROPDOWN CUSTOM : ORG POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -95,7 +86,6 @@
                             <div id="annuaire-select-org-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                         </div>
 
-                        <!-- DROPDOWN CUSTOM : CLASSE POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-form-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -122,11 +112,10 @@
             </div>
         </div>
 
-        <!-- TIROIR 2 : LE CONFIGURATEUR DE SESSIONS -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
-                    <span>✨</span> Configurer et Générer une Session
+                    <span id="icone-titre-formulaire">✨</span> <span id="texte-titre-formulaire">Configurer et Générer une Session</span>
                 </h2>
                 <button onclick="basculerZoneConfigurateur()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
@@ -221,12 +210,11 @@
 
             <div id="conteneur-boutons-action">
                 <button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session complète
+                    🚀 Générer la session
                 </button>
             </div>
         </div>
 
-        <!-- BLOC DE RECHERCHE ET FILTRE PAR PÉRIODE -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -251,7 +239,6 @@
             </div>
         </div>
 
-        <!-- BLOCS TEMPORELS DE TIMELINE -->
         <div class="space-y-3 relative z-10">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -268,7 +255,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -347,28 +333,6 @@
             }
         });
 
-        // RESTAURATION DES FONCTIONS DE BASCULE INTERFACE MANQUANTES
-        function basculerZoneAnnuaire() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            ann.classList.toggle('hidden'); if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
-        }
-
-        function basculerZoneConfigurateur() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            conf.classList.toggle('hidden'); if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
-        }
-
-        function toggleGroupCollapse(targetId, iconId) {
-            const target = document.getElementById(targetId);
-            const icon = document.getElementById(iconId);
-            if (target && icon) {
-                const isHidden = target.classList.toggle('hidden');
-                icon.innerText = isHidden ? '▶' : '▼';
-            }
-        }
-
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -413,6 +377,27 @@
             confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
             prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
+
+        function basculerZoneAnnuaire() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            ann.classList.toggle('hidden'); if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
+        }
+
+        function basculerZoneConfigurateur() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            conf.classList.toggle('hidden'); if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
+        }
+
+        function toggleGroupCollapse(targetId, iconId) {
+            const target = document.getElementById(targetId);
+            const icon = document.getElementById(iconId);
+            if (target && icon) {
+                const isHidden = target.classList.toggle('hidden');
+                icon.innerText = isHidden ? '▶' : '▼';
+            }
+        }
 
         async function initAdmin() {
             try {
@@ -571,26 +556,149 @@
             } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
+        function entrerModifOrganisme(id, nom) {
+            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
+            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
+            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold py-2.5 px-3 rounded-xl cursor-pointer";
+        }
+
+        async function creerOuModifierOrganismeMaster() {
+            const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
+            if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
+            
+            if (idOrgEnCoursModif) {
+                await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
+                idOrgEnCoursModif = null; input.value = "";
+                document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
+                document.getElementById('btn-annuaire-org').className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer";
+            } else { 
+                await db.from('organismes').insert([{ nom: nom }]); input.value = "";
+            }
+            const { data: orgs } = await db.from('organismes').select('*').order('nom');
+            globalOrganismes = orgs || [];
+            renderDropdownsOrganismes();
+            afficherListeOrganismes(globalOrganismes);
+            await UIModal.alert("Organisme enregistré avec succès.", "success");
+        }
+
+        async function supprimerOrganismeMaster(id, nom) {
+            if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
+            await db.from('organismes').delete().eq('id', id);
+            const { data: orgs } = await db.from('organismes').select('*').order('nom');
+            globalOrganismes = orgs || [];
+            renderDropdownsOrganismes();
+            afficherListeOrganismes(globalOrganismes);
+            await UIModal.alert("Organisme supprimé.", "success");
+        }
+
+        function entrerModifFormation(id, nom) {
+            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
+            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
+        }
+
+        async function creerOuModifierFormationMaster() {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
+            if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
+            if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
+            
+            if (idFormEnCoursModif) {
+                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
+                idFormEnCoursModif = null; input.value = "";
+                document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
+            } else { 
+                await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = "";
+            }
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Formation mise à jour.", "success");
+        }
+
+        async function supprimerFormationMaster(id, nom) {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
+            await db.from('formations').delete().eq('id', id);
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Classe supprimée.", "success");
+        }
+
+        function entrerModifApprenant(id, prenom, nom, email) {
+            idAppEnCoursModif = id;
+            document.getElementById('annuaire-prenom-app').value = prenom;
+            document.getElementById('annuaire-nom-app').value = nom;
+            document.getElementById('annuaire-email-app').value = email;
+            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
+        }
+
+        async function creerOuModifierApprenantMaster() {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
+            if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
+            if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
+            
+            if (idAppEnCoursModif) {
+                await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
+                idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
+                document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
+            } else {
+                await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
+                p.value = ""; n.value = ""; e.value = "";
+            }
+            await afficherListeApprenantsMaster(formId);
+            await UIModal.alert("Fiche apprenant enregistrée.", "success");
+        }
+
+        async function supprimerApprenantMaster(id) {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
+            await db.from('apprenants_master').delete().eq('id', id); await afficherListeApprenantsMaster(formId);
+            await UIModal.alert("Apprenant retiré.", "success");
+        }
+
+        // ==========================================
+        //  NOUVELLE LOGIQUE VERROUILLAGE SESSIONS
+        // ==========================================
         async function chargerSessions() {
             const { data: sessions, error: errS } = await db.from('sessions').select('*');
-            const { data: evals, error: errE } = await db.from('evaluateurs').select('*');
-            const { data: apps, error: errA } = await db.from('apprenants').select('*');
+            const { data: evalVotes, error: errV } = await db.from('evaluations').select('session_id');
 
-            if (errS || errE || errA) {
+            if (errS || errV) {
                 await UIModal.alert("Erreur lors de la récupération des données.", "error");
                 return;
             }
 
+            // Création d'un dictionnaire des sessions ayant déjà reçu des notes
+            const sessionsVerrouillees = new Set((evalVotes || []).map(e => e.session_id));
+
             const rawList = sessions || [];
-            const evaluateursList = evals || [];
-            const apprenantsList = apps || [];
+
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+
+            const backgroundUpdates = [];
 
             rawList.forEach(s => {
-                s.evaluateurs_cache = evaluateursList.filter(e => e.session_id === s.id);
-                s.apprenants_cache = apprenantsList.filter(a => a.session_id === s.id);
+                let nvStatut = s.statut;
+                if (s.date_session) {
+                    if (s.date_session < todayStr) nvStatut = 'terminee';
+                    else if (s.date_session > todayStr) nvStatut = 'a_venir';
+                    else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
+                }
+
+                if (s.statut !== nvStatut) {
+                    backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
+                    s.statut = nvStatut;
+                }
+                
+                // On attache le drapeau de verrouillage à l'objet session
+                s.verrouillee = sessionsVerrouillees.has(s.id);
             });
 
-            // CLASSEMENT DOUBLE : DATE ASCpuis ID DESC (DERNIÈRE CRÉÉE EN HAUT)
+            if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
+
             rawList.sort((a, b) => {
                 if (a.date_session !== b.date_session) {
                     return (a.date_session || "").localeCompare(b.date_session || "");
@@ -631,13 +739,9 @@
                     let dateFormateeFr = "";
                     if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
 
-                    const evaluateursNoms = (s.evaluateurs_cache || []).map(e => (e.nom || "").toLowerCase()).join(" ");
-                    const apprenantsNoms = (s.apprenants_cache || []).map(a => (a.prenom || "").toLowerCase()).join(" ");
-
                     return nomSess.includes(rechercheTexte) || typeSess.includes(rechercheTexte) ||
                            formationNom.includes(rechercheTexte) || organismeNom.includes(rechercheTexte) ||
-                           dateFormateeFr.includes(rechercheTexte) || evaluateursNoms.includes(rechercheTexte) ||
-                           apprenantsNoms.includes(rechercheTexte);
+                           dateFormateeFr.includes(rechercheTexte);
                 }
                 return true;
             });
@@ -722,6 +826,14 @@
                         `;
                     }
 
+                    // BOUTON ÉDITION INTELLIGENT (VERROUILLAGE SI NOTES EXISTANTES)
+                    let boutonEdition = "";
+                    if (s.verrouillee) {
+                        boutonEdition = `<button title="Édition bloquée : des évaluations ont déjà été soumises" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800/30 border border-slate-700/30 text-slate-600 cursor-not-allowed text-sm">🚫</button>`;
+                    } else {
+                        boutonEdition = `<button onclick="entrerEnModeModification('${s.id}')" title="Faire l'appel et modifier les groupes" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>`;
+                    }
+
                     let boutonActionStatut = "";
                     if (s.statut === 'a_venir') {
                         boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>`;
@@ -729,23 +841,40 @@
                         boutonActionStatut = `<button onclick="cloturerSession('${s.id}')" title="Clôturer et archiver la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-sm cursor-pointer">🔒</button>`;
                     }
 
-                    htmlBlocClasse += `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80 ${estArchive ? 'opacity-60 hover:opacity-95' : ''}">
-                            <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                    if (!estArchive) {
+                        htmlBlocClasse += `
+                            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
+                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
+                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
+                                    ${liensVotesHtml}
+                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
+                                    <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
+                                    ${boutonEdition}
+                                    ${boutonActionStatut}
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                ${!estArchive ? liensVotesHtml : `<a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>`}
-                                ${!estArchive ? `<a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>` : ''}
-                                <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                ${!estArchive ? `<button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>` : ''}
-                                ${estArchive ? `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>` : boutonActionStatut}
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
+                        `;
+                    } else {
+                        htmlBlocClasse += `
+                            <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
+                                <div>
+                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
+                                    <span class="bg-[#030712] text-slate-500 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
+                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
+                                    <button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-sm cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }
                 });
 
                 htmlBlocClasse += `</div></div>`; conteneur.innerHTML += htmlBlocClasse;
@@ -763,14 +892,14 @@
             const dateSession = document.getElementById('date-session').value;
             const formationId = document.getElementById('select-formation').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // CORRECTION MATHÉMATIQUE
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             const listApprenantsPresents = extraireApprenantsPresents();
 
             if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
             if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent.", "warning", "Appel incomplet");
+            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent dans le registre d'appel.", "warning", "Appel incomplet");
 
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -818,7 +947,7 @@
                 session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
             })));
 
-            await UIModal.alert("La session a été générée avec succès !", "success", "Session Créée");
+            await UIModal.alert("La session a été générée avec succès ! Les groupes ont été constitués.", "success", "Session Créée");
             
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
             document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
@@ -836,7 +965,7 @@
             
             zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
             zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de la session`;
+            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de l'appel / session`;
 
             const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
             const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
@@ -877,7 +1006,7 @@
 
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Enregistrer les modifications</button>
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Mettre à jour l'appel et les groupes</button>
                     <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
                 </div>
             `;
@@ -904,7 +1033,7 @@
             const typeSession = document.getElementById('type-session').value;
             const dateSession = document.getElementById('date-session').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // CORRECTION MATHÉMATIQUE
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             const listApprenantsPresents = extraireApprenantsPresents();
@@ -958,107 +1087,8 @@
                 session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
             })));
 
-            await UIModal.alert("Session reconfigurée avec succès !", "success");
+            await UIModal.alert("Appel et groupes mis à jour avec succès !", "success");
             annulerModeModification(); await chargerSessions();
-        }
-
-        async function creerOuModifierOrganismeMaster() {
-            const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-            if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-            
-            if (idOrgEnCoursModif) {
-                await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                idOrgEnCoursModif = null; input.value = "";
-                document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
-            } else { 
-                await db.from('organismes').insert([{ nom: nom }]); input.value = "";
-            }
-            const { data: orgs } = await db.from('organismes').select('*').order('nom');
-            globalOrganismes = orgs || [];
-            renderDropdownsOrganismes();
-            afficherListeOrganismes(globalOrganismes);
-            await UIModal.alert("Organisme enregistré.", "success");
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression Critique", "error"))) return;
-            await db.from('organismes').delete().eq('id', id);
-            const { data: orgs } = await db.from('organismes').select('*').order('nom');
-            globalOrganismes = orgs || [];
-            renderDropdownsOrganismes();
-            afficherListeOrganismes(globalOrganismes);
-            await UIModal.alert("Organisme supprimé.", "success");
-        }
-
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierFormationMaster() {
-            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
-            if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
-            if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
-            
-            if (idFormEnCoursModif) {
-                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                idFormEnCoursModif = null; input.value = "";
-            } else { 
-                await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = "";
-            }
-            const { data: forms } = await db.from('formations').select('*').order('nom');
-            globalFormations = forms || [];
-            afficherListeFormations(orgId);
-            await UIModal.alert("Formation mise à jour.", "success");
-        }
-
-        async function supprimerFormationMaster(id, nom) {
-            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
-            await db.from('formations').delete().eq('id', id);
-            const { data: forms } = await db.from('formations').select('*').order('nom');
-            globalFormations = forms || [];
-            afficherListeFormations(orgId);
-            await UIModal.alert("Classe supprimée.", "success");
-        }
-
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierApprenantMaster() {
-            const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
-            if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
-            if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
-            
-            if (idAppEnCoursModif) {
-                await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
-                idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
-            } else {
-                await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
-                p.value = ""; n.value = ""; e.value = "";
-            }
-            await afficherListeApprenantsMaster(formId);
-            await UIModal.alert("Fiche apprenant enregistrée.", "success");
-        }
-
-        async function supprimerApprenantMaster(id) {
-            const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
-            await db.from('apprenants_master').delete().eq('id', id); await afficherListeApprenantsMaster(formId);
-            await UIModal.alert("Apprenant retiré.", "success");
-        }
-
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
         }
 
         async function changerStatutSessionDirect(idSession, nvStatut) {
@@ -1067,7 +1097,7 @@
         }
 
         async function cloturerSession(idSession) {
-            if (!(await UIModal.confirm("Fermer définitivement cette session ?", "Clôture", "warning"))) return;
+            if (!(await UIModal.confirm("Fermer définitivement cette session ? Elle sera déplacée dans les archives.", "Clôture", "warning"))) return;
             await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); await chargerSessions();
             await UIModal.alert("Session clôturée et archivée.", "success");
         }
