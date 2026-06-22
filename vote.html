@@ -30,11 +30,10 @@
             </div>
 
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
-                <!-- Généré dynamiquement en JS -->
-            </div>
+                </div>
 
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
-                <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions Jury :</label>
+                <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
                 <div class="flex flex-col rounded-xl overflow-hidden border border-gray-800 focus-within:border-blue-500 transition-all">
                     <div class="flex items-center gap-1 bg-gray-950 p-2 border-b border-gray-800 select-none">
                         <button type="button" onclick="appliquerFormatText('bold')" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
@@ -55,7 +54,7 @@
         <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
-                <h2 class="text-2xl font-black text-white">Évaluations Terminées !</h2>
+                <h2 class="text-2xl font-black text-white">Évaluations Émises !</h2>
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
             <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
@@ -116,7 +115,7 @@
                     votantPrecedent = document.getElementById('select-groupe-votant').value;
                 }
 
-                const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation);
+                const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
                 if (crits && crits.length > 0) {
                     listeCriteres = crits;
                     genererCurseursCriteres();
@@ -152,7 +151,10 @@
                 <div class="bg-gray-950/40 p-5 rounded-xl border border-gray-800/60 shadow-inner space-y-4">
                     
                     <div class="flex justify-between items-center gap-4">
-                        <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                        <div>
+                            <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                            ${c.description ? `<p class="text-xs text-gray-500 mt-0.5 leading-relaxed font-normal">${c.description}</p>` : ''}
+                        </div>
                         <div id="badge-note-app-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
 
@@ -275,11 +277,11 @@
 
                 const moyenneSur20 = (totalNotes / listeCriteres.length / 5) * 20;
 
-                // CORRECTIF : COMPRESSION DES CURSEURS POUR LES APPRENANTS
                 let empreinteDecimale = "";
                 tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
                 const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
+                // CORRECTION DE SYNTAXE REQUIS : Présence de la virgule de séparation
                 paquetInsertions.push({
                     session_id: idSessionEvaluation,
                     groupe_votant: groupeVotant,
