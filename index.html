@@ -385,7 +385,6 @@
                 }
             });
 
-            // MODIFICATION APPORTÉE : Ajout de 'nomGroupe' à la liste des colonnes indexables pour les flèches
             const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe', 'ptAuto', 'ptPairsCumule', 'noteProfSur20', 'impactTotalEntier', 'noteFinaleNum'];
             colonnes.forEach(col => {
                 const spanFlèche = document.getElementById(`flèche-${col}`);
@@ -400,7 +399,6 @@
             });
 
             if(listeFiltree.length === 0) {
-                // Colspan étendu à 8 colonnes pour absorber l'isolation de l'équipe
                 corpsTable.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-600 italic">Aucun apprenant ne correspond à cette recherche.</td></tr>`;
                 return;
             }
@@ -421,7 +419,6 @@
                     ? 'text-red-400 bg-red-500/20 border-red-500/40'
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
-                // CORRECTION ERGONOMIQUE : Intégration de 3 cellules distinctes (Prénom | Nom | Équipe)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">${item.prenomSeul}</td>
@@ -490,7 +487,6 @@
                 ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
             } else {
                 colonneTriActuelle = colonne;
-                // Intégration de 'nomGroupe' dans la détection des chaînes pour trier de A à Z par défaut
                 ordreTriActuel = (colonne === 'prenomSeul' || colonne === 'nomSeul' || colonne === 'nomGroupe') ? 'asc' : 'desc';
             }
             filtrerEtAfficherTableau();
@@ -640,6 +636,7 @@
                     `;
                 }
 
+                // CORRECTION FX APPLIQUÉE ICI : Utilisation de la variable correcte 'contenuCriteres'
                 conteneur.innerHTML += `
                     <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col hover:border-gray-700 transition-colors shadow-inner">
                         <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
@@ -655,7 +652,7 @@
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col space-y-0.5 mt-1">
-                            ${contentsCriteres}
+                            ${contenuCriteres}
                         </div>
                         ${htmlBlockFeedback}
                         ${htmlImpactBulle}
