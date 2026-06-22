@@ -20,7 +20,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
-                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
+                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+                        <option value="" disabled selected>-- Choisissez votre équipe --</option>
+                    </select>
                 </div>
 
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
@@ -30,7 +32,8 @@
             </div>
 
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
-                </div>
+                <!-- Généré dynamiquement en JS -->
+            </div>
 
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
@@ -108,11 +111,13 @@
                     if (apps) apps.forEach(student => { if (membresParIdGroupe[student.groupe_id]) membresParIdGroupe[student.groupe_id].push(student.prenom); });
 
                     const optionsHtml = g.map(grp => `<option value="${grp.nom}">${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}</option>`).join('');
-                    document.getElementById('select-groupe-votant').innerHTML = optionsHtml;
+                    
+                    // MODIFICATION : Ajout de l'option neutre par défaut pour éviter les votes accidentels
+                    document.getElementById('select-groupe-votant').innerHTML = `<option value="" disabled selected>-- Choisissez votre équipe --</option>` + optionsHtml;
                     document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
                     
                     ciblePrecedente = document.getElementById('select-sujet-evalue').value;
-                    votantPrecedent = document.getElementById('select-groupe-votant').value;
+                    votantPrecedent = document.getElementById('select-groupe-votant').value; // S'initialise à ""
                 }
 
                 const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
@@ -120,10 +125,13 @@
                     listeCriteres = crits;
                     genererCurseursCriteres();
                     
-                    const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
-                    if (cacheSauvegarde) {
-                        memoireEvaluations = JSON.parse(cacheSauvegarde);
-                        if (ciblePrecedente) restituerCurseursDepuisMemoire(ciblePrecedente);
+                    // Si l'utilisateur recharge la page, on récupère son cache (si on a un votant)
+                    if (votantPrecedent) {
+                        const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
+                        if (cacheSauvegarde) {
+                            memoireEvaluations = JSON.parse(cacheSauvegarde);
+                            if (ciblePrecedente) restituerCurseursDepuisMemoire(ciblePrecedente);
+                        }
                     }
                 }
             } catch (errorGlobal) { alert("💥 Erreur : " + errorGlobal.message); }
@@ -185,7 +193,7 @@
         }
 
         function sauvegarderCacheSpecifique(votant, cible) {
-            if (!votant || !cible) return;
+            if (!votant || !cible) return; // Ne sauvegarde rien si on n'a pas sélectionné son équipe
             if (!memoireEvaluations[cible]) memoireEvaluations[cible] = { criteres: {}, feedback: "" };
             
             listeCriteres.forEach((c, index) => {
@@ -252,6 +260,13 @@
 
         async function soumettreEvaluationGenerale() {
             const groupeVotant = document.getElementById('select-groupe-votant').value;
+            
+            // CONTROLE DE SECURITE : On bloque l'envoi si le votant n'a pas sélectionné son équipe
+            if (!groupeVotant) {
+                alert("⚠️ Attention : Veuillez sélectionner votre équipe dans le menu déroulant en haut de la page avant d'envoyer !");
+                return;
+            }
+            
             enregistrerEtatCurseursEnContinu();
 
             const { data: verifDejaFait } = await db.from('evaluations').select('id').eq('session_id', idSessionEvaluation).eq('groupe_votant', groupeVotant).limit(1);
@@ -281,7 +296,6 @@
                 tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
                 const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
-                // CORRECTION DE SYNTAXE REQUIS : Présence de la virgule de séparation
                 paquetInsertions.push({
                     session_id: idSessionEvaluation,
                     groupe_votant: groupeVotant,
