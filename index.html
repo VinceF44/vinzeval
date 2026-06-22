@@ -11,18 +11,17 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE OPTIMISÉ (AFFICHAGE SÉQUENTIEL DES INFOS DE SESSION) -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div>
+            <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
-                <h1 id="nom-session" class="text-xl md:text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
+                <h1 id="nom-session" class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight">Chargement du Dashboard...</h1>
+                <div id="session-metadonnees" class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-gray-400 font-medium pt-0.5"></div>
             </div>
-            <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0">
+            <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0 sm:self-center">
                 🔄 Rafraîchir les données
             </button>
         </div>
 
-        <!-- ZONE DE SÉLECTION DE L'ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -35,7 +34,6 @@
             </div>
         </div>
 
-        <!-- RÉCAPITULATIF DÉTAILLÉ DES GRILLES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -47,7 +45,6 @@
             </div>
         </div>
 
-        <!-- TABLEAU DE BORD PRINCIPAL AVEC BARRE DE RECHERCHE ET TRI -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -77,7 +74,6 @@
         </div>
     </div>
 
-    <!-- FENÊTRE POP-UP (MODAL) LARGE POUR FEEDBACKS LONGS -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -116,7 +112,6 @@
         let colonneTriActuelle = 'prenom';
         let ordreTriActuel = 'asc';
 
-        // FONCTION COMPAGNON : Raccourcit "Jean Dupont" en "Jean D."
         function formaterPrenomInitiale(nomComplet) {
             if (!nomComplet) return "";
             const parties = nomComplet.trim().split(/\s+/);
@@ -137,19 +132,33 @@
             const sauvegardeMalus = localStorage.getItem(`malus_invest_${idSessionDashboard}`);
             if (sauvegardeMalus) cacheMalusIndividuels = JSON.parse(sauvegardeMalus);
 
-            // OPTIMISATION 2 : Appel couplé pour lister le type, la date, la classe et l'organisme d'un coup
+            // MODIFICATION APPORTÉE : Extraction et éclatement visuel des métadonnées sous le titre principal
             const { data: s } = await db.from('sessions').select('nom, type, date_session, formations(nom, organismes(nom))').eq('id', idSessionDashboard).single();
             if(s) {
-                const typeText = s.type === 'ecrit' ? 'Évaluation Écrite' : 'Évaluation Orale';
+                document.getElementById('nom-session').innerText = s.nom;
+
+                const badgeType = s.type === 'ecrit' 
+                    ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">✍️ Écrit</span>`
+                    : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">🗣️ Oral</span>`;
+                
                 const organismeNom = s.formations && s.formations.organismes ? s.formations.organismes.nom : 'Organisme';
-                const formationNom = s.formations ? s.formations.nom : 'Formation';
+                const formationNom = s.formations ? s.formations.nom : 'Formation / Groupe';
                 
                 let dateFormatee = "--/--/----";
                 if (s.date_session) {
                     const [y, m, d] = s.date_session.split('-');
                     dateFormatee = `${d}/${m}/${y}`;
                 }
-                document.getElementById('nom-session').innerText = `${s.nom} — ${typeText} — ${organismeNom} — ${formationNom} — ${dateFormatee}`;
+
+                // Injection HTML segmentée et élégante
+                document.getElementById('session-metadonnees').innerHTML = `
+                    ${badgeType}
+                    <span class="flex items-center gap-1 text-slate-300">🏢 ${organismeNom}</span>
+                    <span class="text-slate-700 select-none hidden sm:inline">•</span>
+                    <span class="flex items-center gap-1 text-slate-300">📁 ${formationNom}</span>
+                    <span class="text-slate-700 select-none hidden sm:inline">•</span>
+                    <span class="flex items-center gap-1 text-slate-300 font-mono">📅 ${dateFormatee}</span>
+                `;
             }
 
             const { data: evs = [] } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard);
@@ -182,7 +191,6 @@
                     });
                 }
 
-                // OPTIMISATION 1 : Application du format court "Jean D." dans la liste déroulante des groupes
                 document.getElementById('select-groupe-formateur').innerHTML = g.map(grp => {
                     const listePrenoms = membresParIdGroupe[grp.id] || [];
                     const listeFormattee = listePrenoms.map(formaterPrenomInitiale);
@@ -323,7 +331,7 @@
                 }
 
                 listeCalculeePourTri.push({
-                    prenom: app.prenom, // Reste Prénom + Nom complet pour la grande matrice
+                    prenom: app.prenom, 
                     nomGroupe: nomGroupe,
                     ptAuto: ptAuto,
                     textAuto: textAuto,
@@ -401,7 +409,6 @@
                     ? 'text-red-400 bg-red-500/20 border-red-500/40'
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
-                // PROTECTION : Ici item.prenom reste complet (Prénom + Nom)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">
@@ -489,7 +496,6 @@
             document.getElementById('modal-feedback').classList.add('hidden');
         }
 
-        // OPTIMISATION 1 : Injection du format "Jean D." dans le descriptif des cartes de grilles
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -560,12 +566,12 @@
                 if (!e.estProf) {
                     if (e.groupe_votant !== e.sujet) {
                         const listeP = membresParNomGroupe[e.sujet] || [];
-                        const listeFormattee = listeP.map(formaterPrenomInitiale); // <- APPLICATION ICI
+                        const listeFormattee = listeP.map(formaterPrenomInitiale);
                         const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
                         nomAffiche = `Pour : ${e.sujet}${parents}`;
                     } else {
                         const listeP = membresParNomGroupe[e.groupe_votant] || [];
-                        const listeFormattee = listeP.map(formaterPrenomInitiale); //  <- APPLICATION ICI
+                        const listeFormattee = listeP.map(formaterPrenomInitiale);
                         const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
                         nomAffiche = `${e.groupe_votant}${parents}`;
                     }
