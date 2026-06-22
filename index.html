@@ -145,19 +145,19 @@
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <!-- HEADER AVEC AFFICHAGE POUR LE PDF -->
-            <div id="modal-rapport-header" class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
+            <div id="modal-rapport-header" class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl print-hide">
                 <div>
                     <h3 class="text-lg font-black text-white tracking-tight flex items-center gap-2">📄 Bilan Individuel de Compétences</h3>
                     <p id="rapport-sous-titre" class="text-xs text-indigo-400 mt-1 font-mono uppercase"></p>
                 </div>
-                <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors print-hide">✕</button>
+                <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors">✕</button>
             </div>
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6">
                 <!-- Le contenu sera injecté dynamiquement -->
             </div>
             
-            <!-- FOOTER DYNAMIQUE -->
+            <!-- FOOTER DYNAMIQUE GÉRÉ PAR JAVASCRIPT -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide">
             </div>
         </div>
@@ -431,12 +431,13 @@
                 const btn = document.getElementById('btn-refresh');
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
-                // RECHARGEMENT DES APPRENANTS POUR METTRE A JOUR LES EMAILS EN DIRECT
-                const { data: apps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
-                if(apps) apprenantsSession = apps;
+                // RECHARGEMENT FORCE DES APPRENANTS (POUR LES EMAILS AJOUTES EN COURS DE ROUTE)
+                const { data: apps, error: errApps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
+                if (errApps) throw errApps;
+                if (apps) apprenantsSession = apps;
 
-                const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
-                if (error) throw error;
+                const { data: evals, error: errEvals } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
+                if (errEvals) throw errEvals;
 
                 evaluationsSession = (evals || []).map(e => {
                     const extraction = decoderNoteEtCurseurs(e.note);
@@ -552,6 +553,8 @@
                             const ecartAbsolu = Math.abs(e.note - moyProf);
                             const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
                             htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
+                        } else {
+                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
                         }
                     }
 
@@ -685,9 +688,10 @@
                 const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 
-                // VERIFICATION STRICTE DU CHAMP EMAIL
-                const emailValid = item.appObj.email && item.appObj.email.trim() !== "";
-                let emailIndicator = emailValid ? `<span title="${item.appObj.email}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
+                // VERIFICATION ROBUSTE DU CHAMP EMAIL
+                const mailRaw = item.appObj.email ? String(item.appObj.email).trim() : "";
+                const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
+                let emailIndicator = emailValid ? `<span title="${mailRaw}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded cursor-help">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
 
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono border-b border-gray-800/30">
@@ -704,9 +708,17 @@
                                 <div>${noteFinaleAffichage}</div>
                                 <div class="group relative inline-block">
                                     <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
+                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
+                                        <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
+                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
+                                    </div>
                                 </div>
                                 <div class="group relative inline-block">
                                     <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
+                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
+                                        <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
+                                        <div class="text-amber-200/80 text-[10px]">Attribuer un bonus individuel de +1.00 pt pour récompenser l'engagement de l'apprenant.</div>
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -804,10 +816,12 @@
                 </div>
             `;
 
-            // VERIFICATION STRICTE DU CHAMP EMAIL
-            const mailDestinataire = (dataApp.appObj.email || "").trim();
+            // VERIFICATION ROBUSTE DU CHAMP EMAIL
+            const mailRaw = dataApp.appObj.email ? String(dataApp.appObj.email).trim() : "";
+            const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
+            const mailDestinataire = emailValid ? mailRaw : "";
+
             let btnEmailHtml = "";
-            
             if (mailDestinataire !== "") {
                 btnEmailHtml = `<button id="btn-rapport-envoyer-email" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition cursor-pointer active:scale-95 shadow-md print-hide">📧 Envoyer à l'apprenant(e)</button>`;
             } else {
