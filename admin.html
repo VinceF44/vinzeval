@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DE LA CONSOLE -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">
@@ -25,69 +26,75 @@
             </div>
         </div>
 
+        <!-- INTERFACE ERGONOMIQUE DE L'ANNUAIRE -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master Référentielle</h2>
                 <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants. Les modifications se répercutent instantanément sur les feuilles d'appel.</p>
             </div>
 
+            <!-- NIVEAU 1 : LES STRUCTURES -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1. GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
+                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
                         <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
+                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
                         </div>
                     </div>
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
+                <!-- 2. GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
-                        <select id="annuaire-select-org-pour-formation" onchange="annuaireChangementOrgPourForm(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                        <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
+                        <select id="annuaire-select-org-pour-formation" onchange="annuaireChangementOrgPourForm(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer">
                             <option value="">-- Sélectionner l'organisme --</option>
                         </select>
                         <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                            <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                            <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
+                            <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
                         </div>
                     </div>
                     <div id="annuaire-liste-formations" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3">
-                        <p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir ses formations.</p>
+                        <p class="text-slate-600 italic text-xs">Sélectionnez un organisme pour voir ses formations.</p>
                     </div>
                 </div>
             </div>
 
+            <!-- NIVEAU 2 : LES APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
-                    <div class="text-xs font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
+                    <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-72 shrink-0">
-                        <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2 text-[11px] border border-slate-800 text-slate-100 focus:outline-none">
+                        <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer">
                             <option value="">-- Organisme --</option>
                         </select>
-                        <select id="annuaire-select-form-pour-app" onchange="annuaireChangementFormPourApp(this.value)" class="w-full bg-[#030712] rounded-xl p-2 text-[11px] border border-slate-800 text-slate-100 focus:outline-none">
+                        <select id="annuaire-select-form-pour-app" onchange="annuaireChangementFormPourApp(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer">
                             <option value="">-- Classe --</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
-                    <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                    <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
+                    <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
+                    <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
+                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
+                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-sm font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
                 </div>
 
                 <div id="annuaire-liste-apprenants" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
+                    <p class="text-slate-600 italic text-xs col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
                 </div>
             </div>
         </div>
 
+        <!-- ZONE DU CONFIGURATEUR PRINCIPAL DE SESSIONS -->
         <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
-            <h2 id="titre-formulaire" class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
+            <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
                 <span>✨</span> Configurer et Générer une Session
             </h2>
             
@@ -97,11 +104,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
-                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
+                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type d'évaluation :</label>
-                            <select id="type-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                            <select id="type-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
                                 <option value="oral">🗣️ Évaluation Orale</option>
                                 <option value="ecrit">✍️ Évaluation Écrite</option>
                             </select>
@@ -111,11 +118,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Date de la session :</label>
-                            <input type="date" id="date-session" onclick="this.showPicker()" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                            <input type="date" id="date-session" onclick="this.showPicker()" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Statut de départ :</label>
-                            <select id="statut-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                            <select id="statut-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
                                 <option value="active">🟢 Lancer immédiatement (En cours)</option>
                                 <option value="a_venir">📅 Programmer pour plus tard (À venir)</option>
                             </select>
@@ -124,7 +131,7 @@
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Format : Titre Court : Description Longue) :</label>
-                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[100px] focus:border-[#3b82f6] transition-all"></textarea>
+                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[100px] focus:border-[#3b82f6] transition-all"></textarea>
                     </div>
                 </div>
 
@@ -132,11 +139,11 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nombre de Groupes :</label>
-                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
+                            <input type="number" id="nb-groupes" min="1" value="3" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Préfixe des Groupes :</label>
-                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all">
+                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
                         </div>
                     </div>
                     
@@ -144,13 +151,13 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Organisme :</label>
-                                <select id="select-organisme" onchange="chargerFormationsFiltrees(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <select id="select-organisme" onchange="chargerFormationsFiltrees(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
                                     <option value="">-- Organisme --</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Formation / Classe :</label>
-                                <select id="select-formation" onchange="chargerApprenantsFiltres(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <select id="select-formation" onchange="chargerApprenantsFiltres(this.value)" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
                                     <option value="">-- Choisir --</option>
                                 </select>
                             </div>
@@ -158,38 +165,40 @@
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📢 Faire l'appel (Cocher les présents) :</label>
-                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-xs min-h-[110px] max-h-[200px] overflow-y-auto flex flex-wrap gap-2">
-                                <p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>
+                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-sm font-sans min-h-[110px] max-h-[200px] overflow-y-auto flex flex-wrap gap-2">
+                                <p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="2" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[50px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <!-- MODIFICATION EFFECTUÉE : Suppression de 'font-mono' et 'text-xs', remplacé par 'font-sans' et 'text-sm' -->
+                            <textarea id="liste-evaluateurs-brute" rows="2" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[50px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="conteneur-boutons-action">
-                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
+                <button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
                     🚀 Générer la session complète
                 </button>
             </div>
         </div>
 
+        <!-- BLOCS TEMPORELS -->
         <div class="space-y-3">
-            <h2 class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
+            <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
         </div>
 
         <div class="space-y-3 pt-4 border-t border-slate-800">
-            <h2 class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours (Actives)</h2>
+            <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours (Actives)</h2>
             <div id="liste-sessions-actives" class="space-y-4"></div>
         </div>
 
         <div class="space-y-3 pt-4 border-t border-slate-800">
-            <h2 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique (Terminées)</h2>
+            <h2 class="text-sm font-black text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique (Terminées)</h2>
             <div id="liste-sessions-terminees" class="space-y-4"></div>
         </div>
 
@@ -216,7 +225,6 @@
             document.getElementById('zone-annuaire-master').classList.toggle('hidden');
         }
 
-        // ACCORDÉON DYNAMIQUE DES CATÉGORIES (CLASSES / FORMATIONS)
         function toggleGroupCollapse(targetId, iconId) {
             const target = document.getElementById(targetId);
             const icon = document.getElementById(iconId);
@@ -241,7 +249,7 @@
             const selectForm = document.getElementById('select-formation');
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             selectForm.innerHTML = `<option value="">-- Choisir --</option>`;
-            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
@@ -254,7 +262,7 @@
             const selectForm = document.getElementById('annuaire-select-form-pour-app');
             const conteneurApp = document.getElementById('annuaire-liste-apprenants');
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
-            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4">Sélectionnez une classe pour voir ses apprenants.</p>`;
+            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
@@ -266,28 +274,28 @@
         async function chargerApprenantsFiltres(formationId) {
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             if (!formationId) {
-                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+                conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
                 return;
             }
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
             if (data && data.length > 0) {
                 conteneurAppel.innerHTML = data.map(app => `
-                    <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-1.5 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
+                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
                         <input type="checkbox" name="apprenant-present" data-name="${app.prenom} ${app.nom}" data-email="${app.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                         <div class="leading-tight">
-                            <span class="font-semibold text-slate-200 block">${app.prenom} ${app.nom}</span>
-                            ${app.email ? `<span class="text-[9px] text-slate-500 block truncate max-w-[120px]">${app.email}</span>` : ''}
+                            <span class="font-semibold text-slate-200 block text-sm font-sans">${app.prenom} ${app.nom}</span>
+                            ${app.email ? `<span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${app.email}</span>` : ''}
                         </div>
                     </label>
                 `).join('');
-            } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré.</p>`; }
+            } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
         function afficherListeOrganismes(data) {
             const conteneur = document.getElementById('annuaire-liste-organismes');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(o => `
-                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
                         <span class="truncate font-medium text-slate-300">${o.nom}</span>
                         <div class="flex gap-1 shrink-0">
                             <button onclick="entrerModifOrganisme(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
@@ -295,16 +303,16 @@
                         </div>
                     </div>
                 `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucun organisme enregistré.</p>`; }
+            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucun organisme enregistré.</p>`; }
         }
 
         async function afficherListeFormations(orgId) {
             const conteneur = document.getElementById('annuaire-liste-formations');
-            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
+            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
             const { data } = await db.from('formations').select('*').eq('organisme_id', orgId).order('nom');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(f => `
-                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
                         <span class="truncate font-medium text-slate-300">${f.nom}</span>
                         <div class="flex gap-1 shrink-0">
                             <button onclick="entrerModifFormation(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
@@ -312,33 +320,33 @@
                         </div>
                     </div>
                 `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucune formation pour cet organisme.</p>`; }
+            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucune formation pour cet organisme.</p>`; }
         }
 
         async function afficherListeApprenantsMaster(formId) {
             const conteneur = document.getElementById('annuaire-liste-apprenants');
-            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
+            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(a => `
-                    <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-xs hover:border-slate-800 transition-all shadow-sm">
+                    <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-sm font-sans hover:border-slate-800 transition-all shadow-sm">
                         <div class="truncate pr-2">
                             <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
                             <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                         <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-xs cursor-pointer">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-xs cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-500 italic text-[11px] col-span-full py-4 text-center">Aucun apprenant enregistré.</p>`; }
+            } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
         function entrerModifOrganisme(id, nom) {
             idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
             const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold py-2.5 px-3 rounded-xl cursor-pointer";
         }
 
         async function creerOuModifierOrganismeMaster() {
@@ -432,7 +440,7 @@
             conteneur.innerHTML = "";
 
             if (!sessionsList || sessionsList.length === 0) {
-                conteneur.innerHTML = `<p class="text-xs text-slate-600 italic p-2 pl-4">Aucune session enregistrée dans ce filtre.</p>`;
+                conteneur.innerHTML = `<p class="text-sm text-slate-600 italic p-2 pl-4">Aucune session enregistrée dans ce filtre.</p>`;
                 return;
             }
 
@@ -449,15 +457,14 @@
                 const blockTargetId = `collapse-${conteneurId}-${groupCounter}`;
                 const blockIconId = `icon-${conteneurId}-${groupCounter}`;
 
-                // MODIFICATION 2 : Détection pour rétracter/fermer automatiquement les listes "À venir" par défaut
                 const forceCollapse = (conteneurId === 'liste-sessions-avenir');
                 const hiddenStyleClass = forceCollapse ? 'hidden' : '';
                 const arrowIndicator = forceCollapse ? '▶' : '▼';
 
                 let htmlBlocClasse = `
                     <div class="space-y-2 bg-[#101828]/30 p-3 rounded-xl border border-slate-900/60">
-                        <div onclick="toggleGroupCollapse('${blockTargetId}', '${blockIconId}')" class="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5 cursor-pointer hover:text-white transition-all select-none">
-                            <span id="${blockIconId}" class="text-[9px] font-mono text-[#fe9a00]">${arrowIndicator}</span>
+                        <div onclick="toggleGroupCollapse('${blockTargetId}', '${blockIconId}')" class="text-[11px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5 cursor-pointer hover:text-white transition-all select-none">
+                            <span id="${blockIconId}" class="text-[10px] font-mono text-[#fe9a00]">${arrowIndicator}</span>
                             📁 Classe : ${nomClasse} (${tableauSessions.length} session${tableauSessions.length > 1 ? 's' : ''})
                         </div>
                         <div id="${blockTargetId}" class="${hiddenStyleClass} space-y-2 pl-1.5 border-l border-slate-800/80">
@@ -468,16 +475,15 @@
                     const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                     const badgeType = s.type === 'ecrit' 
-                        ? `<span class="bg-indigo-950 text-indigo-400 text-[9px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950 text-amber-400 text-[9px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
+                        ? `<span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
+                        : `<span class="bg-amber-950 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
 
                     let dateSess = s.date_session;
                     if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
                     else { dateSess = "--/--/----"; }
 
-                    const tagDate = `<span class="text-slate-400 font-mono text-xs ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
+                    const tagDate = `<span class="text-slate-400 font-mono text-[11px] ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
 
-                    // MODIFICATION 1 : Condition stricte pour n'injecter les liens de vote (🗳️, 👩‍🏫) QUE si le statut est actif
                     let liensVotesHtml = "";
                     if (s.statut === 'active') {
                         liensVotesHtml = `
@@ -488,9 +494,9 @@
 
                     let boutonActionStatut = "";
                     if (s.statut === 'a_venir') {
-                        boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-xs cursor-pointer">▶️</button>`;
+                        boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>`;
                     } else if (s.statut === 'active') {
-                        boutonActionStatut = `<button onclick="cloturerSession('${s.id}')" title="Clôturer et archiver la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-xs cursor-pointer">🔒</button>`;
+                        boutonActionStatut = `<button onclick="cloturerSession('${s.id}')" title="Clôturer et archiver la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-sm cursor-pointer">🔒</button>`;
                     }
 
                     if (!estArchive) {
@@ -498,16 +504,16 @@
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                    <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
                                     <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                     <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                    <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-xs cursor-pointer">✏️</button>
+                                    <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>
                                     ${boutonActionStatut}
-                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-xs cursor-pointer">👥</button>
-                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -516,13 +522,13 @@
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
                                 <div>
                                     <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
-                                    <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
+                                    <span class="bg-[#030712] text-slate-500 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
                                     <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
-                                    <button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session et la remettre en cours" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-xs cursor-pointer">🔓</button>
-                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
-                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
+                                    <button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session et la remettre en cours" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-sm cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
                                 </div>
                             </div>
                         `;
@@ -601,7 +607,7 @@
             alert("🎉 Session complète initialisée avec succès !");
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
             document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('liste-evaluateurs-brute').value = "";
             chargerSessions();
         }
@@ -635,11 +641,11 @@
             if(apps) {
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
                 document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                    <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-1.5 rounded-xl border border-slate-800/80">
+                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
                         <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                         <div class="leading-tight">
-                            <span class="font-semibold text-slate-200 block">${a.prenom}</span>
-                            <span class="text-[9px] text-slate-500 block truncate max-w-[120px]">${a.email || 'Pas d\'email'}</span>
+                            <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
+                            <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                     </label>
                 `).join('');
@@ -647,8 +653,8 @@
 
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">💾 Enregistrer les modifications</button>
-                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">💾 Enregistrer les modifications</button>
+                    <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
                 </div>
             `;
             window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
@@ -661,10 +667,10 @@
 
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
             document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
 
-            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
+            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
         }
 
         async function sauvegarderModificationsSession() {
