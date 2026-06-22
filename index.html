@@ -47,14 +47,14 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2">
                 <h2 class="text-base font-black text-white">📊 Matrice des Notes de Session</h2>
-                <p class="text-xs text-gray-400">Calcul automatique des Bonus/Malus d'alignement appliqués sur la note d'oral du jury.</p>
+                <p class="text-xs text-gray-400">Calcul automatique personnalisé décliné par apprenant sur la base des performances de son groupe.</p>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
-                            <th class="py-3 px-3">Groupe Évalue / Évaluateur</th>
+                            <th class="py-3 px-3">Apprenant (Équipe)</th>
                             <th class="py-3 px-3 text-center font-bold text-blue-400">Bonus/Malus Auto-Éval</th>
                             <th class="py-3 px-3 text-center font-bold text-purple-400">Bonus/Malus Notation Pairs</th>
                             <th class="py-3 px-3 text-center bg-amber-950/20">Moy. Oral Jury (/20)</th>
@@ -77,10 +77,11 @@
         const idSessionDashboard = urlParams.get('session_id');
 
         let groupesSession = [];
+        let apprenantsSession = []; // Mémorisation globale des apprenants
         let evaluationsSession = [];
         let listeCriteresProf = [];
         let nomsEvaluateursInscrits = [];
-        let membresParNomGroupe = {}; // Dictionnaire global pour lier les prénoms aux noms des équipes
+        let membresParNomGroupe = {};
 
         async function initDashboard() {
             if (!idSessionDashboard) return;
@@ -96,6 +97,8 @@
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard);
             const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
 
+            if(apps) apprenantsSession = apps;
+
             if(g) {
                 groupesSession = g;
                 const membresParIdGroupe = {};
@@ -109,7 +112,6 @@
                         if (membresParIdGroupe[student.groupe_id]) {
                             membresParIdGroupe[student.groupe_id].push(student.prenom);
                             
-                            // On peuple l'index par nom textuel de groupe
                             const matchingGroup = g.find(item => item.id === student.groupe_id);
                             if(matchingGroup) {
                                 membresParNomGroupe[matchingGroup.nom].push(student.prenom);
@@ -221,12 +223,20 @@
                 }
             });
 
-            groupesSession.forEach(g => {
-                const nom = g.nom;
-                const donnees = structureParGroupe[nom];
+            // Indexation rapide des ID de groupes vers leurs noms textuels
+            const mapIdVersNomGroupe = {};
+            groupesSession.forEach(g => mapIdVersNomGroupe[g.id] = g.nom);
+
+            // Tri par ordre alphabétique des prénoms pour un tableau de bord impeccable
+            apprenantsSession.sort((a, b) => a.prenom.localeCompare(b.prenom));
+
+            // MODIFICATION CLÉ : Le tableau génère désormais une ligne par apprenant
+            apprenantsSession.forEach(app => {
+                const nomGroupe = mapIdVersNomGroupe[app.groupe_id] || "Sans Équipe";
+                const donnees = structureParGroupe[nomGroupe] || { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
                 const autoEvalVal = donnees.autoEval;
 
-                const evalsProfCeGroupe = evaluationsSession.filter(ev => ev.estProf && ev.sujet === nom);
+                const evalsProfCeGroupe = evaluationsSession.filter(ev => ev.estProf && ev.sujet === nomGroupe);
                 const noteProfSur20 = evalsProfCeGroupe.length > 0 ? (evalsProfCeGroupe.reduce((a,b)=>a+b.note,0) / evalsProfCeGroupe.length) : null;
 
                 let ptAuto = 0, textAuto = "--";
@@ -248,7 +258,7 @@
 
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
-                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${nom}</td>
+                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${app.prenom} <span class="text-xs font-normal text-gray-500">(${nomGroupe})</span></td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
@@ -299,13 +309,12 @@
                         if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                         else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
-                        // INFOBULLE OPTIMISÉE : Utilise la description si elle existe, sinon le nom
                         const texteDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : crit.nom;
 
-                        // CODE MIS À JOUR : Titre court et curseur help pour le mouseover
+                        // MODIFICATION CLÉ : Retrait de "Critère X :", affichage épuré direct du titre
                         contenuCriteres += `
                             <div class="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none" title="${texteDescriptionBulle}">
-                                <span class="text-gray-400 truncate pr-2 font-medium">Critère ${idx + 1} : ${crit.nom}</span>
+                                <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
                                 <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5}</span>
                             </div>
                         `;
@@ -324,7 +333,6 @@
                     ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' 
                     : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                 
-                // CODE MIS À JOUR : Injection automatique des prénoms dans les en-têtes de cartes apprenants
                 let nomAffiche = e.groupe_votant;
                 if (!e.estProf) {
                     if (e.groupe_votant !== e.sujet) {
