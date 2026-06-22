@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -22,6 +23,7 @@
             </button>
         </div>
 
+        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -41,6 +43,7 @@
             </div>
         </div>
 
+        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -52,6 +55,7 @@
             </div>
         </div>
 
+        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -84,6 +88,7 @@
         </div>
     </div>
 
+    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
@@ -108,6 +113,7 @@
         </div>
     </div>
 
+    <!-- GRANDE MODALE DE LECTURE FEEDBACK -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -168,7 +174,12 @@
             hiddenInput.value = value;
             if(labelSpan) labelSpan.innerText = label;
             toggleDropdown(dropdownId);
-            if (valeurChangee && dropdownId === 'select-groupe-formateur') mettreAjourDetailsEvaluations(value);
+            
+            // MÉMOIRE LOCALE DU GROUPE SÉLECTIONNÉ !
+            if (valeurChangee && dropdownId === 'select-groupe-formateur') {
+                localStorage.setItem('dernier_groupe_selectionne_' + idSessionDashboard, value);
+                mettreAjourDetailsEvaluations(value);
+            }
         }
 
         window.addEventListener('click', function(e) {
@@ -250,11 +261,19 @@
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
 
-                    const premierGrp = groupesSession[0];
-                    const listeFormattee = (membresParIdGroupe[premierGrp.id] || []).map(formaterPrenomInitiale);
+                    // RESTAURATION DU GROUPE VIA LE LOCALSTORAGE (La fameuse mémoire !)
+                    const dernierGroupeNom = localStorage.getItem('dernier_groupe_selectionne_' + idSessionDashboard);
+                    let groupeActif = groupesSession[0]; 
+
+                    if (dernierGroupeNom) {
+                        const grpTrouve = groupesSession.find(groupe => groupe.nom === dernierGroupeNom);
+                        if (grpTrouve) groupeActif = grpTrouve;
+                    }
+
+                    const listeFormattee = (membresParIdGroupe[groupeActif.id] || []).map(formaterPrenomInitiale);
                     const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
-                    document.getElementById('select-groupe-formateur').value = premierGrp.nom;
-                    document.getElementById('select-groupe-formateur-label').innerText = `${premierGrp.nom}${parents}`;
+                    document.getElementById('select-groupe-formateur').value = groupeActif.nom;
+                    document.getElementById('select-groupe-formateur-label').innerText = `${groupeActif.nom}${parents}`;
                 }
 
                 const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
@@ -298,7 +317,10 @@
                 });
                 
                 calculerEtAfficherTout();
-                if(btn) { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }
+                if(btn) {
+                    btn.innerHTML = "✅ À jour !";
+                    setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
+                }
             } catch (err) { alert("🚨 Erreur chargement : " + err.message); }
         }
 
@@ -312,9 +334,6 @@
             } catch(err) { alert("🚨 Erreur modération : " + err.message); }
         }
 
-        // ==========================================
-        // FIX : SATELLISATION DES CRITÈRES ET DU POPUP
-        // ==========================================
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             try {
                 const conteneur = document.getElementById('grille-details-evaluations');
@@ -345,7 +364,6 @@
                     let sliders = e.sliders || [];
                     let contenuCriteres = '';
 
-                    // Restitution des critères (Bug 1 corrigé)
                     if (sliders.length === listeCriteresProf.length) {
                         listeCriteresProf.forEach((crit, idx) => {
                             const noteSur5 = sliders[idx];
@@ -375,7 +393,6 @@
                     let nomAffiche = e.groupe_votant;
                     if (!e.estProf && e.groupe_votant !== e.sujet) nomAffiche = `Pour : ${e.sujet}`;
 
-                    // Restitution de la Popup de lecture + Modération (Bug 2 corrigé)
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
@@ -400,7 +417,6 @@
                         htmlBlockFeedback = `<div class="mt-2.5 text-[10px] text-gray-600 italic border-t border-gray-800/50 pt-2">Aucun commentaire déposé.</div>`;
                     }
 
-                    // Restitution de la bulle d'impact en points (Bug 4 corrigé)
                     let htmlImpactBulle = "";
                     if (!e.estProf) {
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
@@ -515,12 +531,11 @@
                 });
 
                 filtrerEtAfficherTableau();
+                const grp = document.getElementById('select-groupe-formateur').value;
+                if(grp) mettreAjourDetailsEvaluations(grp);
             } catch (err) { alert("🚨 Erreur calculs : " + err.message); }
         }
 
-        // ==========================================
-        // FIX : DE RETOUR DES ICONES ETOILE / MALUS (Bug 3 corrigé)
-        // ==========================================
         function filtrerEtAfficherTableau() {
             const corpsTable = document.getElementById('table-corps-resultats');
             if (!corpsTable) return; corpsTable.innerHTML = '';
@@ -564,7 +579,7 @@
                         <td class="py-3 px-3 text-center text-sm ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
                         <td class="py-3 px-3 text-center text-sm ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5">${noteJuryText}</td>
-                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-green-400' : 'text-gray-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-emerald-400' : 'text-gray-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
                         <td class="py-3 px-3 font-sans text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
