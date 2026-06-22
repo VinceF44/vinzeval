@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -22,6 +23,7 @@
             </button>
         </div>
 
+        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -41,6 +43,7 @@
             </div>
         </div>
 
+        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -52,6 +55,7 @@
             </div>
         </div>
 
+        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -84,6 +88,7 @@
         </div>
     </div>
 
+    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
@@ -108,6 +113,7 @@
         </div>
     </div>
 
+    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -126,7 +132,74 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
+    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+            <div class="p-5 flex items-start gap-4">
+                <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
+                <div class="flex-1 pt-1">
+                    <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
+                    <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
+                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-gray-950 rounded-xl p-3 text-sm font-sans border border-gray-800 text-white focus:outline-none focus:border-blue-500 transition-all" />
+                </div>
+            </div>
+            <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end gap-3" id="ui-modal-actions">
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">Annuler</button>
+                <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const UIModal = {
+            show: function(options) {
+                return new Promise((resolve) => {
+                    try {
+                        const modal = document.getElementById('ui-modal');
+                        const box = document.getElementById('ui-modal-box');
+                        const title = document.getElementById('ui-modal-title');
+                        const msg = document.getElementById('ui-modal-message');
+                        const icon = document.getElementById('ui-modal-icon');
+                        const input = document.getElementById('ui-modal-input');
+                        const btnCancel = document.getElementById('ui-btn-cancel');
+                        const btnConfirm = document.getElementById('ui-btn-confirm');
+
+                        title.innerText = options.title || 'Information';
+                        msg.innerHTML = options.message || '';
+                        
+                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+
+                        if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
+                        else { input.classList.add('hidden'); }
+
+                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
+                        btnConfirm.innerText = options.confirmText || 'OK';
+
+                        const cleanup = () => {
+                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
+                            setTimeout(() => modal.classList.add('hidden'), 200);
+                            btnConfirm.onclick = null; btnCancel.onclick = null;
+                        };
+
+                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
+                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
+
+                        modal.classList.remove('hidden'); void modal.offsetWidth;
+                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
+                    } catch (err) {
+                        if(options.isConfirm) resolve(window.confirm(options.message));
+                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
+                        else { window.alert(options.message); resolve(true); }
+                    }
+                });
+            },
+            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
+        };
+
         window.onerror = function(msg, url, line) { alert("🚨 Erreur Système Dashboard : \n" + msg + "\nLigne: " + line); };
         window.onunhandledrejection = function(event) { alert("🚨 Erreur Base de données Dashboard : \n" + (event.reason.message || event.reason)); };
 
@@ -147,9 +220,7 @@
         let cacheBonusIndividuels = {};
         let cacheMalusIndividuels = {};
         
-        // ARRAY SÉCURISÉ POUR LES FEEDBACKS
         let listeFeedbacksCartesCourantes = [];
-
         let listeCalculeePourTri = [];
         let colonneTriActuelle = 'nomSeul';
         let ordreTriActuel = 'asc';
@@ -277,7 +348,7 @@
                 listeCriteresProf = critsProf || [];
 
                 await chargerDonneesDashboard();
-            } catch (err) { alert("🚨 Erreur initialisation : " + err.message); }
+            } catch (err) { await UIModal.alert("Erreur lors de l'initialisation : \n" + err.message, "error"); }
         }
 
         function decoderNoteEtCurseurs(notePleine) {
@@ -318,27 +389,31 @@
                     btn.innerHTML = "✅ À jour !";
                     setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
                 }
-            } catch (err) { alert("🚨 Erreur chargement : " + err.message); }
+            } catch (err) { await UIModal.alert("Erreur lors du chargement des évaluations : \n" + err.message, "error"); }
         }
 
         async function modererFeedback(idEvaluation, depuisModal = false) {
             try {
-                if(confirm("🗑️ Supprimer définitivement ce feedback ? (La note chiffrée sera conservée).")) {
+                const isConfirmed = await UIModal.confirm("Voulez-vous supprimer définitivement ce feedback ? (La note chiffrée sera conservée).", "Suppression du Feedback", "error");
+                if(isConfirmed) {
                     const { error } = await db.from('evaluations').update({ feedback: null }).eq('id', idEvaluation);
                     if(error) throw error;
                     if(depuisModal) fermerModalFeedback();
                     await chargerDonneesDashboard();
+                    await UIModal.alert("Le feedback a été supprimé.", "success", "Terminé");
                 }
-            } catch(err) { alert("🚨 Erreur modération : " + err.message); }
+            } catch(err) { await UIModal.alert("Erreur lors de la modération : " + err.message, "error"); }
         }
 
+        // ==========================================
+        // VUE GRILLES DÉTAILLÉES : FUSION FEEDBACK / IMPACT
+        // ==========================================
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             try {
                 const conteneur = document.getElementById('grille-details-evaluations');
                 if(!conteneur) return;
                 conteneur.innerHTML = '';
                 
-                // On vide le tableau mémoire des feedbacks pour cette nouvelle vue
                 listeFeedbacksCartesCourantes = [];
 
                 const evalsPourCeGroupe = evaluationsSession.filter(e => {
@@ -392,34 +467,8 @@
                     let nomAffiche = e.groupe_votant;
                     if (!e.estProf && e.groupe_votant !== e.sujet) nomAffiche = `Pour : ${e.sujet}`;
 
-                    let htmlBlockFeedback = "";
-                    if (e.feedback && e.feedback.trim() !== "") {
-                        // ON ENREGISTRE L'OBJET COMPLET DANS LA MÉMOIRE POUR NE PAS CASSER LE HTML
-                        const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({
-                            texte: e.feedback,
-                            auteur: nomAffiche,
-                            id: e.id
-                        });
-
-                        htmlBlockFeedback = `
-                            <div class="mt-2.5 flex items-center justify-between gap-2 relative border-t border-gray-800/50 pt-2">
-                                <div class="group relative inline-block">
-                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
-                                        💬 Lire le feedback
-                                    </button>
-                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
-                                        <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
-                                        <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        htmlBlockFeedback = `<div class="mt-2.5 text-[10px] text-gray-600 italic border-t border-gray-800/50 pt-2">Aucun commentaire déposé.</div>`;
-                    }
-
-                    let htmlImpactBulle = "";
+                    // PREPARATION DU BADGE D'IMPACT (Sans parenthèses, sans label)
+                    let badgeImpactHtml = "";
                     if (!e.estProf) {
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
                         const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
@@ -427,25 +476,43 @@
                         if (moyProf !== null) {
                             const ecartAbsolu = Math.abs(e.note - moyProf);
                             const estAline = ecartAbsolu < (moyProf * 0.20);
-                            const valeurImpact = estAline ? "+1" : "-1";
-                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/5" : "text-red-400 border-red-500/20 bg-red-500/5";
-                            const labelImpact = estAutoEval ? (estAline ? "Aligné" : "Décalé") : (estAline ? "Objectif" : "Écart");
+                            const valeurImpact = estAline ? "+1 pt" : "-1 pt";
+                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/10" : "text-red-400 border-red-500/20 bg-red-500/10";
                             
-                            htmlImpactBulle = `
-                                <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
-                                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
-                                    <span class="text-[11px] font-bold px-2 py-0.5 border rounded-md ${couleurImpact}">${valeurImpact} pt (${labelImpact})</span>
-                                </div>
-                            `;
+                            badgeImpactHtml = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md ${couleurImpact}">${valeurImpact}</span>`;
                         } else {
-                            htmlImpactBulle = `
-                                <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
-                                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
-                                    <span class="text-[10px] text-gray-500 italic">Attente Jury</span>
-                                </div>
-                            `;
+                            badgeImpactHtml = `<span class="text-[10px] text-gray-500 border border-gray-800 px-2 py-1 rounded-md italic">Attente Jury</span>`;
                         }
                     }
+
+                    // PREPARATION DU CONTENU FEEDBACK
+                    let feedbackContent = "";
+                    if (e.feedback && e.feedback.trim() !== "") {
+                        const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
+                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche, id: e.id });
+
+                        feedbackContent = `
+                            <div class="group relative inline-block">
+                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1.5 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
+                                    💬 Lire le feedback
+                                </button>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
+                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
+                                    <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        feedbackContent = `<span class="text-[10px] text-gray-600 italic">Aucun commentaire.</span>`;
+                    }
+
+                    // FUSION SUR LA MÊME LIGNE
+                    let bottomBarHtml = `
+                        <div class="mt-3 pt-3 border-t border-gray-800/50 flex items-center justify-between gap-2">
+                            ${feedbackContent}
+                            ${badgeImpactHtml}
+                        </div>
+                    `;
 
                     conteneur.innerHTML += `
                         <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col shadow-inner hover:border-gray-700 transition-colors">
@@ -462,12 +529,11 @@
                             <div class="flex-1 flex flex-col space-y-0.5 mt-1">
                                 ${contenuCriteres}
                             </div>
-                            ${htmlBlockFeedback}
-                            ${htmlImpactBulle}
+                            ${bottomBarHtml}
                         </div>
                     `;
                 });
-            } catch(err) { alert("🚨 Erreur d'affichage : " + err.message); }
+            } catch(err) { UIModal.alert("Erreur lors de l'affichage des détails : " + err.message, "error"); }
         }
 
         function calculerEtAfficherTout() {
@@ -533,9 +599,7 @@
                 });
 
                 filtrerEtAfficherTableau();
-                const grp = document.getElementById('select-groupe-formateur').value;
-                if(grp) mettreAjourDetailsEvaluations(grp);
-            } catch (err) { alert("🚨 Erreur calculs : " + err.message); }
+            } catch (err) { UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
         }
 
         function filtrerEtAfficherTableau() {
@@ -672,9 +736,6 @@
             document.getElementById('modal-rapport').classList.remove('hidden');
         }
 
-        // ==========================================
-        // CORRECTION GLOBALE : APPEL PAR INDEX SÉCURISÉ
-        // ==========================================
         function ouvrirModalFeedback(index) {
             const dataFeedback = listeFeedbacksCartesCourantes[index];
             if(!dataFeedback) return;
