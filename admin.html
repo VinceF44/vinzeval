@@ -283,7 +283,6 @@
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
 
-        // INDEXATION GLOBALE POUR ÉVITER LES BUGS RELATIONNELS EN BDD
         let cacheSessionsGlobal = [];
         let globalOrganismes = [];
         let globalFormations = [];
@@ -385,7 +384,6 @@
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 document.getElementById('date-session').valueAsDate = new Date();
                 
-                // Pré-chargement structurel pour neutraliser les erreurs relationnelles BDD
                 const { data: orgs } = await db.from('organismes').select('*').order('nom');
                 globalOrganismes = orgs || [];
                 
@@ -538,7 +536,6 @@
             } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
-        // FUSION DE DONNÉES SYNCHRONE EN SÉCURITÉ ABSOLUE
         async function chargerSessions() {
             const { data: sessions, error: errS } = await db.from('sessions').select('*');
             const { data: evals, error: errE } = await db.from('evaluateurs').select('*');
@@ -558,7 +555,7 @@
                 s.apprenants_cache = apprenantsList.filter(a => a.session_id === s.id);
             });
 
-            // CLASSEMENT CHRONOLOGIQUE PAR DATE + DERNIÈRE CRÉÉE EN HAUT DU MÊME JOUR
+            // DOUBLE CLASSEMENT CHRONOLOGIQUE PAR DATE + PLUS RÉCENTE EN HAUT DU MÊME JOUR
             rawList.sort((a, b) => {
                 if (a.date_session !== b.date_session) {
                     return (a.date_session || "").localeCompare(b.date_session || "");
@@ -642,7 +639,6 @@
             sessionsList.forEach(s => {
                 const formationObj = globalFormations.find(f => f.id === s.formation_id);
                 const nomClasse = formationObj ? formationObj.nom : "Sans affectation";
-                
                 const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
                 const nomOrg = orgObj ? orgObj.nom : "Manuel";
                 
@@ -692,6 +688,7 @@
                         `;
                     }
 
+                    // CORRECTION ICI : boutonActionStatut est maintenant déclaré et calculé proprement
                     let boutonActionStatut = "";
                     if (s.statut === 'a_venir') {
                         boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>`;
@@ -706,11 +703,11 @@
                                 <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                ${!estArchive ? liensVotesHtml : '<a href="index.html?session_id='+s.id+'" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>'}
-                                ${!estArchive ? '<a href="index.html?session_id='+s.id+'" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>' : ''}
+                                ${!estArchive ? liensVotesHtml : `<a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>`}
+                                ${!estArchive ? `<a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>` : ''}
                                 <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                ${!estArchive ? '<button onclick="entrerEnModeModification(\''+s.id+'\')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>' : ''}
-                                ${estArchive ? '<button onclick="changerStatutSessionDirect(\''+s.id+'\', \'active\')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>' : boutonActionStatut}
+                                ${!estArchive ? `<button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>` : ''}
+                                ${estArchive ? `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>` : boutonActionStatut}
                                 <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
                                 <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
                             </div>
@@ -825,203 +822,6 @@
         async function changerStatutSessionDirect(idSession, nvStatut) {
             await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); await chargerSessions();
             await UIModal.alert("Statut mis à jour.", "success");
-        }
-
-        async function genererSessionComplete() {
-            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-            const typeSession = document.getElementById('type-session').value;
-            const dateSession = document.getElementById('date-session').value;
-            const formationId = document.getElementById('select-formation').value;
-            const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
-            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-            const listApprenantsPresents = extraireApprenantsPresents();
-
-            if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
-            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent.", "warning", "Appel incomplet");
-
-            const t = new Date();
-            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-            let statutSession = 'active';
-            if (dateSession < todayStr) statutSession = 'terminee';
-            else if (dateSession > todayStr) statutSession = 'a_venir';
-
-            const { data: session, error: errSess } = await db.from('sessions').insert([{ 
-                nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
-            }]).select().single();
-            if (errSess) return await UIModal.alert("Échec de création : " + errSess.message, "error");
-
-            if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                if (arrCriteres.length > 0) {
-                    await db.from('criteres').insert(arrCriteres.map(ligne => {
-                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
-                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
-                        return { session_id: session.id, nom: nom, description: description };
-                    }));
-                }
-            }
-
-            if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                if (arrEvaluateurs.length > 0) {
-                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
-                }
-            }
-
-            const listeNomsGroupes = []; const payloadGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
-                payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
-            }
-            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
-            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
-            }
-
-            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
-            })));
-
-            await UIModal.alert("La session a été générée avec succès !", "success", "Session Créée");
-            
-            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
-            document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
-            document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-            document.getElementById('liste-evaluateurs-brute').value = "";
-            
-            document.getElementById('zone-configurateur').classList.add('hidden');
-            await chargerSessions();
-        }
-
-        async function entrerEnModeModification(idSession) {
-            idSessionEnCoursModification = idSession;
-            const zoneConfigurateur = document.getElementById('zone-configurateur');
-            
-            zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
-            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de la session`;
-
-            const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
-            const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
-            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
-            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-            const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
-
-            if(session) {
-                document.getElementById('nouveau-nom-session').value = session.nom;
-                const typeVal = session.type || 'oral';
-                document.getElementById('type-session').value = typeVal;
-                document.getElementById('type-session-label').innerText = typeVal === 'oral' ? '🗣️ Évaluation Orale' : '✍️ Évaluation Écrite';
-                document.getElementById('date-session').value = session.date_session || '';
-            }
-            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
-            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
-            
-            if(grps && grps.length > 0) {
-                document.getElementById('nb-groupes').value = grps.length;
-                const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
-            }
-            
-            if(apps) {
-                document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
-                document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Mode Édition --";
-                document.getElementById('select-formation-menu').innerHTML = `<button type="button" class="w-full text-left block px-4 py-2.5 text-sm text-gray-500 rounded-lg">-- Mode Édition --</button>`;
-                
-                document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
-                        <div class="leading-tight">
-                            <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
-                            <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
-                        </div>
-                    </label>
-                `).join('');
-            }
-
-            document.getElementById('conteneur-boutons-action').innerHTML = `
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Enregistrer les modifications</button>
-                    <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
-                </div>
-            `;
-            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
-        }
-
-        async function sauvegarderModificationsSession() {
-            if (!idSessionEnCoursModification) return;
-            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-            const typeSession = document.getElementById('type-session').value;
-            const dateSession = document.getElementById('date-session').value;
-            const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
-            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-            const listApprenantsPresents = extraireApprenantsPresents();
-
-            if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
-            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-
-            const t = new Date();
-            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-            let statutSession = 'active';
-            if (dateSession < todayStr) statutSession = 'terminee';
-            else if (dateSession > todayStr) statutSession = 'a_venir';
-
-            await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
-            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
-
-            if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                if (arrCriteres.length > 0) {
-                    await db.from('criteres').insert(arrCriteres.map(ligne => {
-                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
-                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
-                        return { session_id: idSessionEnCoursModification, nom: nom, description: description };
-                    }));
-                }
-            }
-
-            if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                if (arrEvaluateurs.length > 0) {
-                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
-                }
-            }
-
-            const listeNomsGroupes = []; const payloadGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
-                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
-            }
-            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
-            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
-            }
-
-            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
-            })));
-
-            await UIModal.alert("Session reconfigurée avec succès !", "success");
-            annulerModeModification(); await chargerSessions();
-        }
-
-        async function cloturerSession(idSession) {
-            if (!(await UIModal.confirm("Fermer définitivement cette session ?", "Clôture", "warning"))) return;
-            await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); await chargerSessions();
-            await UIModal.alert("Session clôturée et archivée.", "success");
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
