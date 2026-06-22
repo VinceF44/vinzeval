@@ -13,24 +13,26 @@
         
         <div id="ecran-formulaire" class="space-y-6">
             
+            <!-- EN-TÊTE STICKY AVEC CHRONOMÈTRE XL -->
             <div class="sticky top-0 bg-gray-900 z-30 border-b border-gray-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
                 <div>
                     <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
                     <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
                 </div>
                 
-                <div class="flex items-center gap-3 bg-gray-950 px-3 py-2 rounded-xl border border-gray-800 font-mono shadow-inner text-sm select-none shrink-0 self-end sm:self-auto">
-                    <span id="timer-display" class="text-white font-bold text-base tracking-wider">00:00</span>
-                    <div class="flex items-center gap-1 border-l border-gray-800 pl-2">
-                        <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-gray-800 text-xs transition-colors cursor-pointer">▶️</button>
-                        <button onclick="resetChrono()" title="Réinitialiser" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-gray-800 text-xs transition-colors cursor-pointer">🔄</button>
+                <!-- LE CADRAN CHRONOMÈTRE SURDIMENSIONNÉ -->
+                <div class="flex items-center gap-4 bg-gray-950 px-4 py-2.5 rounded-2xl border border-gray-800 shadow-inner select-none shrink-0 self-end sm:self-auto ring-1 ring-gray-900">
+                    <span id="timer-display" class="text-white font-black text-2xl tracking-widest font-mono tabular-nums">00:00</span>
+                    <div class="flex items-center gap-2 border-l border-gray-800 pl-3">
+                        <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-700 hover:bg-gray-800 hover:border-gray-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">▶️</button>
+                        <button onclick="resetChrono()" title="Réinitialiser" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-700 hover:bg-gray-800 hover:border-gray-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">🔄</button>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text Red-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer">
                         <option value="" disabled selected>-- Choisissez votre équipe --</option>
                     </select>
@@ -43,7 +45,8 @@
             </div>
 
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
-                </div>
+                <!-- Généré dynamiquement en JS -->
+            </div>
 
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
