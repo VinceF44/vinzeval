@@ -7,12 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CSS SPÉCIAL POUR UN EXPORT PDF PROPRE */
+        /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT (1 SEULE PAGE, ENTÊTE CONSERVÉ) */
         @media print {
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; }
             /* Cacher l'interface web derrière */
-            .max-w-7xl, #ui-modal, #modal-feedback { display: none !important; }
+            .max-w-7xl, #ui-modal, #modal-feedback, .print-hide { display: none !important; }
             
             /* Afficher uniquement la modale du rapport */
             #modal-rapport {
@@ -26,6 +26,7 @@
                 max-width: 100% !important;
                 border: none !important;
                 box-shadow: none !important;
+                background: white !important;
             }
             #rapport-corps {
                 overflow: visible !important;
@@ -33,22 +34,9 @@
                 padding: 0 !important;
             }
             
-            /* Ajustement de l'en-tête pour le PDF */
-            #modal-rapport-header {
-                background: transparent !important;
-                border-bottom: 2px solid #e5e7eb !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-            }
-            #modal-rapport h3 { color: black !important; }
-            #rapport-sous-titre { color: #4b5563 !important; font-weight: bold !important; font-size: 14px !important; }
-
-            /* Cacher les boutons de fermeture et d'action */
-            .print-hide { display: none !important; }
-            
-            /* Ajuster les couleurs pour le papier */
+            /* Forcer l'affichage lisible sur le papier */
             #modal-rapport * { color: black !important; border-color: #ddd !important; }
-            .bg-gray-950, .bg-indigo-950\/20 { background-color: #f9fafb !important; }
+            .bg-gray-950, .bg-indigo-950\/20 { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; }
             .text-emerald-400, .text-emerald-500 { color: #059669 !important; }
             .text-red-400, .text-red-500 { color: #dc2626 !important; }
             .text-amber-400, .text-amber-500 { color: #d97706 !important; }
@@ -141,24 +129,17 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL -->
+    <!-- MODALE RAPPORT INDIVIDUEL COMPLETÉ -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
-            <!-- HEADER AVEC AFFICHAGE POUR LE PDF -->
-            <div id="modal-rapport-header" class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl print-hide">
-                <div>
-                    <h3 class="text-lg font-black text-white tracking-tight flex items-center gap-2">📄 Bilan Individuel de Compétences</h3>
-                    <p id="rapport-sous-titre" class="text-xs text-indigo-400 mt-1 font-mono uppercase"></p>
-                </div>
-                <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors">✕</button>
-            </div>
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6">
-                <!-- Le contenu sera injecté dynamiquement -->
+                <!-- Tout le contenu HTML (titres, méta, grilles) sera généré ici pour ne pas sauter au PDF -->
             </div>
             
-            <!-- FOOTER DYNAMIQUE GÉRÉ PAR JAVASCRIPT -->
+            <!-- FOOTER D'ACTIONS -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide">
+                <!-- Injecté dynamiquement -->
             </div>
         </div>
     </div>
@@ -431,7 +412,6 @@
                 const btn = document.getElementById('btn-refresh');
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
-                // RECHARGEMENT FORCE DES APPRENANTS (POUR LES EMAILS AJOUTES EN COURS DE ROUTE)
                 const { data: apps, error: errApps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
                 if (errApps) throw errApps;
                 if (apps) apprenantsSession = apps;
@@ -670,17 +650,6 @@
                 corpsTable.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
             }
 
-            const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe'];
-            colonnes.forEach(col => {
-                const spanFleche = document.getElementById(`fleche-${col}`);
-                if (spanFleche) {
-                    if (col === colonneTriActuelle) {
-                        spanFleche.innerText = ordreTriActuel === 'asc' ? ' ▲' : ' ▼';
-                        spanFleche.className = "text-indigo-400 font-sans font-bold text-[9px]";
-                    } else { spanFleche.innerText = ''; }
-                }
-            });
-
             listeFiltree.forEach(item => {
                 let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
                 let noteFinaleAffichage = item.noteProfSur20 !== -1 ? `<span class="text-sm font-black text-indigo-400">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>` : "--";
@@ -688,7 +657,6 @@
                 const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 
-                // VERIFICATION ROBUSTE DU CHAMP EMAIL
                 const mailRaw = item.appObj.email ? String(item.appObj.email).trim() : "";
                 const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
                 let emailIndicator = emailValid ? `<span title="${mailRaw}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded cursor-help">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
@@ -706,13 +674,15 @@
                         <td class="py-3 px-3 font-sans text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
+                                
                                 <div class="group relative inline-block">
-                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
+                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
                                         <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
                                         <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
                                     </div>
                                 </div>
+                                
                                 <div class="group relative inline-block">
                                     <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
@@ -730,29 +700,14 @@
             });
         }
 
-        function basculerBonusIndividuel(prenomApprenant) {
-            if(cacheBonusIndividuels[prenomApprenant] === true) { delete cacheBonusIndividuels[prenomApprenant]; } 
-            else { cacheBonusIndividuels[prenomApprenant] = true; if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant]; }
-            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
-            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
-            calculerEtAfficherTout();
-        }
-
-        function basculerMalusIndividuel(prenomApprenant) {
-            if(cacheMalusIndividuels[prenomApprenant] === true) { delete cacheMalusIndividuels[prenomApprenant]; } 
-            else { cacheMalusIndividuels[prenomApprenant] = true; if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant]; }
-            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
-            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
-            calculerEtAfficherTout();
-        }
-
+        // ==========================================
+        // FIX INFALLIBLE DE L'EN-TÊTE PDF ET DU MAILTO
+        // ==========================================
         function ouvrirRapportApprenant(prenomComplet) {
             const dataApp = listeCalculeePourTri.find(a => a.prenom === prenomComplet);
             if(!dataApp) return;
 
             const nomSessStr = document.getElementById('nom-session').innerText;
-
-            document.getElementById('rapport-sous-titre').innerText = `${prenomComplet} — ${dataApp.nomGroupe}`;
             const conteneur = document.getElementById('rapport-corps');
             
             const txtJuryRaw = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && e.estProf && e.feedback).map(e => e.feedback);
@@ -762,20 +717,26 @@
             const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic">Aucun retour rédigé pour cette équipe.</p>`;
 
-            const metaDataHtml = `
-                <div class="mb-5 pb-4 border-b border-gray-800 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-2 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
-                    <div class="w-full mb-1 flex flex-wrap gap-3 items-center">
-                        <span>📌 <span class="text-white font-bold text-xs">${nomSessStr}</span></span>
-                        <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px]">${globalTypeEvaluation}</span>
+            // TITRE PRINCIPAL TOTALEMENT INJECTÉ EN DUR DANS LE CORPS (Fige le haut du PDF)
+            const enteteOfficielDocumentHtml = `
+                <div class="mb-5 pb-5 border-b-2 border-gray-800">
+                    <h2 class="text-xl font-black text-white tracking-tight uppercase">📄 Bilan Individuel de Compétences</h2>
+                    <h3 class="text-base font-bold text-indigo-400 mt-1 uppercase font-mono">${prenomComplet} — Équipe : ${dataApp.nomGroupe}</h3>
+                    
+                    <div class="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-1 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
+                        <div class="w-full sm:w-auto mb-1 sm:mb-0 flex gap-2 items-center">
+                            <span>📌 <b>Session :</b> <span class="text-white font-bold">${nomSessStr}</span></span>
+                            <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px] print-hide">${globalTypeEvaluation}</span>
+                        </div>
+                        <div>🏢 <b>Organisme :</b> <span class="text-white">${globalOrganismeNom}</span></div>
+                        <div>📁 <b>Classe :</b> <span class="text-white">${globalFormationNom}</span></div>
+                        <div>📅 <b>Date :</b> <span class="text-white">${globalDateFormatee}</span></div>
                     </div>
-                    <div>🏢 <span class="text-white">${globalOrganismeNom}</span></div>
-                    <div>📁 <span class="text-white">${globalFormationNom}</span></div>
-                    <div>📅 <span class="text-white">${globalDateFormatee}</span></div>
                 </div>
             `;
 
             conteneur.innerHTML = `
-                ${metaDataHtml}
+                ${enteteOfficielDocumentHtml}
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-center shadow-inner">
                         <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Moyenne Jury</div>
@@ -816,20 +777,20 @@
                 </div>
             `;
 
-            // VERIFICATION ROBUSTE DU CHAMP EMAIL
+            // LECTURE DIRECTE ET SECURISEE DE L'EMAIL SANS RETARD DE VARIABLE
             const mailRaw = dataApp.appObj.email ? String(dataApp.appObj.email).trim() : "";
             const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
-            const mailDestinataire = emailValid ? mailRaw : "";
+            const mailDestinataireFinal = emailValid ? mailRaw : "";
 
             let btnEmailHtml = "";
-            if (mailDestinataire !== "") {
+            if (mailDestinataireFinal !== "") {
                 btnEmailHtml = `<button id="btn-rapport-envoyer-email" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition cursor-pointer active:scale-95 shadow-md print-hide">📧 Envoyer à l'apprenant(e)</button>`;
             } else {
                 btnEmailHtml = `<button disabled class="bg-gray-800 text-gray-500 text-xs font-bold py-2.5 px-5 rounded-xl border border-gray-700 cursor-not-allowed print-hide">❌ Pas d'adresse e-mail</button>`;
             }
 
             document.getElementById('modal-rapport-footer').innerHTML = `
-                <span class="text-xs text-gray-500 italic print-hide">Génération et transmission du relevé</span>
+                <span class="text-xs text-gray-500 italic print-hide">Relevé officiel consolidé</span>
                 <div class="flex gap-3 print-hide">
                     <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md">
                         📥 Exporter / Imprimer PDF
@@ -840,12 +801,10 @@
 
             document.getElementById('modal-rapport').classList.remove('hidden');
 
-            const btnMail = document.getElementById('btn-rapport-envoyer-email');
-            if(btnMail) {
-                btnMail.onclick = function() {
-                    const nomSessStr = document.getElementById('nom-session').innerText;
+            // BRANCHEMENT ET EXECUTION DIRECTE DE L'EMAIL
+            if (mailDestinataireFinal !== "") {
+                document.getElementById('btn-rapport-envoyer-email').onclick = function() {
                     const sujetEmail = encodeURIComponent(`[Bilan d'évaluation] Vos résultats pour la session : ${nomSessStr}`);
-                    
                     let corpsEmailText = `Bonjour ${dataApp.prenomSeul},\n\nVoici le bilan de vos évaluations pour la session : ${nomSessStr}.\n\n--------------------------------------------\n📊 VOS RÉSULTATS CHIFFRÉS :\n- Note de base définie par le Jury : ${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}/20\n- Impact cumulé (Auto-évaluation + Pairs) : ${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt(s) (limité à ±2 points max)\n- Ajustement discrétionnaire formateur : ${dataApp.hasBonus ? '+1.00' : (dataApp.hasMalus ? '-1.00' : '0.00')} pt\n\n🏆 NOTE FINALE ENREGISTRÉE : ${dataApp.noteFinaleNum !== -1 ? dataApp.noteFinaleNum.toFixed(2) : '--'}/20\n--------------------------------------------\n\n`;
                     
                     if(txtJuryRaw.length > 0 || txtPairsRaw.length > 0) {
@@ -856,7 +815,7 @@
                     }
                     corpsEmailText += `En restant à votre disposition pour tout échange complémentaire.\nCordialement,\nL'équipe pédagogique.`;
                     
-                    window.location.href = `mailto:${mailDestinataire}?subject=${sujetEmail}&body=${encodeURIComponent(corpsEmailText)}`;
+                    window.location.href = `mailto:${mailDestinataireFinal}?subject=${sujetEmail}&body=${encodeURIComponent(corpsEmailText)}`;
                 };
             }
         }
