@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DE LA CONSOLE -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
@@ -27,6 +28,7 @@
             </div>
         </div>
 
+        <!-- TIROIR 1 : L'ANNUAIRE PÉDAGOGIQUE -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -37,6 +39,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -48,6 +51,7 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
+                <!-- GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
@@ -72,6 +76,7 @@
                 </div>
             </div>
 
+            <!-- REGISTRE APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
@@ -112,10 +117,11 @@
             </div>
         </div>
 
+        <!-- TIROIR 2 : LE CONFIGURATEUR DE SESSIONS -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
-                    <span id="icone-titre-formulaire">✨</span> <span id="texte-titre-formulaire">Configurer et Générer une Session</span>
+                    <span>✨</span> Configurer et Générer une Session
                 </h2>
                 <button onclick="basculerZoneConfigurateur()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
@@ -210,11 +216,12 @@
 
             <div id="conteneur-boutons-action">
                 <button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session
+                    🚀 Générer la session complète
                 </button>
             </div>
         </div>
 
+        <!-- BLOC DE RECHERCHE ET FILTRE PAR PÉRIODE -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -239,6 +246,7 @@
             </div>
         </div>
 
+        <!-- BLOCS TEMPORELS DE TIMELINE -->
         <div class="space-y-3 relative z-10">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -255,6 +263,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -332,51 +341,6 @@
                 document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
             }
         });
-
-        const UIModal = {
-            show: function(options) {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById('ui-modal');
-                    const box = document.getElementById('ui-modal-box');
-                    const title = document.getElementById('ui-modal-title');
-                    const msg = document.getElementById('ui-modal-message');
-                    const icon = document.getElementById('ui-modal-icon');
-                    const input = document.getElementById('ui-modal-input');
-                    const btnCancel = document.getElementById('ui-btn-cancel');
-                    const btnConfirm = document.getElementById('ui-btn-confirm');
-
-                    title.innerText = options.title || 'Information';
-                    msg.innerHTML = options.message || '';
-                    
-                    if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-
-                    if (options.isPrompt) {
-                        input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
-                    } else { input.classList.add('hidden'); }
-
-                    if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
-                    btnConfirm.innerText = options.confirmText || 'OK';
-
-                    const cleanup = () => {
-                        modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                        setTimeout(() => modal.classList.add('hidden'), 200);
-                        btnConfirm.onclick = null; btnCancel.onclick = null;
-                    };
-
-                    btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
-                    btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
-
-                    modal.classList.remove('hidden'); void modal.offsetWidth;
-                    modal.classList.add('opacity-100'); box.classList.add('scale-100');
-                });
-            },
-            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
-            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
-        };
 
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
@@ -556,111 +520,6 @@
             } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold py-2.5 px-3 rounded-xl cursor-pointer";
-        }
-
-        async function creerOuModifierOrganismeMaster() {
-            const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-            if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-            
-            if (idOrgEnCoursModif) {
-                await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                idOrgEnCoursModif = null; input.value = "";
-                document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
-                document.getElementById('btn-annuaire-org').className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer";
-            } else { 
-                await db.from('organismes').insert([{ nom: nom }]); input.value = "";
-            }
-            const { data: orgs } = await db.from('organismes').select('*').order('nom');
-            globalOrganismes = orgs || [];
-            renderDropdownsOrganismes();
-            afficherListeOrganismes(globalOrganismes);
-            await UIModal.alert("Organisme enregistré avec succès.", "success");
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
-            await db.from('organismes').delete().eq('id', id);
-            const { data: orgs } = await db.from('organismes').select('*').order('nom');
-            globalOrganismes = orgs || [];
-            renderDropdownsOrganismes();
-            afficherListeOrganismes(globalOrganismes);
-            await UIModal.alert("Organisme supprimé.", "success");
-        }
-
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierFormationMaster() {
-            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
-            if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
-            if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
-            
-            if (idFormEnCoursModif) {
-                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                idFormEnCoursModif = null; input.value = "";
-                document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
-            } else { 
-                await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = "";
-            }
-            const { data: forms } = await db.from('formations').select('*').order('nom');
-            globalFormations = forms || [];
-            afficherListeFormations(orgId);
-            await UIModal.alert("Formation mise à jour.", "success");
-        }
-
-        async function supprimerFormationMaster(id, nom) {
-            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
-            await db.from('formations').delete().eq('id', id);
-            const { data: forms } = await db.from('formations').select('*').order('nom');
-            globalFormations = forms || [];
-            afficherListeFormations(orgId);
-            await UIModal.alert("Classe supprimée.", "success");
-        }
-
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierApprenantMaster() {
-            const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
-            if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
-            if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
-            
-            if (idAppEnCoursModif) {
-                await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
-                idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
-            } else {
-                await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
-                p.value = ""; n.value = ""; e.value = "";
-            }
-            await afficherListeApprenantsMaster(formId);
-            await UIModal.alert("Fiche apprenant enregistrée.", "success");
-        }
-
-        async function supprimerApprenantMaster(id) {
-            const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
-            await db.from('apprenants_master').delete().eq('id', id); await afficherListeApprenantsMaster(formId);
-            await UIModal.alert("Apprenant retiré.", "success");
-        }
-
-        // ==========================================
-        //  NOUVELLE LOGIQUE VERROUILLAGE SESSIONS
-        // ==========================================
         async function chargerSessions() {
             const { data: sessions, error: errS } = await db.from('sessions').select('*');
             const { data: evalVotes, error: errV } = await db.from('evaluations').select('session_id');
@@ -670,9 +529,7 @@
                 return;
             }
 
-            // Création d'un dictionnaire des sessions ayant déjà reçu des notes
             const sessionsVerrouillees = new Set((evalVotes || []).map(e => e.session_id));
-
             const rawList = sessions || [];
 
             const t = new Date();
@@ -693,7 +550,6 @@
                     s.statut = nvStatut;
                 }
                 
-                // On attache le drapeau de verrouillage à l'objet session
                 s.verrouillee = sessionsVerrouillees.has(s.id);
             });
 
@@ -826,7 +682,6 @@
                         `;
                     }
 
-                    // BOUTON ÉDITION INTELLIGENT (VERROUILLAGE SI NOTES EXISTANTES)
                     let boutonEdition = "";
                     if (s.verrouillee) {
                         boutonEdition = `<button title="Édition bloquée : des évaluations ont déjà été soumises" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800/30 border border-slate-700/30 text-slate-600 cursor-not-allowed text-sm">🚫</button>`;
@@ -846,7 +701,7 @@
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                    <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
@@ -892,7 +747,7 @@
             const dateSession = document.getElementById('date-session').value;
             const formationId = document.getElementById('select-formation').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // CORRECTION MATHÉMATIQUE
+            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // PROTECTION MATHÉMATIQUE ANTI-BUG
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             const listApprenantsPresents = extraireApprenantsPresents();
@@ -1033,7 +888,7 @@
             const typeSession = document.getElementById('type-session').value;
             const dateSession = document.getElementById('date-session').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // CORRECTION MATHÉMATIQUE
+            const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); // PROTECTION MATHÉMATIQUE
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             const listApprenantsPresents = extraireApprenantsPresents();
@@ -1089,6 +944,35 @@
 
             await UIModal.alert("Appel et groupes mis à jour avec succès !", "success");
             annulerModeModification(); await chargerSessions();
+        }
+
+        async function creerOuModifierFormationMaster() {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
+            if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
+            if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
+            
+            if (idFormEnCoursModif) {
+                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
+                idFormEnCoursModif = null; input.value = "";
+                document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
+            } else { 
+                await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = "";
+            }
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Formation mise à jour.", "success");
+        }
+
+        async function supprimerFormationMaster(id, nom) {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
+            await db.from('formations').delete().eq('id', id);
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Classe supprimée.", "success");
         }
 
         async function changerStatutSessionDirect(idSession, nvStatut) {
