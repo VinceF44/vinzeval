@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DE LA CONSOLE -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">
@@ -26,16 +25,13 @@
             </div>
         </div>
 
-        <!-- INTERFACE ERGONOMIQUE DE L'ANNUAIRE REPAENSÉE EN 2 NIVEAUX -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master Référentielle</h2>
                 <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants. Les modifications se répercutent instantanément sur les feuilles d'appel.</p>
             </div>
 
-            <!-- NIVEAU 1 : LES STRUCTURES (ORGANISMES & CLASSES SIDE-BY-SIDE) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 1. GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -47,7 +43,6 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <!-- 2. GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
@@ -65,11 +60,9 @@
                 </div>
             </div>
 
-            <!-- NIVEAU 2 : LES APPRENANTS (PLEIN ÉCRAN POUR ABSORBER LA DENSITÉ DE DATA) -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-xs font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
-                    <!-- Filtre de ciblage rapide -->
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-72 shrink-0">
                         <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2 text-[11px] border border-slate-800 text-slate-100 focus:outline-none">
                             <option value="">-- Organisme --</option>
@@ -80,22 +73,19 @@
                     </div>
                 </div>
 
-                <!-- Formulaire d'insertion horizontal, très propre -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
                     <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                     <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] sm:col-span-1 md:col-span-1">
-                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer sm:col-span-3 md:col-span-1">Enregistrer l'apprenant</button>
+                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
                 </div>
 
-                <!-- LE CHEF D'ŒUVRE UX : LA GRILLE RESPONSIVE MULTI-COLONNES POUR LES ELEVES -->
                 <div id="annuaire-liste-apprenants" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher et moduler les fiches apprenants.</p>
+                    <p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
                 </div>
             </div>
         </div>
 
-        <!-- ZONE DU CONFIGURATEUR PRINCIPAL DE SESSIONS -->
         <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
             <h2 id="titre-formulaire" class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
                 <span>✨</span> Configurer et Générer une Session
@@ -117,11 +107,24 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Date de la session :</label>
+                            <input type="date" id="date-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Statut de départ :</label>
+                            <select id="statut-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                                <option value="active">🟢 Lancer immédiatement (En cours)</option>
+                                <option value="a_venir">📅 Programmer pour plus tard (À venir)</option>
+                            </select>
+                        </div>
+                    </div>
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Format : Titre Court : Description Longue) :</label>
-                        <textarea id="criteres-session" rows="6" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
-                        <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Utilisez les ":" pour séparer le titre court de sa description longue.</p>
+                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[100px] focus:border-[#3b82f6] transition-all"></textarea>
                     </div>
                 </div>
 
@@ -156,13 +159,13 @@
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📢 Faire l'appel (Cocher les présents) :</label>
                             <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-xs min-h-[110px] max-h-[140px] overflow-y-auto space-y-2">
-                                <p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>
+                                <p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[70px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                            <textarea id="liste-evaluateurs-brute" rows="2" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[50px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
                         </div>
                     </div>
                 </div>
@@ -176,13 +179,18 @@
         </div>
 
         <div class="space-y-3">
-            <h2 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours</h2>
-            <div id="liste-sessions-actives" class="space-y-3"></div>
+            <h2 class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
+            <div id="liste-sessions-avenir" class="space-y-4"></div>
         </div>
 
         <div class="space-y-3 pt-4 border-t border-slate-800">
-            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique</h2>
-            <div id="liste-sessions-terminees" class="space-y-2.5"></div>
+            <h2 class="text-xs font-black uppercase tracking-wider flex items-center gap-2 text-emerald-400 pl-1">🟢 Sessions en cours (Actives)</h2>
+            <div id="liste-sessions-actives" class="space-y-4"></div>
+        </div>
+
+        <div class="space-y-3 pt-4 border-t border-slate-800">
+            <h2 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-2 pl-1">🗃️ Archives & Historique (Terminées)</h2>
+            <div id="liste-sessions-terminees" class="space-y-4"></div>
         </div>
 
     </div>
@@ -199,6 +207,7 @@
 
         async function initAdmin() {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            document.getElementById('date-session').valueAsDate = new Date(); // Date du jour par défaut
             await chargerOrganismes();
             chargerSessions();
         }
@@ -214,7 +223,6 @@
                 document.getElementById('select-organisme').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
                 document.getElementById('annuaire-select-org-pour-formation').innerHTML = `<option value="">-- Sélectionner l'organisme --</option>` + optionsHtml;
                 document.getElementById('annuaire-select-org-pour-app').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
-                
                 afficherListeOrganismes(data);
             }
         }
@@ -223,36 +231,32 @@
             const selectForm = document.getElementById('select-formation');
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             selectForm.innerHTML = `<option value="">-- Choisir --</option>`;
-            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
+            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
             if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
         }
 
-        function annuaireChangementOrgPourForm(organismeId) {
-            afficherListeFormations(organismeId);
-        }
+        function annuaireChangementOrgPourForm(organismeId) { afficherListeFormations(organismeId); }
 
         async function annuaireFiltrerFormations(organismeId) {
             const selectForm = document.getElementById('annuaire-select-form-pour-app');
             const conteneurApp = document.getElementById('annuaire-liste-apprenants');
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
-            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4">Sélectionnez une classe pour voir ses apprenants.</p>`;
             
             if (!organismeId) return;
-            const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
+            const { data } = await db.from('formations').select('*').eq('organisme_id', organismesId).order('nom');
             if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
         }
 
-        function annuaireChangementFormPourApp(formationId) {
-            afficherListeApprenantsMaster(formationId);
-        }
+        function annuaireChangementFormPourApp(formationId) { afficherListeApprenantsMaster(formationId); }
 
         async function chargerApprenantsFiltres(formationId) {
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             if (!formationId) {
-                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
+                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
                 return;
             }
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
@@ -268,10 +272,6 @@
                 `).join('');
             } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré.</p>`; }
         }
-
-        // ==========================================
-        //  RENDU VISUEL DES MATRICES DE L'ANNUAIRE
-        // ==========================================
 
         function afficherListeOrganismes(data) {
             const conteneur = document.getElementById('annuaire-liste-organismes');
@@ -290,8 +290,7 @@
 
         async function afficherListeFormations(orgId) {
             const conteneur = document.getElementById('annuaire-liste-formations');
-            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>`; return; }
-            
+            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
             const { data } = await db.from('formations').select('*').eq('organisme_id', orgId).order('nom');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(f => `
@@ -306,411 +305,223 @@
             } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucune formation pour cet organisme.</p>`; }
         }
 
-        // AMÉLIORATION UX DE LA GRILLE DES APPRENANTS
         async function afficherListeApprenantsMaster(formId) {
             const conteneur = document.getElementById('annuaire-liste-apprenants');
-            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`; return; }
-            
+            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
             if(data && data.length > 0) {
-                // Les élèves se déploient en grille aérée
                 conteneur.innerHTML = data.map(a => `
                     <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-xs hover:border-slate-800 transition-all shadow-sm">
                         <div class="truncate pr-2">
                             <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
-                            <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email renseigné'}</span>
+                            <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                         <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" title="Modifier" class="text-amber-400 hover:text-white p-1 cursor-pointer text-xs">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" title="Supprimer" class="text-red-500 hover:text-white p-1 cursor-pointer text-xs">🗑️</button>
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-xs cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-xs cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-500 italic text-[11px] col-span-full py-4 text-center">Aucun apprenant enregistré dans cette classe pour le moment.</p>`; }
+            } else { conteneur.innerHTML = `<p class="text-slate-500 italic text-[11px] col-span-full py-4 text-center">Aucun apprenant enregistré.</p>`; }
         }
 
-        // ==========================================
-        //         CRUD DIRECT : 1. ORGANISMES
-        // ==========================================
-
         function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id;
-            document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org');
-            btn.innerText = "💾 Sauver";
+            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
+            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
             btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
         }
 
         async function creerOuModifierOrganismeMaster() {
-            const input = document.getElementById('annuaire-nom-organisme');
-            const nom = input.value.trim();
-            if (!nom) return alert("Saisissez un nom d'organisme.");
-
+            const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); if (!nom) return;
             if (idOrgEnCoursModif) {
-                const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                if (error) alert(error.message);
-                else {
-                    idOrgEnCoursModif = null; input.value = "";
-                    const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "Enregistrer";
-                    btn.className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
-                    await chargerOrganismes();
-                }
-            } else {
-                const { error } = await db.from('organismes').insert([{ nom: nom }]);
-                if (error) alert("Erreur : " + error.message);
-                else { input.value = ""; await chargerOrganismes(); }
-            }
+                await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
+                idOrgEnCoursModif = null; input.value = "";
+                document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
+                await chargerOrganismes();
+            } else { await db.from('organismes').insert([{ nom: nom }]); input.value = ""; await chargerOrganismes(); }
         }
 
         async function supprimerOrganismeMaster(id, nom) {
-            if (!confirm(`🚨 ATTENTION SUPPLÉMENTAIRE :\n\nSupprimer l'organisme [${nom}] détruira AUTOMATIQUEMENT l'intégralité de ses classes et apprenants associés.\n\nVoulez-vous valider ?`)) return;
-            const { error } = await db.from('organismes').delete().eq('id', id);
-            if (error) alert(error.message);
-            else {
-                await chargerOrganismes();
-                document.getElementById('annuaire-liste-formations').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>`;
-                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
-            }
+            if (!confirm(`🚨 Suppression définitive de l'organisme [${nom}] ?`)) return;
+            await db.from('organismes').delete().eq('id', id); await chargerOrganismes();
         }
 
-        // ==========================================
-        //         CRUD DIRECT : 2. CLASSES
-        // ==========================================
-
         function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id;
-            document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form');
-            btn.innerText = "💾 Sauver";
-            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
+            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
         }
 
         async function creerOuModifierFormationMaster() {
             const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            const input = document.getElementById('annuaire-nom-formation');
-            const nom = input.value.trim();
-
-            if (!orgId) return alert("Sélectionnez d'abord un organisme d'affectation.");
-            if (!nom) return alert("Saisissez un nom pour le groupe / classe.");
-
+            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
+            if (!orgId || !nom) return;
             if (idFormEnCoursModif) {
-                const { error } = await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                if (error) alert(error.message);
-                else {
-                    idFormEnCoursModif = null; input.value = "";
-                    const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "Enregistrer";
-                    btn.className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
-                    await afficherListeFormations(orgId);
-                    
-                    const orgPrincipal = document.getElementById('select-organisme').value;
-                    if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
-                }
-            } else {
-                const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
-                if (error) alert(error.message);
-                else { input.value = ""; await afficherListeFormations(orgId); }
-            }
+                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
+                idFormEnCoursModif = null; input.value = ""; await afficherListeFormations(orgId);
+            } else { await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = ""; await afficherListeFormations(orgId); }
         }
 
         async function supprimerFormationMaster(id, nom) {
             const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-            if (!confirm(`⚠️ Supprimer la formation [${nom}] ainsi que ses apprenants liés ?`)) return;
-            const { error } = await db.from('formations').delete().eq('id', id);
-            if (error) alert(error.message);
-            else {
-                await afficherListeFormations(orgId);
-                const orgPrincipal = document.getElementById('select-organisme').value;
-                if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
-                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
-            }
+            if (!confirm(`Supprimer la classe [${nom}] ?`)) return;
+            await db.from('formations').delete().eq('id', id); await afficherListeFormations(orgId);
         }
-
-        // ==========================================
-        //         CRUD DIRECT : 3. APPRENANTS
-        // ==========================================
 
         function entrerModifApprenant(id, prenom, nom, email) {
             idAppEnCoursModif = id;
             document.getElementById('annuaire-prenom-app').value = prenom;
             document.getElementById('annuaire-nom-app').value = nom;
             document.getElementById('annuaire-email-app').value = email;
-            const btn = document.getElementById('btn-annuaire-app');
-            btn.innerText = "💾 Sauver la fiche";
-            btn.className = "w-full bg-emerald-600 text-white text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all sm:col-span-3 md:col-span-1";
+            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
         }
 
         async function creerOuModifierApprenantMaster() {
             const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            const inputPrenom = document.getElementById('annuaire-prenom-app');
-            const inputNom = document.getElementById('annuaire-nom-app');
-            const inputEmail = document.getElementById('annuaire-email-app');
-
-            const prenom = inputPrenom.value.trim();
-            const nom = inputNom.value.trim();
-            const email = inputEmail.value.trim();
-
-            if (!formId) return alert("Sélectionnez la classe d'affectation.");
-            if (!prenom || !nom) return alert("Le prénom et le nom sont requis.");
-
+            const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
+            if (!formId || !p.value || !n.value) return;
             if (idAppEnCoursModif) {
-                const { error } = await db.from('apprenants_master').update({ prenom: prenom, nom: nom, email: email || null }).eq('id', idAppEnCoursModif);
-                if (error) alert(error.message);
-                else {
-                    idAppEnCoursModif = null; inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
-                    const btn = document.getElementById('btn-annuaire-app'); btn.innerText = "Enregistrer l'apprenant";
-                    btn.className = "w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer sm:col-span-3 md:col-span-1";
-                    await afficherListeApprenantsMaster(formId);
-                    
-                    const formPrincipal = document.getElementById('select-formation').value;
-                    if (formPrincipal === formId) chargerApprenantsFiltres(formId);
-                }
+                await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
+                idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
+                document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
+                await afficherListeApprenantsMaster(formId);
             } else {
-                const { error } = await db.from('apprenants_master').insert([{ prenom: prenom, nom: nom, email: email || null, formation_id: formId }]);
-                if (error) alert(error.message);
-                else {
-                    inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
-                    await afficherListeApprenantsMaster(formId);
-                    const formPrincipal = document.getElementById('select-formation').value;
-                    if (formPrincipal === formId) chargerApprenantsFiltres(formId);
-                }
+                await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
+                p.value = ""; n.value = ""; e.value = ""; await afficherListeApprenantsMaster(formId);
             }
         }
 
-        async function supprimerApprenantMaster(id, prenom) {
+        async function supprimerApprenantMaster(id) {
             const formId = document.getElementById('annuaire-select-form-pour-app').value;
-            if (!confirm(`Retirer définitivement [${prenom}] de la base master ?`)) return;
-            const { error } = await db.from('apprenants_master').delete().eq('id', id);
-            if (error) alert(error.message);
-            else {
-                await afficherListeApprenantsMaster(formId);
-                const formPrincipal = document.getElementById('select-formation').value;
-                if (formPrincipal === formId) chargerApprenantsFiltres(formId);
-            }
+            if (!confirm(`Supprimer l'apprenant ?`)) return;
+            await db.from('apprenants_master').delete().eq('id', id); await afficherListeApprenantsMaster(formId);
         }
 
         // ==========================================
-        //    LOGIQUE CLASSIQUE GENERATEUR SESSIONS
+        //  RESTRUCTURATION : AFFICHAGE & TRI DES SESSIONS
         // ==========================================
 
         async function chargerSessions() {
-            const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            if (error) return alert("❌ Erreur Supabase : " + error.message);
+            // Jointure pour récupérer le nom complet de la classe/formation associée
+            const { data: sessions, error } = await db.from('sessions').select('*, formations(nom)').order('date_session', { ascending: true });
+            if (error) return;
 
-            const conteneurActives = document.getElementById('liste-sessions-actives');
-            const conteneurTerminees = document.getElementById('liste-sessions-terminees');
-            conteneurActives.innerHTML = ""; conteneurTerminees.innerHTML = "";
+            const arrAvenir = []; const arrActives = []; const arrTerminees = [];
 
-            if (!sessions || sessions.length === 0) {
-                conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
+            sessions.forEach(s => {
+                if (s.statut === 'terminee') arrTerminees.push(s);
+                else if (s.statut === 'a_venir') arrAvenir.push(s);
+                else arrActives.push(s); // active
+            });
+
+            regrouperEtAfficherSessionsParGroupe(arrAvenir, 'liste-sessions-avenir', false);
+            regrouperEtAfficherSessionsParGroupe(arrActives, 'liste-sessions-actives', false);
+            regrouperEtAfficherSessionsParGroupe(arrTerminees, 'liste-sessions-terminees', true);
+        }
+
+        function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive) {
+            const conteneur = document.getElementById(conteneurId);
+            conteneur.innerHTML = "";
+
+            if (!sessionsList || sessionsList.length === 0) {
+                conteneur.innerHTML = `<p class="text-xs text-slate-600 italic p-2 pl-4">Aucune session enregistrée.</p>`;
                 return;
             }
 
-            sessions.forEach(s => {
-                const nomValide = s.nom || "Session sans nom";
-                const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                
-                const badgeType = s.type === 'ecrit' 
-                    ? `<span class="bg-indigo-950 text-indigo-400 text-[9px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
-                    : `<span class="bg-amber-950 text-amber-400 text-[9px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
-
-                if (s.statut !== 'terminee') {
-                    conteneurActives.innerHTML += `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
-                            <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center">${nomValide} ${badgeType}</div>
-                                <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
-                                <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-xs cursor-pointer">✏️</button>
-                                <button onclick="cloturerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-xs cursor-pointer">🔒</button>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    conteneurTerminees.innerHTML += `
-                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
-                            <div>
-                                <div class="font-medium text-slate-400 text-base flex items-center">🗃️ ${nomValide} ${badgeType}</div>
-                                <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
-                                <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                }
+            // Groupement par nom de formation (Classe)
+            const mapGroupements = {};
+            sessionsList.forEach(s => {
+                const nomClasse = (s.formations && s.formations.nom) ? s.formations.nom : "Sans affectation (Manuel)";
+                if (!mapGroupements[nomClasse]) mapGroupements[nomClasse] = [];
+                mapGroupements[nomClasse].push(s);
             });
-        }
 
-        async function entrerEnModeModification(idSession) {
-            idSessionEnCoursModification = idSession;
-            const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.classList.remove('border-slate-800');
-            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification profonde de la session`;
-
-            const { data: session } = await db.from('sessions').select('nom, type').eq('id', idSession).single();
-            const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
-            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
-            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-            const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
-
-            if(session) {
-                document.getElementById('nouveau-nom-session').value = session.nom;
-                document.getElementById('type-session').value = session.type || 'oral';
-            }
-            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
-            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
-            
-            if(grps && grps.length > 0) {
-                document.getElementById('nb-groupes').value = grps.length;
-                const premierNom = grps[0].nom;
-                const match = premierNom.match(/^(.*?)(\d+)$/);
-                if (match) document.getElementById('prefixe-groupes').value = match[1];
-            }
-            
-            if(apps) {
-                document.getElementById('select-organisme').value = "";
-                document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
-                document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                    <label class="flex items-center gap-2.5 text-slate-300">
-                        <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 rounded text-blue-600 accent-blue-500">
-                        <div>
-                            <span>${a.prenom}</span>
-                            <span class="text-[10px] text-slate-500 block">${a.email || 'Pas d\'email'}</span>
+            // Construction de l'interface en cascade
+            for (const [nomClasse, tableauSessions] of Object.entries(mapGroupements)) {
+                let htmlBlocClasse = `
+                    <div class="space-y-2 bg-[#101828]/30 p-3 rounded-xl border border-slate-900/60">
+                        <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5">
+                            📁 Classe : ${nomClasse}
                         </div>
-                    </label>
-                `).join('');
-            }
+                        <div class="space-y-2 pl-1.5 border-l border-slate-800/80">
+                `;
 
-            document.getElementById('conteneur-boutons-action').innerHTML = `
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-emerald-600 border border-emerald-500/20 hover:bg-emerald-700 active:scale-[0.99]">
-                        💾 Enregistrer les modifications
-                    </button>
-                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900">
-                        Annuler
-                    </button>
-                </div>
-            `;
-            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
+                tableauSessions.forEach(s => {
+                    const nomValide = s.nom || "Soutenance";
+                    const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
+                    const badgeType = s.type === 'ecrit' 
+                        ? `<span class="bg-indigo-950 text-indigo-400 text-[9px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
+                        : `<span class="bg-amber-950 text-amber-400 text-[9px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
+
+                    // Formatage de la date (YYYY-MM-DD -> DD/MM/YYYY)
+                    let dateSess = s.date_session;
+                    if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
+                    else { dateSess = "--/--/----"; }
+
+                    const tagDate = `<span class="text-slate-400 font-mono text-xs ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
+
+                    let boutonActionStatut = "";
+                    if (s.statut === 'a_venir') {
+                        boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-xs cursor-pointer">▶️</button>`;
+                    } else if (s.statut === 'active') {
+                        boutonActionStatut = `<button onclick="cloturerSession('${s.id}')" title="Clôturer et archiver la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-xs cursor-pointer">🔒</button>`;
+                    }
+
+                    if (!estArchive) {
+                        htmlBlocClasse += `
+                            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
+                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
+                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
+                                    <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
+                                    <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
+                                    <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
+                                    <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-xs cursor-pointer">✏️</button>
+                                    ${boutonActionStatut}
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-xs cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        htmlBlocClasse += `
+                            <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
+                                <div>
+                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
+                                    <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
+                                    <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
+                                    <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
+                                    <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                htmlBlocClasse += `</div></div>`; conteneur.innerHTML += htmlBlocClasse;
+            }
         }
 
-        function annulerModeModification() {
-            idSessionEnCoursModification = null;
-            const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.classList.remove('border-emerald-500/40', 'bg-[#101828]/95');
-            zoneConfigurateur.classList.add('border-slate-800');
-            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
-
-            document.getElementById('nouveau-nom-session').value = "";
-            document.getElementById('criteres-session').value = "";
-            document.getElementById('liste-evaluateurs-brute').value = "";
-            document.getElementById('select-organisme').value = "";
-            document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
-            document.getElementById('nb-groupes').value = "3";
-            document.getElementById('prefixe-groupes').value = "Groupe ";
-
-            document.getElementById('conteneur-boutons-action').innerHTML = `
-                <button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
-                    🚀 Générer la session complète
-                </button>
-            `;
+        async function changerStatutSessionDirect(idSession, nvStatut) {
+            await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); chargerSessions();
         }
 
         function extraireApprenantsPresents() {
             const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
-            return Array.from(cases).map(c => ({
-                nomComplet: c.getAttribute('data-name'),
-                email: c.getAttribute('data-email')
-            })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
-        }
-
-        async function sauvegarderModificationsSession() {
-            if (!idSessionEnCoursModification) return;
-            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
-            const typeSession = document.getElementById('type-session').value;
-            const criteresRaw = document.getElementById('criteres-session').value.trim();
-            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
-            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-            
-            const listeApprenantsPresents = extraireApprenantsPresents();
-
-            if (!nomSession) return alert("Erreur : Le nom de la session est obligatoire.");
-            if (listeApprenantsPresents.length === 0) return alert("❌ Impossible : Vous devez cocher au moins un apprenant présent.");
-
-            await db.from('sessions').update({ nom: nomSession, type: typeSession }).eq('id', idSessionEnCoursModification);
-
-            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
-            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
-
-            if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
-                if (arrCriteres.length > 0) {
-                    const payloadCriteres = arrCriteres.map(ligne => {
-                        const idx = ligne.indexOf(':');
-                        let nom = ligne, description = "";
-                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
-                        return { session_id: idSessionEnCoursModification, nom: nom, description: description };
-                    });
-                    await db.from('criteres').insert(payloadCriteres);
-                }
-            }
-
-            if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                if (arrEvaluateurs.length > 0) {
-                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
-                }
-            }
-
-            const listeNomsGroupes = []; const payloadGroupes = [];
-            for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`;
-                listeNomsGroupes.push(nomDuGroupe);
-                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
-            }
-            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
-
-            const mapNomVersIdGroupe = {};
-            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
-
-            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
-            }
-
-            const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
-                const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                return {
-                    session_id: idSessionEnCoursModification,
-                    prenom: appObj.nomComplet,
-                    email: appObj.email || null,
-                    groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                };
-            });
-            await db.from('apprenants').insert(payloadApprenants);
-
-            alert("✏️ Session reconfigurée avec succès sur la base des présents !");
-            annulerModeModification();
-            chargerSessions();
+            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
         }
 
         async function genererSessionComplete() {
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
             const typeSession = document.getElementById('type-session').value;
+            const dateSession = document.getElementById('date-session').value;
+            const statutSession = document.getElementById('statut-session').value;
+            const formationId = document.getElementById('select-formation').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
@@ -718,22 +529,22 @@
             
             const listeApprenantsPresents = extraireApprenantsPresents();
 
-            if (!nomSession) return alert("Erreur : Le nom de la session est obligatoire.");
-            if (listeApprenantsPresents.length === 0) return alert("❌ Appel incomplet : Vous devez cocher les apprenants présents.");
+            if (!nomSession) return alert("Le nom de la session est obligatoire.");
+            if (listeApprenantsPresents.length === 0) return alert("❌ Cochez les apprenants présents.");
 
-            const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active', type: typeSession }]).select().single();
-            if (errSess) return alert("Échec création session: " + errSess.message);
+            const { data: session, error: errSess } = await db.from('sessions').insert([{ 
+                nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
+            }]).select().single();
+            if (errSess) return;
 
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
-                    const payloadCriteres = arrCriteres.map(ligne => {
-                        const idx = ligne.indexOf(':');
-                        let nom = ligne, description = "";
+                    await db.from('criteres').insert(arrCriteres.map(ligne => {
+                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
                         if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
                         return { session_id: session.id, nom: nom, description: description };
-                    });
-                    await db.from('criteres').insert(payloadCriteres);
+                    }));
                 }
             }
 
@@ -746,69 +557,163 @@
 
             const listeNomsGroupes = []; const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
-                const nomDuGroupe = `${prefixe}${i}`;
-                listeNomsGroupes.push(nomDuGroupe);
+                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
                 payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
             }
             const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
-
-            const mapNomVersIdGroupe = {};
-            groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
             for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
             }
 
-            const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
-                const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                return {
-                    session_id: session.id,
-                    prenom: appObj.nomComplet,
-                    email: appObj.email || null,
-                    groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                };
-            });
-            await db.from('apprenants').insert(payloadApprenants);
+            await db.from('apprenants').insert(listeApprenantsPresents.map((appObj, index) => ({
+                session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+            })));
 
-            alert("🎉 Session complète initialisée uniquement avec les apprenants présents et leurs emails !");
-            document.getElementById('nouveau-nom-session').value = "";
-            document.getElementById('criteres-session').value = "";
-            document.getElementById('select-organisme').value = "";
-            document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
-            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
+            alert("🎉 Session complète initialisée avec succès !");
+            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
+            document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('liste-evaluateurs-brute').value = "";
             chargerSessions();
         }
 
+        async function entrerEnModeModification(idSession) {
+            idSessionEnCoursModification = idSession;
+            const zoneConfigurateur = document.getElementById('zone-configurateur');
+            zoneConfigurateur.classList.remove('border-slate-800'); zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
+            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de la session`;
+
+            const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
+            const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
+            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
+            const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
+            const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
+
+            if(session) {
+                document.getElementById('nouveau-nom-session').value = session.nom;
+                document.getElementById('type-session').value = session.type || 'oral';
+                document.getElementById('date-session').value = session.date_session || '';
+                // Si la session est active ou à venir, on cale le sélecteur dessus
+                if(session.statut !== 'terminee') document.getElementById('statut-session').value = session.statut;
+            }
+            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
+            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
+            
+            if(grps && grps.length > 0) {
+                document.getElementById('nb-groupes').value = grps.length;
+                const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
+            }
+            
+            if(apps) {
+                document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
+                document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
+                    <label class="flex items-center gap-2.5 text-slate-300">
+                        <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 rounded text-blue-600">
+                        <div><span>${a.prenom}</span><span class="text-[10px] text-slate-500 block">${a.email || 'Pas d\'email'}</span></div>
+                    </label>
+                `).join('');
+            }
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">💾 Enregistrer les modifications</button>
+                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
+                </div>
+            `;
+            window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function annulerModeModification() {
+            idSessionEnCoursModification = null; const zoneConfigurateur = document.getElementById('zone-configurateur');
+            zoneConfigurateur.className = "bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all";
+            document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
+
+            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
+            document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
+            document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
+
+            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-xs font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
+        }
+
+        async function sauvegarderModificationsSession() {
+            if (!idSessionEnCoursModification) return;
+            const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const typeSession = document.getElementById('type-session').value;
+            const dateSession = document.getElementById('date-session').value;
+            const statutSession = document.getElementById('statut-session').value;
+            const criteresRaw = document.getElementById('criteres-session').value.trim();
+            const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
+            const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
+            const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+            const listeApprenantsPresents = extraireApprenantsPresents();
+
+            if (!nomSession || listeApprenantsPresents.length === 0) return alert("Erreur dans les champs obligatoires.");
+
+            await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
+            await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
+            await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
+
+            if (criteresRaw) {
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
+                if (arrCriteres.length > 0) {
+                    await db.from('criteres').insert(arrCriteres.map(ligne => {
+                        const idx = ligne.indexOf(':'); let nom = ligne, description = "";
+                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
+                        return { session_id: idSessionEnCoursModification, nom: nom, description: description };
+                    }));
+                }
+            }
+
+            if (evaluateursRaw) {
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
+                if (arrEvaluateurs.length > 0) {
+                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
+                }
+            }
+
+            const listeNomsGroupes = []; const payloadGroupes = [];
+            for (let i = 1; i <= nbGroupes; i++) {
+                const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
+                payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
+            }
+            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
+            const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
+
+            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1)); [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
+            }
+
+            await db.from('apprenants').insert(listeApprenantsPresents.map((appObj, index) => ({
+                session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+            })));
+
+            alert("✏️ Session reconfigurée !"); annulerModeModification(); chargerSessions();
+        }
+
         async function cloturerSession(idSession) {
             if (!confirm("⚠️ Fermer définitivement cette session ?")) return;
-            const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
-            if (!error) chargerSessions();
+            await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); chargerSessions();
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
-            const nouveauNom = prompt(`Définir le nom de la copie :`, `${nomActuel} - Copie`);
-            if (!nouveauNom || nouveauNom.trim() === "") return;
+            const nouveauNom = prompt(`Définir le nom de la copie :`, `${nomActuel} - Copie`); if (!nouveauNom) return;
+            const { data: src } = await db.from('sessions').select('type, date_session, formation_id').eq('id', idSessionSource).single();
+            const { data: nv } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'a_venir', type: src.type, date_session: src.date_session, formation_id: src.formation_id }]).select().single();
 
-            const { data: sourceSess } = await db.from('sessions').select('type').eq('id', idSessionSource).single();
-            const typeSource = sourceSess ? sourceSess.type : 'oral';
-
-            const { data: nouvelleSession } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active', type: typeSource }]).select().single();
-
-            const { data: criteresSource } = await db.from('criteres').select('nom, description').eq('session_id', idSessionSource);
-            if (criteresSource && criteresSource.length > 0) {
-                await db.from('criteres').insert(criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom, description: c.description })));
-            }
-
-            alert("👥 Session dupliquée ! Faites l'appel pour affecter le groupe d'élèves.");
-            chargerSessions();
+            const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSessionSource);
+            if (crits && crits.length > 0) { await db.from('criteres').insert(crits.map(c => ({ session_id: nv.id, nom: c.nom, description: c.description }))); }
+            alert("👥 Session dupliquée (Placée dans 'À venir')."); chargerSessions();
         }
 
         async function supprimerSession(idSession) {
             if (!confirm("🚨 ATTENTION : Suppression définitive !")) return;
-            const { error } = await db.from('sessions').delete().eq('id', idSession);
-            if (!error) chargerSessions();
+            await db.from('sessions').delete().eq('id', idSession); chargerSessions();
         }
 
         window.onload = initAdmin;
