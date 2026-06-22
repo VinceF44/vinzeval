@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DE LA CONSOLE AVEC LES DEUX BOUTONS ALIGNÉS -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
@@ -28,7 +27,6 @@
             </div>
         </div>
 
-        <!-- TIROIR 1 : L'ANNUAIRE PÉDAGOGIQUE PREMIUM DROPDOWNS -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -39,7 +37,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- GESTION ORGANISME -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -51,12 +48,10 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <!-- GESTION FORMATION / GROUPE -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         
-                        <!-- DROPDOWN CUSTOM : ORG POUR FORMATION -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-formation" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -77,15 +72,12 @@
                 </div>
             </div>
 
-            <!-- REGISTRE APPRENANTS -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
                     
-                    <!-- OPTIMISATION ERGONOMIQUE 1 : Élargissement significatif du conteneur à sm:w-[550px] pour éviter les coupures de texte sur 2 lignes -->
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-[550px] shrink-0">
                         
-                        <!-- DROPDOWN CUSTOM : ORG POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -95,7 +87,6 @@
                             <div id="annuaire-select-org-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                         </div>
 
-                        <!-- DROPDOWN CUSTOM : CLASSE POUR APP -->
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-form-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -106,7 +97,6 @@
                                 <button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -123,7 +113,6 @@
             </div>
         </div>
 
-        <!-- TIROIR 2 : LE CONFIGURATEUR DE SESSIONS -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
@@ -133,7 +122,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="sm:col-span-1">
@@ -142,7 +130,6 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type d'évaluation :</label>
-                            <!-- DROPDOWN CUSTOM : TYPE SESSION -->
                             <div class="custom-dropdown-container relative w-full text-left">
                                 <input type="hidden" id="type-session" value="oral">
                                 <button type="button" onclick="toggleDropdown('type-session')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
@@ -183,7 +170,6 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Organisme :</label>
-                                <!-- DROPDOWN CUSTOM : ORGANISME CONFIG -->
                                 <div class="custom-dropdown-container relative w-full text-left">
                                     <input type="hidden" id="select-organisme" value="">
                                     <button type="button" onclick="toggleDropdown('select-organisme')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
@@ -195,7 +181,6 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Formation / Classe :</label>
-                                <!-- DROPDOWN CUSTOM : FORMATION CONFIG -->
                                 <div class="custom-dropdown-container relative w-full text-left">
                                     <input type="hidden" id="select-formation" value="">
                                     <button type="button" onclick="toggleDropdown('select-formation')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer shadow-sm">
@@ -231,7 +216,6 @@
             </div>
         </div>
 
-        <!-- BLOC DE RECHERCHE ET FILTRE PAR PÉRIODE -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -240,7 +224,6 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📅 Filtrer par période :</label>
-                    <!-- DROPDOWN CUSTOM : PÉRIODE FILTRE -->
                     <div class="custom-dropdown-container relative w-full text-left">
                         <input type="hidden" id="filtre-periode-selection" value="toutes">
                         <button type="button" onclick="toggleDropdown('filtre-periode-selection')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#2563eb] transition-all cursor-pointer shadow-sm">
@@ -249,7 +232,7 @@
                         </button>
                         <div id="filtre-periode-selection-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
                             <button type="button" onclick="selectOption('filtre-periode-selection', 'toutes', '📆 Toutes les dates')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">📆 Toutes les dates</button>
-                            <button type="button" onclick="selectOption('filtre-periode-selection', 'aujourdhui', '🌞 Aujourd'hui uniquement')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🌞 Aujourd'hui uniquement</button>
+                            <button type="button" onclick="selectOption('filtre-periode-selection', 'aujourdhui', '🌞 Aujourd\'hui uniquement')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🌞 Aujourd'hui uniquement</button>
                             <button type="button" onclick="selectOption('filtre-periode-selection', 'mois', '🗓️ Mois en cours')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🗓️ Mois en cours</button>
                         </div>
                     </div>
@@ -257,7 +240,6 @@
             </div>
         </div>
 
-        <!-- BLOCS TEMPORELS DE TIMELINE -->
         <div class="space-y-3 relative z-10">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -274,7 +256,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -302,9 +283,12 @@
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
 
+        // INDEXATION GLOBALE POUR ÉVITER LES BUGS RELATIONNELS EN BDD
         let cacheSessionsGlobal = [];
+        let globalOrganismes = [];
+        let globalFormations = [];
 
-        // --- MOTEUR CORE DES DROPDOWNS CUSTOMS ---
+        // MOTEUR DES DROPDOWNS CUSTOMS
         function toggleDropdown(id) {
             const menu = document.getElementById(id + '-menu');
             const arrow = document.getElementById(id + '-arrow');
@@ -396,50 +380,46 @@
             prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
-        function toggleGroupCollapse(targetId, iconId) {
-            const target = document.getElementById(targetId);
-            const icon = document.getElementById(iconId);
-            if (target && icon) {
-                const isHidden = target.classList.toggle('hidden');
-                icon.innerText = isHidden ? '▶' : '▼';
-            }
-        }
-
         async function initAdmin() {
             try {
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 document.getElementById('date-session').valueAsDate = new Date();
-                await chargerOrganismes();
+                
+                // Pré-chargement structurel pour neutraliser les erreurs relationnelles BDD
+                const { data: orgs } = await db.from('organismes').select('*').order('nom');
+                globalOrganismes = orgs || [];
+                
+                const { data: forms } = await db.from('formations').select('*').order('nom');
+                globalFormations = forms || [];
+                
+                renderDropdownsOrganismes();
+                afficherListeOrganismes(globalOrganismes);
+                
                 await chargerSessions();
             } catch(e) {
                 console.error(e);
-                UIModal.alert("Connexion à la base de données échouée.", "error");
+                await UIModal.alert("Connexion à la base de données échouée.", "error");
             }
         }
 
-        async function chargerOrganismes() {
-            const { data } = await db.from('organismes').select('*').order('nom');
-            if (data) {
-                let htmlOpts = `<button type="button" onclick="selectOption('select-organisme', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
-                let htmlOptsAnnForm = `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '', '-- Sélectionner l\'organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Sélectionner l'organisme --</button>`;
-                let htmlOptsAnnApp = `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
-                
-                data.forEach(o => {
-                    const safeNom = o.nom.replace(/'/g, "\'");
-                    htmlOpts += `<button type="button" onclick="selectOption('select-organisme', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                    htmlOptsAnnForm += `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                    htmlOptsAnnApp += `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                });
-                
-                document.getElementById('select-organisme-menu').innerHTML = htmlOpts;
-                document.getElementById('annuaire-select-org-pour-formation-menu').innerHTML = htmlOptsAnnForm;
-                document.getElementById('annuaire-select-org-pour-app-menu').innerHTML = htmlOptsAnnApp;
-                
-                afficherListeOrganismes(data);
-            }
+        function renderDropdownsOrganismes() {
+            let htmlOpts = `<button type="button" onclick="selectOption('select-organisme', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
+            let htmlOptsAnnForm = `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '', '-- Sélectionner l\\'organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Sélectionner l'organisme --</button>`;
+            let htmlOptsAnnApp = `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
+            
+            globalOrganismes.forEach(o => {
+                const safeNom = o.nom.replace(/'/g, "\\'");
+                htmlOpts += `<button type="button" onclick="selectOption('select-organisme', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
+                htmlOptsAnnForm += `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
+                htmlOptsAnnApp += `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
+            });
+            
+            document.getElementById('select-organisme-menu').innerHTML = htmlOpts;
+            document.getElementById('annuaire-select-org-pour-formation-menu').innerHTML = htmlOptsAnnForm;
+            document.getElementById('annuaire-select-org-pour-app-menu').innerHTML = htmlOptsAnnApp;
         }
 
-        async function chargerFormationsFiltrees(organismeId) {
+        function chargerFormationsFiltrees(organismeId) {
             const selectFormHidden = document.getElementById('select-formation');
             const selectFormLabel = document.getElementById('select-formation-label');
             const selectFormMenu = document.getElementById('select-formation-menu');
@@ -447,24 +427,22 @@
             
             selectFormHidden.value = "";
             selectFormLabel.innerText = "-- Choisir --";
-            selectFormMenu.innerHTML = `<button type="button" onclick="selectOption('select-formation', '', '-- Choisir --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisir --</button>`;
+            let html = `<button type="button" onclick="selectOption('select-formation', '', '-- Choisir --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisir --</button>`;
             conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             
-            if (!organismeId) return;
-            const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
-            if (data) {
-                let html = selectFormMenu.innerHTML;
-                data.forEach(f => {
-                    const safeNom = f.nom.replace(/'/g, "\'");
-                    html += `<button type="button" onclick="selectOption('select-formation', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
-                });
-                selectFormMenu.innerHTML = html;
-            }
+            if (!organismeId) { selectFormMenu.innerHTML = html; return; }
+            
+            const filtered = globalFormations.filter(f => f.organisme_id == organismeId);
+            filtered.forEach(f => {
+                const safeNom = f.nom.replace(/'/g, "\\'");
+                html += `<button type="button" onclick="selectOption('select-formation', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
+            });
+            selectFormMenu.innerHTML = html;
         }
 
         function annuaireChangementOrgPourForm(organismeId) { afficherListeFormations(organismeId); }
 
-        async function annuaireFiltrerFormations(organismeId) {
+        function annuaireFiltrerFormations(organismeId) {
             const hiddenInput = document.getElementById('annuaire-select-form-pour-app');
             const labelSpan = document.getElementById('annuaire-select-form-pour-app-label');
             const menuContainer = document.getElementById('annuaire-select-form-pour-app-menu');
@@ -472,19 +450,17 @@
             
             hiddenInput.value = "";
             labelSpan.innerText = "-- Classe --";
-            menuContainer.innerHTML = `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>`;
+            let html = `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>`;
             conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
             
-            if (!organismeId) return;
-            const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
-            if (data) {
-                let html = menuContainer.innerHTML;
-                data.forEach(f => {
-                    const safeNom = f.nom.replace(/'/g, "\'");
-                    html += `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
-                });
-                menuContainer.innerHTML = html;
-            }
+            if (!organismeId) { menuContainer.innerHTML = html; return; }
+            
+            const filtered = globalFormations.filter(f => f.organisme_id == organismeId);
+            filtered.forEach(f => {
+                const safeNom = f.nom.replace(/'/g, "\\'");
+                html += `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '${f.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${f.nom}</button>`;
+            });
+            menuContainer.innerHTML = html;
         }
 
         function annuaireChangementFormPourApp(formationId) { afficherListeApprenantsMaster(formationId); }
@@ -516,25 +492,26 @@
                     <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
                         <span class="truncate font-medium text-slate-300">${o.nom}</span>
                         <div class="flex gap-1 shrink-0">
-                            <button onclick="entrerModifOrganisme(${o.id}, '${o.nom.replace(/'/g, "\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
-                            <button onclick="supprimerOrganismeMaster(${o.id}, '${o.nom.replace(/'/g, "\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifOrganisme(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
+                            <button onclick="supprimerOrganismeMaster(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
             } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucun organisme enregistré.</p>`; }
         }
 
-        async function afficherListeFormations(orgId) {
+        function afficherListeFormations(orgId) {
             const conteneur = document.getElementById('annuaire-liste-formations');
             if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
-            const { data } = await db.from('formations').select('*').eq('organisme_id', orgId).order('nom');
-            if(data && data.length > 0) {
-                conteneur.innerHTML = data.map(f => `
+            
+            const filtered = globalFormations.filter(f => f.organisme_id == orgId);
+            if(filtered.length > 0) {
+                conteneur.innerHTML = filtered.map(f => `
                     <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
                         <span class="truncate font-medium text-slate-300">${f.nom}</span>
                         <div class="flex gap-1 shrink-0">
-                            <button onclick="entrerModifFormation(${f.id}, '${f.nom.replace(/'/g, "\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
-                            <button onclick="supprimerFormationMaster(${f.id}, '${f.nom.replace(/'/g, "\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifFormation(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
+                            <button onclick="supprimerFormationMaster(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
@@ -550,33 +527,46 @@
                     <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-sm font-sans hover:border-slate-800 transition-all shadow-sm">
                         <div class="truncate pr-2">
                             <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
-                            <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d'email'}</span>
+                            <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                         <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\'")}', '${a.nom.replace(/'/g, "\'")}', '${(a.email || '').replace(/'/g, "\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
             } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
         }
 
-        // ====================================================================
-        //  OPTIMISATION ERGONOMIQUE 2 : Double tri pour ordonner en cascade (Besoin 2)
-        // ====================================================================
+        // FUSION DE DONNÉES SYNCHRONE EN SÉCURITÉ ABSOLUE
         async function chargerSessions() {
-            const { data: sessions, error } = await db.from('sessions')
-                .select('*, formations(id, nom, organisme_id, organismes(nom)), evaluateurs(nom), apprenants(prenom)')
-                .order('date_session', { ascending: true })
-                .order('id', { ascending: false }); // Garantit que la dernière session créée s'affiche toujours en tête
-                
-            if (error) {
-                await UIModal.alert("Erreur technique Supabase : " + error.message, "error");
+            const { data: sessions, error: errS } = await db.from('sessions').select('*');
+            const { data: evals, error: errE } = await db.from('evaluateurs').select('*');
+            const { data: apps, error: errA } = await db.from('apprenants').select('*');
+
+            if (errS || errE || errA) {
+                await UIModal.alert("Erreur lors de la récupération des données.", "error");
                 return;
             }
 
-            cacheSessionsGlobal = sessions || [];
+            const rawList = sessions || [];
+            const evaluateursList = evals || [];
+            const apprenantsList = apps || [];
 
+            rawList.forEach(s => {
+                s.evaluateurs_cache = evaluateursList.filter(e => e.session_id === s.id);
+                s.apprenants_cache = apprenantsList.filter(a => a.session_id === s.id);
+            });
+
+            // CLASSEMENT CHRONOLOGIQUE PAR DATE + DERNIÈRE CRÉÉE EN HAUT DU MÊME JOUR
+            rawList.sort((a, b) => {
+                if (a.date_session !== b.date_session) {
+                    return (a.date_session || "").localeCompare(b.date_session || "");
+                }
+                return isNaN(a.id) || isNaN(b.id) ? String(b.id).localeCompare(String(a.id)) : b.id - a.id;
+            });
+
+            cacheSessionsGlobal = rawList;
             if (cacheSessionsGlobal.length === 0) {
                 document.getElementById('zone-configurateur').classList.remove('hidden');
             }
@@ -600,14 +590,18 @@
                 if (rechercheTexte !== "") {
                     const nomSess = (s.nom || "").toLowerCase();
                     const typeSess = (s.type === "ecrit" ? "écrit" : "oral").toLowerCase();
-                    const formationNom = s.formations && s.formations.nom ? s.formations.nom.toLowerCase() : "";
-                    const organismeNom = s.formations && s.formations.organismes && s.formations.organismes.nom ? s.formations.organismes.nom.toLowerCase() : "";
+                    
+                    const formationObj = globalFormations.find(f => f.id === s.formation_id);
+                    const formationNom = formationObj ? formationObj.nom.toLowerCase() : "";
+                    
+                    const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
+                    const organismeNom = orgObj ? orgObj.nom.toLowerCase() : "";
                     
                     let dateFormateeFr = "";
                     if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
 
-                    const evaluateursNoms = (s.evaluateurs || []).map(e => (e.nom || "").toLowerCase()).join(" ");
-                    const apprenantsNoms = (s.apprenants || []).map(a => (a.prenom || "").toLowerCase()).join(" ");
+                    const evaluateursNoms = (s.evaluateurs_cache || []).map(e => (e.nom || "").toLowerCase()).join(" ");
+                    const apprenantsNoms = (s.apprenants_cache || []).map(a => (a.prenom || "").toLowerCase()).join(" ");
 
                     return nomSess.includes(rechercheTexte) || typeSess.includes(rechercheTexte) ||
                            formationNom.includes(rechercheTexte) || organismeNom.includes(rechercheTexte) ||
@@ -646,8 +640,12 @@
 
             const mapGroupements = {};
             sessionsList.forEach(s => {
-                const nomOrg = (s.formations && s.formations.organismes && s.formations.organismes.nom) ? s.formations.organismes.nom : "Manuel";
-                const nomClasse = (s.formations && s.formations.nom) ? s.formations.nom : "Sans affectation";
+                const formationObj = globalFormations.find(f => f.id === s.formation_id);
+                const nomClasse = formationObj ? formationObj.nom : "Sans affectation";
+                
+                const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
+                const nomOrg = orgObj ? orgObj.nom : "Manuel";
+                
                 const cleGroupement = `${nomOrg} : ${nomClasse}`;
                 if (!mapGroupements[cleGroupement]) mapGroupements[cleGroupement] = [];
                 mapGroupements[cleGroupement].push(s);
@@ -674,7 +672,7 @@
 
                 tableauSessions.forEach(s => {
                     const nomValide = s.nom || "Soutenance";
-                    const nomEchappe = nomValide.replace(/'/g, "\'").replace(/"/g, "&quot;");
+                    const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                     const badgeType = s.type === 'ecrit' 
                         ? `<span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
@@ -705,14 +703,14 @@
                         <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80 ${estArchive ? 'opacity-60 hover:opacity-95' : ''}">
                             <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                 <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                 ${!estArchive ? liensVotesHtml : '<a href="index.html?session_id='+s.id+'" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>'}
                                 ${!estArchive ? '<a href="index.html?session_id='+s.id+'" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>' : ''}
                                 <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                ${!estArchive ? '<button onclick="entrerEnModeModification(''+s.id+'')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>' : ''}
-                                ${estArchive ? '<button onclick="changerStatutSessionDirect(''+s.id+'', 'active')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>' : boutonActionStatut}
+                                ${!estArchive ? '<button onclick="entrerEnModeModification(\''+s.id+'\')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>' : ''}
+                                ${estArchive ? '<button onclick="changerStatutSessionDirect(\''+s.id+'\', \'active\')" title="Ré-activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">🔓</button>' : boutonActionStatut}
                                 <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
                                 <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
                             </div>
@@ -724,9 +722,109 @@
             }
         }
 
-        function extraireApprenantsPresents() {
-            const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
-            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
+        function entrerModifOrganisme(id, nom) {
+            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
+            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
+            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold py-2.5 px-3 rounded-xl cursor-pointer";
+        }
+
+        async function creerOuModifierOrganismeMaster() {
+            const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
+            if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
+            
+            if (idOrgEnCoursModif) {
+                await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
+                idOrgEnCoursModif = null; input.value = "";
+                document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
+            } else { 
+                await db.from('organismes').insert([{ nom: nom }]); input.value = "";
+            }
+            const { data: orgs } = await db.from('organismes').select('*').order('nom');
+            globalOrganismes = orgs || [];
+            renderDropdownsOrganismes();
+            afficherListeOrganismes(globalOrganismes);
+            await UIModal.alert("Organisme enregistré avec succès.", "success");
+        }
+
+        async function supprimerOrganismeMaster(id, nom) {
+            if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression Critique", "error"))) return;
+            await db.from('organismes').delete().eq('id', id);
+            const { data: orgs } = await db.from('organismes').select('*').order('nom');
+            globalOrganismes = orgs || [];
+            renderDropdownsOrganismes();
+            afficherListeOrganismes(globalOrganismes);
+            await UIModal.alert("Organisme supprimé.", "success");
+        }
+
+        function entrerModifFormation(id, nom) {
+            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
+            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
+        }
+
+        async function creerOuModifierFormationMaster() {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
+            if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
+            if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
+            
+            if (idFormEnCoursModif) {
+                await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
+                idFormEnCoursModif = null; input.value = "";
+            } else { 
+                await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]); input.value = "";
+            }
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Formation mise à jour.", "success");
+        }
+
+        async function supprimerFormationMaster(id, nom) {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
+            await db.from('formations').delete().eq('id', id);
+            const { data: forms } = await db.from('formations').select('*').order('nom');
+            globalFormations = forms || [];
+            afficherListeFormations(orgId);
+            await UIModal.alert("Classe supprimée.", "success");
+        }
+
+        function entrerModifApprenant(id, prenom, nom, email) {
+            idAppEnCoursModif = id;
+            document.getElementById('annuaire-prenom-app').value = prenom;
+            document.getElementById('annuaire-nom-app').value = nom;
+            document.getElementById('annuaire-email-app').value = email;
+            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
+        }
+
+        async function creerOuModifierApprenantMaster() {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
+            if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
+            if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
+            
+            if (idAppEnCoursModif) {
+                await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
+                idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
+                document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
+            } else {
+                await db.from('apprenants_master').insert([{ prenom: p.value, nom: n.value, email: e.value || null, formation_id: formId }]);
+                p.value = ""; n.value = ""; e.value = "";
+            }
+            await afficherListeApprenantsMaster(formId);
+            await UIModal.alert("Fiche apprenant enregistrée.", "success");
+        }
+
+        async function supprimerApprenantMaster(id) {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
+            await db.from('apprenants_master').delete().eq('id', id); await afficherListeApprenantsMaster(formId);
+            await UIModal.alert("Apprenant retiré.", "success");
+        }
+
+        async function changerStatutSessionDirect(idSession, nvStatut) {
+            await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); await chargerSessions();
+            await UIModal.alert("Statut mis à jour.", "success");
         }
 
         async function genererSessionComplete() {
@@ -742,7 +840,7 @@
 
             if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
             if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
-            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent dans le registre d'appel.", "warning", "Appel incomplet");
+            if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent.", "warning", "Appel incomplet");
 
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -756,8 +854,7 @@
             if (errSess) return await UIModal.alert("Échec de création : " + errSess.message, "error");
 
             if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('
-').map(c => c.trim()).filter(c => c !== "");
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
                     await db.from('criteres').insert(arrCriteres.map(ligne => {
                         const idx = ligne.indexOf(':'); let nom = ligne, description = "";
@@ -768,8 +865,7 @@
             }
 
             if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('
-').map(e => e.trim()).filter(e => e !== "");
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
                     await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
                 }
@@ -792,7 +888,7 @@
                 session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
             })));
 
-            await UIModal.alert("La session a été générée avec succès ! Les groupes ont été constitués.", "success", "Session Créée");
+            await UIModal.alert("La session a été générée avec succès !", "success", "Session Créée");
             
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
             document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
@@ -801,7 +897,7 @@
             document.getElementById('liste-evaluateurs-brute').value = "";
             
             document.getElementById('zone-configurateur').classList.add('hidden');
-            chargerSessions();
+            await chargerSessions();
         }
 
         async function entrerEnModeModification(idSession) {
@@ -825,10 +921,8 @@
                 document.getElementById('type-session-label').innerText = typeVal === 'oral' ? '🗣️ Évaluation Orale' : '✍️ Évaluation Écrite';
                 document.getElementById('date-session').value = session.date_session || '';
             }
-            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('
-');
-            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('
-');
+            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
+            if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
             
             if(grps && grps.length > 0) {
                 document.getElementById('nb-groupes').value = grps.length;
@@ -845,7 +939,7 @@
                         <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                         <div class="leading-tight">
                             <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
-                            <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d'email'}</span>
+                            <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                     </label>
                 `).join('');
@@ -871,7 +965,7 @@
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             const listApprenantsPresents = extraireApprenantsPresents();
 
-            if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires. Vérifiez le nom et l'appel.", "error");
+            if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
             if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
 
             const t = new Date();
@@ -887,8 +981,7 @@
             await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
 
             if (criteresRaw) {
-                const arrCriteres = criteresRaw.split('
-').map(c => c.trim()).filter(c => c !== "");
+                const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
                     await db.from('criteres').insert(arrCriteres.map(ligne => {
                         const idx = ligne.indexOf(':'); let nom = ligne, description = "";
@@ -899,8 +992,7 @@
             }
 
             if (evaluateursRaw) {
-                const arrEvaluateurs = evaluateursRaw.split('
-').map(e => e.trim()).filter(e => e !== "");
+                const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
                     await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
                 }
@@ -923,30 +1015,30 @@
             })));
 
             await UIModal.alert("Session reconfigurée avec succès !", "success");
-            annulerModeModification(); chargerSessions();
+            annulerModeModification(); await chargerSessions();
         }
 
         async function cloturerSession(idSession) {
-            if (!(await UIModal.confirm("Fermer définitivement cette session ? Elle sera déplacée dans les archives.", "Clôture", "warning"))) return;
-            await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); chargerSessions();
+            if (!(await UIModal.confirm("Fermer définitivement cette session ?", "Clôture", "warning"))) return;
+            await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession); await chargerSessions();
             await UIModal.alert("Session clôturée et archivée.", "success");
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
-            const nouveauNom = await UIModal.prompt(`Définir le nom de la copie :`, `${nomActuel} - Copie`); if (!nouveauNom) return;
+            const nouveauNom = await UIModal.prompt("Définir le nom de la copie :", `${nomActuel} - Copie`); if (!nouveauNom) return;
             const { data: src } = await db.from('sessions').select('type, date_session, formation_id').eq('id', idSessionSource).single();
             const { data: nv } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'a_venir', type: src.type, date_session: src.date_session, formation_id: src.formation_id }]).select().single();
 
             const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSessionSource);
             if (crits && crits.length > 0) { await db.from('criteres').insert(crits.map(c => ({ session_id: nv.id, nom: c.nom, description: c.description }))); }
             
-            chargerSessions();
-            await UIModal.alert("Session dupliquée (Placée dans 'À venir').", "success");
+            await chargerSessions();
+            await UIModal.alert("Session dupliquée.", "success");
         }
 
         async function supprimerSession(idSession) {
-            if (!(await UIModal.confirm("Suppression définitive de la session et de toutes ses notes ?", "Suppression Critique", "error"))) return;
-            await db.from('sessions').delete().eq('id', idSession); chargerSessions();
+            if (!(await UIModal.confirm("Suppression définitive de la session ?", "Suppression Critique", "error"))) return;
+            await db.from('sessions').delete().eq('id', idSession); await chargerSessions();
             await UIModal.alert("Session supprimée avec succès.", "success");
         }
 
