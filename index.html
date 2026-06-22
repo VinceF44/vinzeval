@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CSS SPÉCIAL POUR UN EXPORT PDF PROPRE (1 SEULE PAGE, COULEURS LISIBLES) */
+        /* CSS SPÉCIAL POUR UN EXPORT PDF PROPRE */
         @media print {
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; }
@@ -32,6 +32,17 @@
                 height: auto !important;
                 padding: 0 !important;
             }
+            
+            /* Ajustement de l'en-tête pour le PDF */
+            #modal-rapport-header {
+                background: transparent !important;
+                border-bottom: 2px solid #e5e7eb !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            #modal-rapport h3 { color: black !important; }
+            #rapport-sous-titre { color: #4b5563 !important; font-weight: bold !important; font-size: 14px !important; }
+
             /* Cacher les boutons de fermeture et d'action */
             .print-hide { display: none !important; }
             
@@ -133,19 +144,20 @@
     <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
-            <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl print-hide">
+            <!-- HEADER AVEC AFFICHAGE POUR LE PDF -->
+            <div id="modal-rapport-header" class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
                 <div>
                     <h3 class="text-lg font-black text-white tracking-tight flex items-center gap-2">📄 Bilan Individuel de Compétences</h3>
                     <p id="rapport-sous-titre" class="text-xs text-indigo-400 mt-1 font-mono uppercase"></p>
                 </div>
-                <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors">✕</button>
+                <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors print-hide">✕</button>
             </div>
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6">
                 <!-- Le contenu sera injecté dynamiquement -->
             </div>
             
-            <!-- FOOTER DYNAMIQUE GÉRÉ PAR JAVASCRIPT -->
+            <!-- FOOTER DYNAMIQUE -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide">
             </div>
         </div>
@@ -255,7 +267,6 @@
         let nomsEvaluateursInscrits = [];
         let membresParNomGroupe = {};
 
-        // Variables pour mémoriser les infos de la session pour l'export Bilan
         let globalOrganismeNom = "Organisme Non Défini";
         let globalFormationNom = "Formation Non Définie";
         let globalDateFormatee = "--/--/----";
@@ -420,7 +431,7 @@
                 const btn = document.getElementById('btn-refresh');
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
-                // MISE A JOUR DE LA LISTE DES APPRENANTS POUR LES EMAILS DYNAMIQUES
+                // RECHARGEMENT DES APPRENANTS POUR METTRE A JOUR LES EMAILS EN DIRECT
                 const { data: apps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
                 if(apps) apprenantsSession = apps;
 
@@ -520,21 +531,13 @@
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({
-                            texte: e.feedback,
-                            auteur: nomAffiche,
-                            id: e.id
-                        });
+                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche, id: e.id });
 
                         htmlBlockFeedback = `
                             <div class="group relative inline-block">
                                 <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1.5 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
                                     💬 Lire le feedback
                                 </button>
-                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
-                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
-                                    <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
-                                </div>
                             </div>
                         `;
                     } else {
@@ -545,16 +548,10 @@
                     if (!e.estProf) {
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
                         const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
-                        
                         if (moyProf !== null) {
                             const ecartAbsolu = Math.abs(e.note - moyProf);
-                            const estAline = ecartAbsolu < (moyProf * 0.20);
-                            const valeurImpact = estAline ? "+1 pt" : "-1 pt";
-                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/10" : "text-red-400 border-red-500/20 bg-red-500/10";
-                            
-                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md shrink-0 ${couleurImpact}">${valeurImpact}</span>`;
-                        } else {
-                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
+                            const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
+                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
                         }
                     }
 
@@ -688,7 +685,9 @@
                 const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 
-                let emailIndicator = item.appObj.email ? `<span title="${item.appObj.email}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
+                // VERIFICATION STRICTE DU CHAMP EMAIL
+                const emailValid = item.appObj.email && item.appObj.email.trim() !== "";
+                let emailIndicator = emailValid ? `<span title="${item.appObj.email}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
 
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono border-b border-gray-800/30">
@@ -805,10 +804,11 @@
                 </div>
             `;
 
-            const mailDestinataire = dataApp.appObj.email || "";
+            // VERIFICATION STRICTE DU CHAMP EMAIL
+            const mailDestinataire = (dataApp.appObj.email || "").trim();
             let btnEmailHtml = "";
             
-            if (mailDestinataire) {
+            if (mailDestinataire !== "") {
                 btnEmailHtml = `<button id="btn-rapport-envoyer-email" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition cursor-pointer active:scale-95 shadow-md print-hide">📧 Envoyer à l'apprenant(e)</button>`;
             } else {
                 btnEmailHtml = `<button disabled class="bg-gray-800 text-gray-500 text-xs font-bold py-2.5 px-5 rounded-xl border border-gray-700 cursor-not-allowed print-hide">❌ Pas d'adresse e-mail</button>`;
