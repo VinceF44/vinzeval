@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DE LA CONSOLE -->
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">
@@ -25,28 +26,31 @@
             </div>
         </div>
 
-        <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-5 shadow-xl transition-all">
+        <!-- INTERFACE ERGONOMIQUE DE L'ANNUAIRE REPAENSÉE EN 2 NIVEAUX -->
+        <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Moduler la Base de Données Master (Organismes, Classes, Apprenants)</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">Ajoutez, modifiez ou supprimez vos données globales. Les listes d'appel se synchronisent en temps réel.</p>
+                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master Référentielle</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants. Les modifications se répercutent instantanément sur les feuilles d'appel.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
+            <!-- NIVEAU 1 : LES STRUCTURES (ORGANISMES & CLASSES SIDE-BY-SIDE) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1. GESTION ORGANISME -->
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Organismes</div>
+                        <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
                         <div class="flex gap-2">
                             <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                             <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
                         </div>
                     </div>
-                    <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-48 space-y-1.5 border-t border-slate-800/60 pt-3">
-                        </div>
+                    <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
+                <!-- 2. GESTION FORMATION / GROUPE -->
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Formations / Classes</div>
+                        <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         <select id="annuaire-select-org-pour-formation" onchange="annuaireChangementOrgPourForm(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                             <option value="">-- Sélectionner l'organisme --</option>
                         </select>
@@ -55,38 +59,43 @@
                             <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
                         </div>
                     </div>
-                    <div id="annuaire-liste-formations" class="mt-4 flex-1 overflow-y-auto max-h-48 space-y-1.5 border-t border-slate-800/60 pt-3">
-                        <p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>
+                    <div id="annuaire-liste-formations" class="mt-4 flex-1 overflow-y-auto max-h-36 space-y-1.5 border-t border-slate-800/60 pt-3">
+                        <p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir ses formations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NIVEAU 2 : LES APPRENANTS (PLEIN ÉCRAN POUR ABSORBER LA DENSITÉ DE DATA) -->
+            <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
+                    <div class="text-xs font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
+                    <!-- Filtre de ciblage rapide -->
+                    <div class="grid grid-cols-2 gap-2 w-full sm:w-72 shrink-0">
+                        <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2 text-[11px] border border-slate-800 text-slate-100 focus:outline-none">
+                            <option value="">-- Organisme --</option>
+                        </select>
+                        <select id="annuaire-select-form-pour-app" onchange="annuaireChangementFormPourApp(this.value)" class="w-full bg-[#030712] rounded-xl p-2 text-[11px] border border-slate-800 text-slate-100 focus:outline-none">
+                            <option value="">-- Classe --</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
-                    <div class="space-y-3">
-                        <div class="text-xs font-bold uppercase text-slate-400">👤 3. Apprenants (Annuaire Général)</div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                                <option value="">-- Organisme --</option>
-                            </select>
-                            <select id="annuaire-select-form-pour-app" onchange="annuaireChangementFormPourApp(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                                <option value="">-- Classe --</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                            <input type="text" id="annuaire-nom-app" placeholder="Nom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                            <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer</button>
-                        </div>
-                    </div>
-                    <div id="annuaire-liste-apprenants" class="mt-4 flex-1 overflow-y-auto max-h-40 space-y-1.5 border-t border-slate-800/60 pt-3">
-                        <p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>
-                    </div>
+                <!-- Formulaire d'insertion horizontal, très propre -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
+                    <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                    <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] sm:col-span-1 md:col-span-1">
+                    <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer sm:col-span-3 md:col-span-1">Enregistrer l'apprenant</button>
+                </div>
+
+                <!-- LE CHEF D'ŒUVRE UX : LA GRILLE RESPONSIVE MULTI-COLONNES POUR LES ELEVES -->
+                <div id="annuaire-liste-apprenants" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
+                    <p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher et moduler les fiches apprenants.</p>
                 </div>
             </div>
         </div>
 
+        <!-- ZONE DU CONFIGURATEUR PRINCIPAL DE SESSIONS -->
         <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
             <h2 id="titre-formulaire" class="text-xs font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
                 <span>✨</span> Configurer et Générer une Session
@@ -184,7 +193,6 @@
         let db;
         let idSessionEnCoursModification = null;
 
-        // INDEXATION DES ETATS DE MODIFICATION DE L'ANNUAIRE
         let idOrgEnCoursModif = null;
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
@@ -215,7 +223,7 @@
             const selectForm = document.getElementById('select-formation');
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             selectForm.innerHTML = `<option value="">-- Choisir --</option>`;
-            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un groupe pour faire l'appel.</p>`;
+            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
@@ -230,7 +238,7 @@
             const selectForm = document.getElementById('annuaire-select-form-pour-app');
             const conteneurApp = document.getElementById('annuaire-liste-apprenants');
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
-            conteneurApp.innerHTML = `<p class="text-slate-600 italic">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
@@ -298,25 +306,27 @@
             } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucune formation pour cet organisme.</p>`; }
         }
 
+        // AMÉLIORATION UX DE LA GRILLE DES APPRENANTS
         async function afficherListeApprenantsMaster(formId) {
             const conteneur = document.getElementById('annuaire-liste-apprenants');
-            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`; return; }
+            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`; return; }
             
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
             if(data && data.length > 0) {
+                // Les élèves se déploient en grille aérée
                 conteneur.innerHTML = data.map(a => `
-                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                    <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-xs hover:border-slate-800 transition-all shadow-sm">
                         <div class="truncate pr-2">
-                            <span class="font-medium text-slate-300 block">${a.prenom} ${a.nom}</span>
-                            <span class="text-[10px] text-slate-500 block truncate">${a.email || 'Pas d\'email'}</span>
+                            <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
+                            <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email renseigné'}</span>
                         </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                        <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" title="Modifier" class="text-amber-400 hover:text-white p-1 cursor-pointer text-xs">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" title="Supprimer" class="text-red-500 hover:text-white p-1 cursor-pointer text-xs">🗑️</button>
                         </div>
                     </div>
                 `).join('');
-            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucun apprenant enregistré dans cette classe.</p>`; }
+            } else { conteneur.innerHTML = `<p class="text-slate-500 italic text-[11px] col-span-full py-4 text-center">Aucun apprenant enregistré dans cette classe pour le moment.</p>`; }
         }
 
         // ==========================================
@@ -359,7 +369,7 @@
             else {
                 await chargerOrganismes();
                 document.getElementById('annuaire-liste-formations').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>`;
-                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
             }
         }
 
@@ -411,7 +421,7 @@
                 await afficherListeFormations(orgId);
                 const orgPrincipal = document.getElementById('select-organisme').value;
                 if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
-                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px] col-span-full py-4 text-center">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
             }
         }
 
@@ -425,8 +435,8 @@
             document.getElementById('annuaire-nom-app').value = nom;
             document.getElementById('annuaire-email-app').value = email;
             const btn = document.getElementById('btn-annuaire-app');
-            btn.innerText = "💾 Sauver";
-            btn.className = "bg-emerald-600 text-white text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer transition-all";
+            btn.innerText = "💾 Sauver la fiche";
+            btn.className = "w-full bg-emerald-600 text-white text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all sm:col-span-3 md:col-span-1";
         }
 
         async function creerOuModifierApprenantMaster() {
@@ -447,8 +457,8 @@
                 if (error) alert(error.message);
                 else {
                     idAppEnCoursModif = null; inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
-                    const btn = document.getElementById('btn-annuaire-app'); btn.innerText = "Enregistrer";
-                    btn.className = "bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-xl transition hover:bg-[#e08b00] cursor-pointer";
+                    const btn = document.getElementById('btn-annuaire-app'); btn.innerText = "Enregistrer l'apprenant";
+                    btn.className = "w-full bg-[#fe9a00] text-slate-950 text-xs font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer sm:col-span-3 md:col-span-1";
                     await afficherListeApprenantsMaster(formId);
                     
                     const formPrincipal = document.getElementById('select-formation').value;
@@ -551,7 +561,7 @@
             const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
             const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-            const { data: apps } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
+            const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
 
             if(session) {
                 document.getElementById('nouveau-nom-session').value = session.nom;
