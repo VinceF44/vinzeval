@@ -420,6 +420,10 @@
                 const btn = document.getElementById('btn-refresh');
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
+                // MISE A JOUR DE LA LISTE DES APPRENANTS POUR LES EMAILS DYNAMIQUES
+                const { data: apps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
+                if(apps) apprenantsSession = apps;
+
                 const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
                 if (error) throw error;
 
@@ -516,13 +520,21 @@
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche, id: e.id });
+                        listeFeedbacksCartesCourantes.push({
+                            texte: e.feedback,
+                            auteur: nomAffiche,
+                            id: e.id
+                        });
 
                         htmlBlockFeedback = `
                             <div class="group relative inline-block">
                                 <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1.5 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
                                     💬 Lire le feedback
                                 </button>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
+                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
+                                    <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
+                                </div>
                             </div>
                         `;
                     } else {
@@ -533,10 +545,16 @@
                     if (!e.estProf) {
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
                         const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
+                        
                         if (moyProf !== null) {
                             const ecartAbsolu = Math.abs(e.note - moyProf);
-                            const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
-                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
+                            const estAline = ecartAbsolu < (moyProf * 0.20);
+                            const valeurImpact = estAline ? "+1 pt" : "-1 pt";
+                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/10" : "text-red-400 border-red-500/20 bg-red-500/10";
+                            
+                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md shrink-0 ${couleurImpact}">${valeurImpact}</span>`;
+                        } else {
+                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
                         }
                     }
 
