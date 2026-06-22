@@ -11,6 +11,7 @@
 
     <div class="w-full max-w-5xl bg-[#101828] p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
+        <!-- EN-TÊTE STICKY POUR FORMATEUR AVEC CHRONOMÈTRE XL -->
         <div class="sticky top-0 bg-[#101828] z-30 border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
             <div>
                 <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
@@ -19,11 +20,12 @@
                 <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
             </div>
             
-            <div class="flex items-center gap-3 bg-[#030712] px-3 py-2 rounded-xl border border-slate-800 font-mono shadow-inner text-sm select-none shrink-0 self-end sm:self-auto">
-                <span id="timer-display" class="text-white font-bold text-base tracking-wider">00:00</span>
-                <div class="flex items-center gap-1 border-l border-slate-800 pl-2">
-                    <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-xs transition-colors cursor-pointer">▶️</button>
-                    <button onclick="resetChrono()" title="Réinitialiser" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-xs transition-colors cursor-pointer">🔄</button>
+            <!-- LE CADRAN CHRONOMÈTRE SURDIMENSIONNÉ STYLE PURPLE ACCENT -->
+            <div class="flex items-center gap-4 bg-[#030712] px-4 py-2.5 rounded-2xl border border-slate-800 shadow-inner select-none shrink-0 self-end sm:self-auto ring-1 ring-[#030712]">
+                <span id="timer-display" class="text-white font-black text-2xl tracking-widest font-mono tabular-nums">00:00</span>
+                <div class="flex items-center gap-2 border-l border-slate-800 pl-3">
+                    <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-10 w-10 flex items-center justify-center rounded-xl bg-[#101828] border border-slate-700 hover:bg-slate-800 hover:border-slate-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">▶️</button>
+                    <button onclick="resetChrono()" title="Réinitialiser" class="h-10 w-10 flex items-center justify-center rounded-xl bg-[#101828] border border-slate-700 hover:bg-slate-800 hover:border-slate-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">🔄</button>
                 </div>
             </div>
         </div>
@@ -44,7 +46,8 @@
         <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40">💡 Notez les équipes à tour de rôle en changeant de cible. Vos curseurs et blocs-notes sont sauvegardés au fur et à mesure. Cliquez sur le gros bouton en bas à la fin pour tout valider d'un coup.</p>
 
         <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60">
-            </div>
+            <!-- Chargé dynamiquement -->
+        </div>
 
         <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
             <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Recommandations Jury :</label>
