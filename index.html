@@ -351,7 +351,7 @@
             filtrerEtAfficherTableau();
         }
 
-        // CORRECTIF DE FINITION : Rendu des cartes avec infobulles graphiques professionnelles au format Tailwind
+        // MODIFICATION VALIDÉE : Repositionnement de l'impact en bas à droite sous forme de pied de page (Total)
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -389,9 +389,8 @@
                         if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                         else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
-                        const texteDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : "Aucune description supplémentaire définie pour ce critère.";
+                        const texteDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : crit.nom;
 
-                        // MODIFICATION APPORTÉE : Wrapper 'group relative' + conteneur absolu caché s'activant au mouseover
                         contenuCriteres += `
                             <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
                                 <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
@@ -433,6 +432,7 @@
                 
                 let noteColor = e.note >= 10 ? 'text-white' : 'text-red-400';
 
+                // ARCHITECTURE EN PIED DE PAGE : Génération de l'impact sous forme de ligne "Total"
                 let htmlImpactBulle = "";
                 if (!e.estProf) {
                     const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
@@ -442,12 +442,22 @@
                         const ecartAbsolu = Math.abs(e.note - moyProf);
                         const estAline = ecartAbsolu < (moyProf * 0.20);
                         const valeurImpact = estAline ? "+1" : "-1";
-                        const couleurImpact = estAline ? "text-green-400" : "text-red-400";
+                        const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/5" : "text-red-400 border-red-500/20 bg-red-500/5";
                         const labelImpact = estAutoEval ? (estAline ? "Aligné" : "Décalé") : (estAline ? "Objectif" : "Écart");
                         
-                        htmlImpactBulle = `<div class="text-[10px] font-bold ${couleurImpact} mt-1.5 font-sans tracking-tight">${valeurImpact} pt (${labelImpact})</div>`;
+                        htmlImpactBulle = `
+                            <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
+                                <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
+                                <span class="text-[11px] font-bold px-2 py-0.5 border rounded-md ${couleurImpact}">${valeurImpact} pt (${labelImpact})</span>
+                            </div>
+                        `;
                     } else {
-                        htmlImpactBulle = `<div class="text-[9px] text-gray-500 mt-1.5 font-sans italic">Attente Jury</div>`;
+                        htmlImpactBulle = `
+                            <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
+                                <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
+                                <span class="text-[10px] text-gray-500 italic">Attente Jury</span>
+                            </div>
+                        `;
                     }
                 }
 
@@ -463,12 +473,12 @@
                             <div class="text-right shrink-0 pl-2">
                                 <div class="text-xl font-black font-mono tracking-tighter ${noteColor}">${e.note.toFixed(2)}</div>
                                 <div class="text-[9px] text-gray-500 font-mono font-bold -mt-1">/ 20</div>
-                                ${htmlImpactBulle}
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col space-y-0.5 mt-1">
                             ${contenuCriteres}
                         </div>
+                        ${htmlImpactBulle}
                     </div>
                 `;
             });
