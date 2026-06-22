@@ -27,8 +27,8 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
-                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">👑 Équipe à analyser & Modération</h2>
-                    <p class="text-xs text-gray-400 leading-relaxed">Consultez les notes et feedbacks reçus par cette équipe. Vous pouvez modérer (effacer) un feedback non-objectif avant l'édition des rapports.</p>
+                    <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider">👑 Équipe à analyser & Feedbacks</h2>
+                    <p class="text-xs text-gray-400 leading-relaxed">Consultez les notes et feedbacks reçus par cette équipe. Vous pouvez supprimer un feedback non-objectif avant l'édition des rapports.</p>
                 </div>
                 <div class="w-full md:w-96 shrink-0">
                     <div class="custom-dropdown-container relative w-full text-left">
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- GRANDE MODALE DE LECTURE FEEDBACK -->
+    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -121,7 +121,10 @@
                 <button onclick="fermerModalFeedback()" class="text-gray-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
             </div>
             <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-gray-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5"></div>
-            <div class="p-4 border-t border-gray-800 flex justify-end">
+            <div class="p-4 border-t border-gray-800 flex justify-between items-center">
+                <button id="btn-modal-supprimer-feedback" class="text-xs text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold flex items-center gap-1.5">
+                    🗑️ Supprimer le feedback
+                </button>
                 <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2 px-4 rounded-xl transition cursor-pointer">
                     Fermer la lecture
                 </button>
@@ -175,7 +178,6 @@
             if(labelSpan) labelSpan.innerText = label;
             toggleDropdown(dropdownId);
             
-            // MÉMOIRE LOCALE DU GROUPE SÉLECTIONNÉ !
             if (valeurChangee && dropdownId === 'select-groupe-formateur') {
                 localStorage.setItem('dernier_groupe_selectionne_' + idSessionDashboard, value);
                 mettreAjourDetailsEvaluations(value);
@@ -261,7 +263,6 @@
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
 
-                    // RESTAURATION DU GROUPE VIA LE LOCALSTORAGE (La fameuse mémoire !)
                     const dernierGroupeNom = localStorage.getItem('dernier_groupe_selectionne_' + idSessionDashboard);
                     let groupeActif = groupesSession[0]; 
 
@@ -324,14 +325,15 @@
             } catch (err) { alert("🚨 Erreur chargement : " + err.message); }
         }
 
-        async function modererFeedback(idEvaluation) {
+        async function modererFeedback(idEvaluation, depuisModal = false) {
             try {
                 if(confirm("🗑️ Supprimer définitivement ce commentaire ? (La note chiffrée sera conservée).")) {
                     const { error } = await db.from('evaluations').update({ feedback: null }).eq('id', idEvaluation);
                     if(error) throw error;
+                    if(depuisModal) fermerModalFeedback();
                     await chargerDonneesDashboard();
                 }
-            } catch(err) { alert("🚨 Erreur modération : " + err.message); }
+            } catch(err) { alert("🚨 Erreur suppression : " + err.message); }
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -402,15 +404,11 @@
                         htmlBlockFeedback = `
                             <div class="mt-2.5 flex items-center justify-between gap-2 relative border-t border-gray-800/50 pt-2">
                                 <div class="group relative inline-block">
-                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}')" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
+                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}', ${e.id})" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
                                         💬 Lire le feedback
                                     </button>
-                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
-                                        <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Feedback</div>
-                                        <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
-                                    </div>
                                 </div>
-                                <button onclick="modererFeedback(${e.id})" class="text-[10px] text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold">🗑️ Modérer</button>
+                                <button onclick="modererFeedback(${e.id})" class="text-[10px] text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold">🗑️ Supprimer</button>
                             </div>
                         `;
                     } else {
@@ -531,8 +529,6 @@
                 });
 
                 filtrerEtAfficherTableau();
-                const grp = document.getElementById('select-groupe-formateur').value;
-                if(grp) mettreAjourDetailsEvaluations(grp);
             } catch (err) { alert("🚨 Erreur calculs : " + err.message); }
         }
 
@@ -670,10 +666,18 @@
             document.getElementById('modal-rapport').classList.remove('hidden');
         }
 
-        function ouvrirModalFeedback(index, auteur) {
+        // ==========================================
+        // GESTION POPUP FEEDBACK ET BOUTON MODÉRER (Fix)
+        // ==========================================
+        function ouvrirModalFeedback(index, auteur, evalId) {
             const texteComplet = listeFeedbacksCartesCourantes[index] || "Aucun texte enregistré.";
             document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${auteur}`;
             document.getElementById('modal-feedback-corps').innerHTML = texteComplet;
+            
+            // On attribue dynamiquement l'action de suppression au bouton rouge de la modale
+            const btnSupprimer = document.getElementById('btn-modal-supprimer-feedback');
+            btnSupprimer.onclick = function() { modererFeedback(evalId, true); };
+
             document.getElementById('modal-feedback').classList.remove('hidden');
         }
 
