@@ -95,10 +95,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div class="flex flex-col justify-between space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-1">
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
-                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
+                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type d'évaluation :</label>
@@ -107,25 +107,15 @@
                                 <option value="ecrit">✍️ Évaluation Écrite</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Date de la session :</label>
                             <input type="date" id="date-session" onclick="this.showPicker()" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Statut de départ :</label>
-                            <select id="statut-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
-                                <option value="active">🟢 Lancer immédiatement (En cours)</option>
-                                <option value="a_venir">📅 Programmer pour plus tard (À venir)</option>
-                            </select>
                         </div>
                     </div>
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Format : Titre Court : Description Longue) :</label>
-                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[100px] focus:border-[#3b82f6] transition-all"></textarea>
+                        <textarea id="criteres-session" rows="4" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
                     </div>
                 </div>
 
@@ -202,7 +192,7 @@
                 <div class="flex-1 pt-1">
                     <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
                     <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
-                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all" />
+                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#2563eb] transition-all" />
                 </div>
             </div>
             <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
@@ -267,14 +257,6 @@
             prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
-        async function initAdmin() {
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            document.getElementById('date-session').valueAsDate = new Date();
-            await chargerOrganismes();
-            chargerSessions();
-        }
-
-        // DEUX FONCTIONS COMPAGNONNES DE PILOTAGE DE MASQUAGE DES BLOCS
         function basculerZoneAnnuaire() { document.getElementById('zone-annuaire-master').classList.toggle('hidden'); }
         function basculerZoneConfigurateur() { document.getElementById('zone-configurateur').classList.toggle('hidden'); }
 
@@ -484,16 +466,45 @@
             await UIModal.alert("Apprenant supprimé.", "success");
         }
 
+        // MODIFICATION UX REPRISE : ANALYSE ET ALIGNEMENT AUTOMATIQUE DES STATUTS PAR LA DATE
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*, formations(nom)').order('date_session', { ascending: true });
             if (error) return;
 
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+
             const arrAvenir = []; const arrActives = []; const arrTerminees = [];
+            const backgroundUpdates = [];
+
             sessions.forEach(s => {
+                let nvStatut = s.statut;
+                if (s.date_session) {
+                    if (s.date_session < todayStr) {
+                        nvStatut = 'terminee'; // Hier et avant -> Archive automatique
+                    } else if (s.date_session > todayStr) {
+                        nvStatut = 'a_venir'; // Demain et après -> À venir automatique
+                    } else if (s.date_session === todayStr) {
+                        if (s.statut === 'a_venir') {
+                            nvStatut = 'active'; // Jour J -> Devient active automatiquement si en attente
+                        }
+                    }
+                }
+
+                // Si le statut calculé diverge du statut réel en BDD, on met à jour en arrière-plan
+                if (s.statut !== nvStatut) {
+                    backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
+                    s.statut = nvStatut;
+                }
+
                 if (s.statut === 'terminee') arrTerminees.push(s);
                 else if (s.statut === 'a_venir') arrAvenir.push(s);
                 else arrActives.push(s);
             });
+
+            if (backgroundUpdates.length > 0) {
+                await Promise.all(backgroundUpdates);
+            }
 
             regrouperEtAfficherSessionsParGroupe(arrAvenir, 'liste-sessions-avenir', false);
             regrouperEtAfficherSessionsParGroupe(arrActives, 'liste-sessions-actives', false);
@@ -569,7 +580,7 @@
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                    <div class="text-[11px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
@@ -618,7 +629,6 @@
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
             const typeSession = document.getElementById('type-session').value;
             const dateSession = document.getElementById('date-session').value;
-            const statutSession = document.getElementById('statut-session').value;
             const formationId = document.getElementById('select-formation').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
@@ -627,7 +637,15 @@
             const listApprenantsPresents = extraireApprenantsPresents();
 
             if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
+            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
             if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent dans le registre d'appel.", "warning", "Appel incomplet");
+
+            // MODIFICATION APPORTÉE : Calcul automatique du statut basé sur la date à l'insertion
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+            let statutSession = 'active';
+            if (dateSession < todayStr) statutSession = 'terminee';
+            else if (dateSession > todayStr) statutSession = 'a_venir';
 
             const { data: session, error: errSess } = await db.from('sessions').insert([{ 
                 nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
@@ -675,7 +693,6 @@
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('liste-evaluateurs-brute').value = "";
             
-            // On replie automatiquement la zone pour ne pas encombrer l'écran
             document.getElementById('zone-configurateur').classList.add('hidden');
             chargerSessions();
         }
@@ -684,7 +701,6 @@
             idSessionEnCoursModification = idSession;
             const zoneConfigurateur = document.getElementById('zone-configurateur');
             
-            // MODIFICATION UX : On force l'ouverture du tiroir de configuration s'il était fermé
             zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
             zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
             
@@ -700,7 +716,6 @@
                 document.getElementById('nouveau-nom-session').value = session.nom;
                 document.getElementById('type-session').value = session.type || 'oral';
                 document.getElementById('date-session').value = session.date_session || '';
-                if(session.statut !== 'terminee') document.getElementById('statut-session').value = session.statut;
             }
             if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
             if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
@@ -713,7 +728,7 @@
             if(apps) {
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
                 document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                    <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
+                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
                         <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                         <div class="leading-tight">
                             <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
@@ -750,7 +765,6 @@
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
             const typeSession = document.getElementById('type-session').value;
             const dateSession = document.getElementById('date-session').value;
-            const statutSession = document.getElementById('statut-session').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
@@ -758,6 +772,14 @@
             const listApprenantsPresents = extraireApprenantsPresents();
 
             if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires. Vérifiez le nom et l'appel.", "error");
+            if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
+
+            // MODIFICATION APPORTÉE : Calcul automatique du statut basé sur la date lors de l'enregistrement d'une modification
+            const t = new Date();
+            const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+            let statutSession = 'active';
+            if (dateSession < todayStr) statutSession = 'terminee';
+            else if (dateSession > todayStr) statutSession = 'a_venir';
 
             await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
             await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
