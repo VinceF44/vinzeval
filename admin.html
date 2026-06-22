@@ -9,7 +9,7 @@
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
@@ -28,14 +28,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 <div class="flex flex-col justify-between space-y-4">
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
-                        <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1 - Master" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Nom de la session :</label>
+                            <input type="text" id="nouveau-nom-session" placeholder="Ex: Soutenance Bloc 1" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type d'évaluation :</label>
+                            <select id="type-session" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all cursor-pointer">
+                                <option value="oral">🗣️ Évaluation Orale</option>
+                                <option value="ecrit">✍️ Évaluation Écrite</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div class="flex-1 flex flex-col">
                         <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Critères d'évaluation (Format : Titre Court : Description Longue) :</label>
-                        <textarea id="criteres-session" rows="6" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle&#10;Support : Visuels des slides et clarté des schémas" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
+                        <textarea id="criteres-session" rows="6" placeholder="Ex: Qualité du code : Le plan d'action tient compte des enjeux...&#10;Aisance orale : Clarté de l'élocution et posture corporelle" class="w-full flex-1 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-sans min-h-[140px] focus:border-[#3b82f6] transition-all"></textarea>
                         <p class="text-[10px] text-slate-500 mt-1.5 pl-1">Utilisez les ":" pour séparer le titre court de sa description longue.</p>
                     </div>
                 </div>
@@ -48,21 +57,36 @@
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Préfixe des Groupes :</label>
-                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-[#3b82f6] transition-all">
+                            <input type="text" id="prefixe-groupes" value="Groupe " class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all">
                         </div>
                     </div>
                     
                     <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Organisme :</label>
+                                <select id="select-organisme" onchange="chargerFormationsFiltrees(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    <option value="">-- Organisme --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Formation / Classe :</label>
+                                <select id="select-formation" onchange="chargerApprenantsFiltres(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    <option value="">-- Choisir --</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des apprenants (Un prénom par ligne) :</label>
-                            <textarea id="liste-apprenants-brute" rows="4" placeholder="Thomas&#10;Julie&#10;Lucas" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[100px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ils seront automatiquement répartis équitablement.</p>
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📢 Faire l'appel (Cocher les présents) :</label>
+                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-xs min-h-[110px] max-h-[140px] overflow-y-auto space-y-2">
+                                <p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>
+                            </div>
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[80px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
-                            <p class="text-[10px] text-slate-500 mt-1 pl-1">Ces profils disposeront du formulaire d'évaluation dédié.</p>
+                            <textarea id="liste-evaluateurs-brute" rows="3" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none font-mono text-xs min-h-[70px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
                         </div>
                     </div>
                 </div>
@@ -95,98 +119,132 @@
 
         async function initAdmin() {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            await chargerOrganismes();
             chargerSessions();
+        }
+
+        async function chargerOrganismes() {
+            const { data } = await db.from('organismes').select('*').order('nom');
+            if (data) {
+                document.getElementById('select-organisme').innerHTML = `<option value="">-- Organisme --</option>` + 
+                    data.map(o => `<option value="${o.id}">${o.nom}</option>`).join('');
+            }
+        }
+
+        async function chargerFormationsFiltrees(organismeId) {
+            const selectForm = document.getElementById('select-formation');
+            const conteneurAppel = document.getElementById('liste-appel-checkbox');
+            selectForm.innerHTML = `<option value="">-- Choisir --</option>`;
+            conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un groupe pour faire l'appel.</p>`;
+            
+            if (!organismeId) return;
+            const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
+            if (data) {
+                selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
+            }
+        }
+
+        // MODIFICATION : Récupération et affichage de l'e-mail dans l'interface d'appel
+        async function chargerApprenantsFiltres(formationId) {
+            const conteneurAppel = document.getElementById('liste-appel-checkbox');
+            if (!formationId) {
+                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un groupe pour faire l'appel.</p>`;
+                return;
+            }
+            
+            const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
+            
+            if (data && data.length > 0) {
+                conteneurAppel.innerHTML = data.map(app => `
+                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none">
+                        <input type="checkbox" name="apprenant-present" data-name="${app.prenom} ${app.nom}" data-email="${app.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-800 rounded text-blue-600 accent-blue-500 focus:outline-none">
+                        <div>
+                            <span class="font-medium">${app.prenom} ${app.nom}</span>
+                            ${app.email ? `<span class="text-[10px] text-slate-500 block -mt-0.5">${app.email}</span>` : `<span class="text-[10px] text-red-500/50 block -mt-0.5">Pas d'adresse email</span>`}
+                        </div>
+                    </label>
+                `).join('');
+            } else {
+                conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré dans cette classe.</p>`;
+            }
         }
 
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*').order('created_at', { ascending: false });
-            
-            if (error) {
-                alert("❌ Erreur de connexion Supabase : " + error.message);
-                return;
-            }
+            if (error) return alert("❌ Erreur Supabase : " + error.message);
 
             const conteneurActives = document.getElementById('liste-sessions-actives');
             const conteneurTerminees = document.getElementById('liste-sessions-terminees');
-            
-            conteneurActives.innerHTML = "";
-            conteneurTerminees.innerHTML = "";
+            conteneurActives.innerHTML = ""; conteneurTerminees.innerHTML = "";
 
             if (!sessions || sessions.length === 0) {
                 conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
                 return;
             }
 
-            let countActives = 0, countTerminees = 0;
-
             sessions.forEach(s => {
                 const nomValide = s.nom || "Session sans nom";
                 const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                const badgeType = s.type === 'ecrit' 
+                    ? `<span class="bg-indigo-950 text-indigo-400 text-[9px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
+                    : `<span class="bg-amber-950 text-amber-400 text-[9px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
 
                 if (s.statut !== 'terminee') {
-                    countActives++;
                     conteneurActives.innerHTML += `
                         <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                             <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                <div class="font-bold text-slate-100 text-base tracking-tight truncate">${nomValide}</div>
+                                <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center">${nomValide} ${badgeType}</div>
                                 <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" title="Évaluation Apprenant(e)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" title="Évaluation Formateur(trice)" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
-                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
+                                <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
+                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                 <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
-                                <button onclick="entrerEnModeModification('${s.id}')" title="Modifier toute la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">✏️</button>
-                                <button onclick="cloturerSession('${s.id}')" title="Clôturer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 hover:text-white border-red-900/30 transition-all text-xs cursor-pointer">🔒</button>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" title="Supprimer définitivement" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white transition-all text-xs cursor-pointer">🗑️</button>
+                                <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-xs cursor-pointer">✏️</button>
+                                <button onclick="cloturerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-xs cursor-pointer">🔒</button>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-xs cursor-pointer">👥</button>
+                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
                     `;
                 } else {
-                    countTerminees++;
                     conteneurTerminees.innerHTML += `
                         <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-50 transition-all hover:opacity-70">
                             <div>
-                                <div class="font-medium text-slate-400 text-base">🗃️ ${nomValide}</div>
+                                <div class="font-medium text-slate-400 text-base flex items-center">🗃️ ${nomValide} ${badgeType}</div>
                                 <span class="bg-[#030712] text-slate-500 text-[9px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
                             </div>
                             <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
-                                <a href="index.html?session_id=${s.id}" target="_blank" title="Consulter le Dashboard Archivé" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
-                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" title="Dupliquer depuis l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
-                                <button onclick="supprimerSession('${s.id}')" title="Supprimer l'archive" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 hover:text-white transition-all text-xs cursor-pointer">🗑️</button>
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-sm">👁️</a>
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-xs cursor-pointer">👥</button>
+                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-xs cursor-pointer">🗑️</button>
                             </div>
                         </div>
                     `;
                 }
             });
-
-            if (countActives === 0) conteneurActives.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Aucune session active en cours.</p>`;
-            if (countTerminees === 0) conteneurTerminees.innerHTML = `<p class="text-xs text-slate-500 italic p-2">L'historique des archives est vide.</p>`;
         }
 
         async function entrerEnModeModification(idSession) {
             idSessionEnCoursModification = idSession;
-            
             const zoneConfigurateur = document.getElementById('zone-configurateur');
             zoneConfigurateur.classList.remove('border-slate-800');
             zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
-            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition active</span> — Modification profonde de la session`;
+            document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification profonde de la session`;
 
-            const { data: session } = await db.from('sessions').select('nom').eq('id', idSession).single();
-            // AJUSTEMENT MODIFICATION : Extraction simultanée du nom et de la description
+            const { data: session } = await db.from('sessions').select('nom, type').eq('id', idSession).single();
             const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
             const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-            const { data: apps } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
+            const { data: apps } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
 
-            if(session) document.getElementById('nouveau-nom-session').value = session.nom;
-            
-            // AJUSTEMENT RENDU MODIFICATION : Restitution propre sous format "Titre : Description"
-            if(crits) {
-                document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
+            if(session) {
+                document.getElementById('nouveau-nom-session').value = session.nom;
+                document.getElementById('type-session').value = session.type || 'oral';
             }
-            
+            if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
             if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
             
             if(grps && grps.length > 0) {
@@ -195,25 +253,36 @@
                 const match = premierNom.match(/^(.*?)(\d+)$/);
                 if (match) document.getElementById('prefixe-groupes').value = match[1];
             }
-            if(apps) document.getElementById('liste-apprenants-brute').value = apps.map(a => a.prenom).join('\n');
+            
+            if(apps) {
+                document.getElementById('select-organisme').value = "";
+                document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
+                document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
+                    <label class="flex items-center gap-2.5 text-slate-300">
+                        <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 rounded text-blue-600 accent-blue-500">
+                        <div>
+                            <span>${a.prenom}</span>
+                            <span class="text-[10px] text-slate-500 block">${a.email || 'Pas d\'email'}</span>
+                        </div>
+                    </label>
+                `).join('');
+            }
 
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-emerald-600 border border-emerald-500/20 hover:bg-emerald-700 active:scale-[0.99]">
                         💾 Enregistrer les modifications
                     </button>
-                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer text-slate-400 bg-[#030712] border border-slate-800 hover:text-slate-200 hover:bg-slate-900">
+                    <button onclick="annulerModeModification()" class="text-xs font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900">
                         Annuler
                     </button>
                 </div>
             `;
-
             window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
         }
 
         function annulerModeModification() {
             idSessionEnCoursModification = null;
-            
             const zoneConfigurateur = document.getElementById('zone-configurateur');
             zoneConfigurateur.classList.remove('border-emerald-500/40', 'bg-[#101828]/95');
             zoneConfigurateur.classList.add('border-slate-800');
@@ -221,8 +290,10 @@
 
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
-            document.getElementById('liste-apprenants-brute').value = "";
             document.getElementById('liste-evaluateurs-brute').value = "";
+            document.getElementById('select-organisme').value = "";
+            document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
             document.getElementById('nb-groupes').value = "3";
             document.getElementById('prefixe-groupes').value = "Groupe ";
 
@@ -233,38 +304,43 @@
             `;
         }
 
+        // MODIFICATION : Extraction couplée du nom complet et de l'e-mail depuis les data-attributes
+        function extraireApprenantsPresents() {
+            const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
+            return Array.from(cases).map(c => ({
+                nomComplet: c.getAttribute('data-name'),
+                email: c.getAttribute('data-email')
+            })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
+        }
+
         async function sauvegarderModificationsSession() {
             if (!idSessionEnCoursModification) return;
-
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const typeSession = document.getElementById('type-session').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+            
+            const listeApprenantsPresents = extraireApprenantsPresents();
 
-            if (!nomSession) { alert("Erreur : Le nom de la session est obligatoire."); return; }
+            if (!nomSession) return alert("Erreur : Le nom de la session est obligatoire.");
+            if (listeApprenantsPresents.length === 0) return alert("❌ Impossible : Vous devez cocher au moins un apprenant présent.");
 
-            const { error: errSess } = await db.from('sessions').update({ nom: nomSession }).eq('id', idSessionEnCoursModification);
-            if (errSess) { alert("Échec modification session: " + errSess.message); return; }
+            await db.from('sessions').update({ nom: nomSession, type: typeSession }).eq('id', idSessionEnCoursModification);
 
             await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('evaluateurs').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('apprenants').delete().eq('session_id', idSessionEnCoursModification);
             await db.from('groupes').delete().eq('session_id', idSessionEnCoursModification);
 
-            // AJUSTEMENT DE PARSING : Séparation automatique du titre court et de la description
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
                     const payloadCriteres = arrCriteres.map(ligne => {
-                        const indexDeSeparation = ligne.indexOf(':');
-                        let nom = ligne;
-                        let description = "";
-                        if (indexDeSeparation !== -1) {
-                            nom = ligne.substring(0, indexDeSeparation).trim();
-                            description = ligne.substring(indexDeSeparation + 1).trim();
-                        }
+                        const idx = ligne.indexOf(':');
+                        let nom = ligne, description = "";
+                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
                         return { session_id: idSessionEnCoursModification, nom: nom, description: description };
                     });
                     await db.from('criteres').insert(payloadCriteres);
@@ -274,74 +350,67 @@
             if (evaluateursRaw) {
                 const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
-                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom }));
-                    await db.from('evaluateurs').insert(payloadEvaluateurs);
+                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
                 }
             }
 
-            const listeNomsGroupes = [];
-            const payloadGroupes = [];
+            const listeNomsGroupes = []; const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
                 const nomDuGroupe = `${prefixe}${i}`;
                 listeNomsGroupes.push(nomDuGroupe);
                 payloadGroupes.push({ session_id: idSessionEnCoursModification, nom: nomDuGroupe });
             }
-            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
-            if (errGrp) { alert("Erreur génération groupes : " + errGrp.message); return; }
+            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
 
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            if (apprenantsRaw) {
-                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
-                if (listeApprenants.length > 0) {
-                    for (let i = listeApprenants.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
-                    }
-                    const payloadApprenants = listeApprenants.map((prenom, index) => {
-                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                        return {
-                            session_id: idSessionEnCoursModification,
-                            prenom: prenom,
-                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                        };
-                    });
-                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
-                    if (errApp) alert("Attention : Échec de la répartition : " + errApp.message);
-                }
+            // Mélange des objets apprenants
+            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
             }
 
-            alert("✏️ Session entièrement mise à jour et reconfigurée avec succès !");
+            // MODIFICATION : Injection de la clé email lors de la modification
+            const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
+                const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
+                return {
+                    session_id: idSessionEnCoursModification,
+                    prenom: appObj.nomComplet,
+                    email: appObj.email || null,
+                    groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
+                };
+            });
+            await db.from('apprenants').insert(payloadApprenants);
+
+            alert("✏️ Session reconfigurée avec succès sur la base des présents et de leurs emails !");
             annulerModeModification();
             chargerSessions();
         }
 
         async function genererSessionComplete() {
             const nomSession = document.getElementById('nouveau-nom-session').value.trim();
+            const typeSession = document.getElementById('type-session').value;
             const criteresRaw = document.getElementById('criteres-session').value.trim();
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-            const apprenantsRaw = document.getElementById('liste-apprenants-brute').value.trim();
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
+            
+            const listeApprenantsPresents = extraireApprenantsPresents();
 
-            if (!nomSession) { alert("Erreur : Le nom de la session is obligatoire."); return; }
+            if (!nomSession) return alert("Erreur : Le nom de la session est obligatoire.");
+            if (listeApprenantsPresents.length === 0) return alert("❌ Appel incomplet : Vous devez cocher les apprenants présents.");
 
-            const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active' }]).select().single();
-            if (errSess) { alert("Échec création session: " + errSess.message); return; }
+            const { data: session, error: errSess } = await db.from('sessions').insert([{ nom: nomSession, statut: 'active', type: typeSession }]).select().single();
+            if (errSess) return alert("Échec création session: " + errSess.message);
 
-            // AJUSTEMENT DE PARSING : Séparation du titre court et de la description longue à la génération
             if (criteresRaw) {
                 const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                 if (arrCriteres.length > 0) {
                     const payloadCriteres = arrCriteres.map(ligne => {
-                        const indexDeSeparation = ligne.indexOf(':');
-                        let nom = ligne;
-                        let description = "";
-                        if (indexDeSeparation !== -1) {
-                            nom = ligne.substring(0, indexDeSeparation).trim();
-                            description = ligne.substring(indexDeSeparation + 1).trim();
-                        }
+                        const idx = ligne.indexOf(':');
+                        let nom = ligne, description = "";
+                        if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
                         return { session_id: session.id, nom: nom, description: description };
                     });
                     await db.from('criteres').insert(payloadCriteres);
@@ -351,85 +420,77 @@
             if (evaluateursRaw) {
                 const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
                 if (arrEvaluateurs.length > 0) {
-                    const payloadEvaluateurs = arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom }));
-                    await db.from('evaluateurs').insert(payloadEvaluateurs);
+                    await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
                 }
             }
 
-            const listeNomsGroupes = [];
-            const payloadGroupes = [];
+            const listeNomsGroupes = []; const payloadGroupes = [];
             for (let i = 1; i <= nbGroupes; i++) {
                 const nomDuGroupe = `${prefixe}${i}`;
                 listeNomsGroupes.push(nomDuGroupe);
                 payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
             }
-            const { data: groupesInseres, error: errGrp } = await db.from('groupes').insert(payloadGroupes).select();
-            if (errGrp) { alert("Erreur lors de la génération des groupes : " + errGrp.message); return; }
+            const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
 
             const mapNomVersIdGroupe = {};
             groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            if (apprenantsRaw) {
-                let listeApprenants = apprenantsRaw.split('\n').map(a => a.trim()).filter(a => a !== "");
-                
-                if (listeApprenants.length > 0) {
-                    for (let i = listeApprenants.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [listeApprenants[i], listeApprenants[j]] = [listeApprenants[j], listeApprenants[i]];
-                    }
-
-                    const payloadApprenants = listeApprenants.map((prenom, index) => {
-                        const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
-                        return {
-                            session_id: session.id,
-                            prenom: prenom,
-                            groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
-                        };
-                    });
-
-                    const { error: errApp } = await db.from('apprenants').insert(payloadApprenants);
-                    if (errApp) alert("Attention : Échec de la répartition des apprenants : " + errApp.message);
-                }
+            // Mélange des objets
+            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
             }
 
-            alert("🎉 Session complète configurée et générée avec succès !");
+            // MODIFICATION : Transfert de la donnée e-mail vers la session d'évaluation active
+            const payloadApprenants = listeApprenantsPresents.map((appObj, index) => {
+                const nomGroupeAssigne = listeNomsGroupes[index % nbGroupes];
+                return {
+                    session_id: session.id,
+                    prenom: appObj.nomComplet,
+                    email: appObj.email || null,
+                    groupe_id: mapNomVersIdGroupe[nomGroupeAssigne]
+                };
+            });
+            await db.from('apprenants').insert(payloadApprenants);
+
+            alert("🎉 Session complète initialisée uniquement avec les apprenants présents et leurs emails !");
             document.getElementById('nouveau-nom-session').value = "";
             document.getElementById('criteres-session').value = "";
-            document.getElementById('liste-apprenants-brute').value = "";
+            document.getElementById('select-organisme').value = "";
+            document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
+            document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
             document.getElementById('liste-evaluateurs-brute').value = "";
             chargerSessions();
         }
 
         async function cloturerSession(idSession) {
-            if (!confirm("⚠️ Fermer définitivement cette session ?\n\nLe lien de vote sera clos pour les élèves, les données resteront sécurisées dans l'historique.")) return;
+            if (!confirm("⚠️ Fermer définitivement cette session ?")) return;
             const { error } = await db.from('sessions').update({ statut: 'terminee' }).eq('id', idSession);
             if (!error) chargerSessions();
         }
 
         async function dupliquerSession(idSessionSource, nomActuel) {
-            const nouveauNom = prompt(`Définir le nom de la copie basée sur [${nomActuel}] :`, `${nomActuel} - Groupe B`);
+            const nouveauNom = prompt(`Définir le nom de la copie :`, `${nomActuel} - Copie`);
             if (!nouveauNom || nouveauNom.trim() === "") return;
 
-            const { data: nouvelleSession, error: errSess } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active' }]).select().single();
-            if (errSess) return;
+            const { data: sourceSess } = await db.from('sessions').select('type').eq('id', idSessionSource).single();
+            const typeSource = sourceSess ? sourceSess.type : 'oral';
 
-            // AJUSTEMENT DUPLICATION : On duplique à la fois le nom ET la description du critère source
+            const { data: nouvelleSession } = await db.from('sessions').insert([{ nom: nouveauNom.trim(), statut: 'active', type: typeSource }]).select().single();
+
             const { data: criteresSource } = await db.from('criteres').select('nom, description').eq('session_id', idSessionSource);
             if (criteresSource && criteresSource.length > 0) {
-                const nouveauxCriteres = criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom, description: c.description }));
-                await db.from('criteres').insert(nouveauxCriteres);
+                await db.from('criteres').insert(criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom, description: c.description })));
             }
 
-            alert("👥 Session et critères dupliqués ! (Pensez à recréer/réaffecter vos groupes d'élèves pour cette nouvelle session).");
+            alert("👥 Session et critères dupliqués ! Faites l'appel pour affecter le groupe d'élèves.");
             chargerSessions();
         }
 
         async function supprimerSession(idSession) {
-            if (!confirm("🚨 ATTENTION : Suppression définitive !\n\nCette action va détruire cette session ainsi que TOUTES ses données associées (groupes, apprenants, critères, évaluations).\n\nVoulez-vous vraiment continuer ?")) return;
-
+            if (!confirm("🚨 ATTENTION : Suppression définitive !")) return;
             const { error } = await db.from('sessions').delete().eq('id', idSession);
-            if (error) alert("Erreur lors de la suppression : " + error.message);
-            else chargerSessions();
+            if (!error) chargerSessions();
         }
 
         window.onload = initAdmin;
