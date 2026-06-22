@@ -11,21 +11,24 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md backdrop-blur-md">
+        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md">
             <div>
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
                 <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
             </div>
-            <div class="flex items-center gap-2 self-stretch sm:self-auto">
-                <button onclick="basculerZoneAnnuaire()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
-                    🗃️ Ouvrir / Fermer l'Annuaire Master
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
+                <button onclick="basculerZoneAnnuaire()" class="flex-1 lg:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
+                    🗃️ Annuaire pédagogique
+                </button>
+                <button onclick="basculerZoneConfigurateur()" class="flex-1 lg:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
+                    ✨ Configurer et générer une session
                 </button>
             </div>
         </div>
 
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master Référentielle</h2>
+                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Annuaire pédagogique</h2>
                 <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants. Les modifications se répercutent instantanément sur les feuilles d'appel.</p>
             </div>
 
@@ -84,12 +87,13 @@
             </div>
         </div>
 
-        <div id="zone-configurateur" class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
+        <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
             <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
                 <span>✨</span> Configurer et Générer une Session
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -175,7 +179,6 @@
             </div>
         </div>
 
-        <!-- BLOCS TEMPORELS -->
         <div class="space-y-3">
             <h2 class="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-blue-400 pl-1">📅 Sessions à venir</h2>
             <div id="liste-sessions-avenir" class="space-y-4"></div>
@@ -192,7 +195,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES (REMPLACE LES ALERT/CONFIRM NATIVES) -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -204,7 +206,7 @@
                 </div>
             </div>
             <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
-                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
                 <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
             </div>
         </div>
@@ -220,7 +222,6 @@
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
 
-        // SYSTÈME DE MODALES MODERNES ASYNCHRONES
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -234,22 +235,18 @@
                     const btnConfirm = document.getElementById('ui-btn-confirm');
 
                     title.innerText = options.title || 'Information';
-                    msg.innerHTML = options.message || ''; // Permet le HTML pour les sauts de ligne
+                    msg.innerHTML = options.message || '';
                     
                     if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
                     else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-slate-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
                     else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
 
                     if (options.isPrompt) {
-                        input.classList.remove('hidden');
-                        input.value = options.defaultValue || '';
-                        setTimeout(() => input.focus(), 100);
+                        input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
                     } else { input.classList.add('hidden'); }
 
-                    if (options.isConfirm || options.isPrompt) { btnCancel.classList.remove('hidden'); } 
-                    else { btnCancel.classList.add('hidden'); }
-
+                    if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
                     btnConfirm.innerText = options.confirmText || 'OK';
 
                     const cleanup = () => {
@@ -277,7 +274,9 @@
             chargerSessions();
         }
 
+        // DEUX FONCTIONS COMPAGNONNES DE PILOTAGE DE MASQUAGE DES BLOCS
         function basculerZoneAnnuaire() { document.getElementById('zone-annuaire-master').classList.toggle('hidden'); }
+        function basculerZoneConfigurateur() { document.getElementById('zone-configurateur').classList.toggle('hidden'); }
 
         function toggleGroupCollapse(targetId, iconId) {
             const target = document.getElementById(targetId);
@@ -387,8 +386,8 @@
                             <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                         </div>
                         <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
-                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-xs cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-xs cursor-pointer">🗑️</button>
                         </div>
                     </div>
                 `).join('');
@@ -541,8 +540,8 @@
                     const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                     const badgeType = s.type === 'ecrit' 
-                        ? `<span class="bg-indigo-950 text-indigo-400 text-[9px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950 text-amber-400 text-[9px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
+                        ? `<span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2">✍️ Écrit</span>`
+                        : `<span class="bg-amber-950 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2">🗣️ Oral</span>`;
 
                     let dateSess = s.date_session;
                     if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
@@ -675,13 +674,20 @@
             document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Choisir --</option>`;
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('liste-evaluateurs-brute').value = "";
+            
+            // On replie automatiquement la zone pour ne pas encombrer l'écran
+            document.getElementById('zone-configurateur').classList.add('hidden');
             chargerSessions();
         }
 
         async function entrerEnModeModification(idSession) {
             idSessionEnCoursModification = idSession;
             const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.classList.remove('border-slate-800'); zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
+            
+            // MODIFICATION UX : On force l'ouverture du tiroir de configuration s'il était fermé
+            zoneConfigurateur.classList.remove('hidden', 'border-slate-800'); 
+            zoneConfigurateur.classList.add('border-emerald-500/40', 'bg-[#101828]/95');
+            
             document.getElementById('titre-formulaire').innerHTML = `<span class="text-emerald-400">✏️ Mode Édition Active</span> — Modification de la session`;
 
             const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
@@ -707,7 +713,7 @@
             if(apps) {
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
                 document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
-                    <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
+                    <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
                         <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                         <div class="leading-tight">
                             <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
@@ -728,7 +734,7 @@
 
         function annulerModeModification() {
             idSessionEnCoursModification = null; const zoneConfigurateur = document.getElementById('zone-configurateur');
-            zoneConfigurateur.className = "bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all";
+            zoneConfigurateur.className = "hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all";
             document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
 
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
