@@ -44,6 +44,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur le bouton de feedback pour afficher les détails.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -54,8 +55,8 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 class="text-base font-black text-white">📊 Matrice des Notes & Édition des Bilan</h2>
-                    <p class="text-xs text-gray-400">Cliquez sur l'icône de rapport (📄) pour visualiser le bilan individuel modéré de l'apprenant.</p>
+                    <h2 class="text-base font-black text-white">📊 Matrice des Notes & Édition des Bilans</h2>
+                    <p class="text-xs text-gray-400">Calcul automatique personnalisé décliné par apprenant. Utilisez l'étoile (Bonus +1) ou le triangle (Malus -1) pour affiner la note finale.</p>
                 </div>
                 <div class="w-full sm:w-64 shrink-0">
                     <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom, nom ou groupe..." class="w-full bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-colors">
@@ -69,12 +70,12 @@
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('prenomSeul')">Prénom <span id="fleche-prenomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('nomSeul')">Nom <span id="fleche-nomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('nomGroupe')">Équipe <span id="fleche-nomGroupe"></span></th>
-                            <th class="py-3 px-3 text-center text-blue-400">Bonus/Malus Auto</th>
-                            <th class="py-3 px-3 text-center text-purple-400">Bonus/Malus Pairs</th>
-                            <th class="py-3 px-3 text-center bg-amber-950/10">Moy. Oral Jury</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 bg-slate-900/50">Impact Cumulé</th>
-                            <th class="py-3 px-3 text-right text-indigo-400">Note Finale</th>
-                            <th class="py-3 px-3 text-center text-white">Rapport</th>
+                            <th class="py-3 px-3 text-center text-blue-400 font-bold">Bonus/Malus Auto</th>
+                            <th class="py-3 px-3 text-center text-purple-400 font-bold">Bonus/Malus Pairs</th>
+                            <th class="py-3 px-3 text-center bg-amber-950/10 font-bold">Moy. Oral Jury</th>
+                            <th class="py-3 px-3 text-center text-emerald-400 bg-slate-900/50 font-bold">Impact Cumulé</th>
+                            <th class="py-3 px-3 text-right text-indigo-400 font-bold">Note Finale</th>
+                            <th class="py-3 px-3 text-center text-white font-bold">Rapport</th>
                         </tr>
                     </thead>
                     <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60"></tbody>
@@ -92,8 +93,7 @@
                 </div>
                 <button onclick="fermerModalRapport()" class="text-gray-500 hover:text-white text-2xl font-bold px-2 cursor-pointer transition-colors">✕</button>
             </div>
-            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6">
-                </div>
+            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6"></div>
             <div class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center">
                 <span class="text-xs text-gray-500 italic">Fonctions d'export à venir à l'Étape 2...</span>
                 <div class="flex gap-3">
@@ -108,8 +108,22 @@
         </div>
     </div>
 
+    <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 id="modal-feedback-titre" class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">💬 Feedback</h3>
+                <button onclick="fermerModalFeedback()" class="text-gray-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
+            </div>
+            <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-gray-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5"></div>
+            <div class="p-4 border-t border-gray-800 flex justify-end">
+                <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2 px-4 rounded-xl transition cursor-pointer">
+                    Fermer la lecture
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // SYSTÈME DE DIAGNOSTIC AIRBAG (Alerte rouge en cas d'erreur)
         window.onerror = function(msg, url, line) { alert("🚨 Erreur Système Dashboard : \n" + msg + "\nLigne: " + line); };
         window.onunhandledrejection = function(event) { alert("🚨 Erreur Base de données Dashboard : \n" + (event.reason.message || event.reason)); };
 
@@ -129,6 +143,7 @@
 
         let cacheBonusIndividuels = {};
         let cacheMalusIndividuels = {};
+        let listeFeedbacksCartesCourantes = [];
 
         let listeCalculeePourTri = [];
         let colonneTriActuelle = 'nomSeul';
@@ -183,15 +198,14 @@
                 const sauvegardeMalus = localStorage.getItem(`malus_invest_${idSessionDashboard}`);
                 if (sauvegardeMalus) cacheMalusIndividuels = JSON.parse(sauvegardeMalus);
 
-                // Récupération de la session
                 const { data: s, error: errS } = await db.from('sessions').select('nom, type, date_session, formations(nom, organismes(nom))').eq('id', idSessionDashboard).single();
-                if(errS) throw new Error("Impossible de charger la session : " + errS.message);
+                if(errS) throw errS;
 
                 if(s) {
                     document.getElementById('nom-session').innerText = s.nom || "Session sans nom";
                     const badgeType = s.type === 'ecrit' 
                         ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">🗣️ Oral</span>`;
+                        : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">🗣️ Oral</span>`;
                     
                     const organismeNom = s.formations && s.formations.organismes ? s.formations.organismes.nom : 'Organisme Non Défini';
                     const formationNom = s.formations ? s.formations.nom : 'Formation Non Définie';
@@ -247,9 +261,7 @@
                 listeCriteresProf = critsProf || [];
 
                 await chargerDonneesDashboard();
-            } catch (err) {
-                alert("🚨 Erreur lors de l'initialisation du Dashboard : \n" + err.message);
-            }
+            } catch (err) { alert("🚨 Erreur initialisation : " + err.message); }
         }
 
         function decoderNoteEtCurseurs(notePleine) {
@@ -277,7 +289,7 @@
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
                 const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
-                if (error) throw new Error(error.message);
+                if (error) throw error;
 
                 evaluationsSession = (evals || []).map(e => {
                     const extraction = decoderNoteEtCurseurs(e.note);
@@ -286,34 +298,31 @@
                 });
                 
                 calculerEtAfficherTout();
-                
-                if(btn) {
-                    btn.innerHTML = "✅ À jour !";
-                    setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
-                }
-            } catch (err) {
-                const btn = document.getElementById('btn-refresh');
-                if(btn) { btn.innerHTML = "❌ Erreur de synchro"; btn.disabled = false; }
-                alert("🚨 Erreur lors du chargement des évaluations : \n" + err.message);
-            }
+                if(btn) { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }
+            } catch (err) { alert("🚨 Erreur chargement : " + err.message); }
         }
 
         async function modererFeedback(idEvaluation) {
             try {
-                if(confirm("🗑️ Êtes-vous sûr de vouloir supprimer définitivement ce commentaire ? (La note chiffrée sera conservée).")) {
+                if(confirm("🗑️ Supprimer définitivement ce commentaire ? (La note chiffrée sera conservée).")) {
                     const { error } = await db.from('evaluations').update({ feedback: null }).eq('id', idEvaluation);
                     if(error) throw error;
                     await chargerDonneesDashboard();
                 }
-            } catch(err) { alert("🚨 Erreur lors de la modération : " + err.message); }
+            } catch(err) { alert("🚨 Erreur modération : " + err.message); }
         }
 
+        // ==========================================
+        // FIX : SATELLISATION DES CRITÈRES ET DU POPUP
+        // ==========================================
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             try {
                 const conteneur = document.getElementById('grille-details-evaluations');
                 if(!conteneur) return;
                 conteneur.innerHTML = '';
                 
+                listeFeedbacksCartesCourantes = [];
+
                 const evalsPourCeGroupe = evaluationsSession.filter(e => {
                     if (e.estProf && e.sujet === groupeAffiche) return true;
                     if (!e.estProf && e.sujet === groupeAffiche && e.groupe_votant === groupeAffiche) return true;
@@ -333,6 +342,32 @@
                 }
 
                 evalsPourCeGroupe.forEach(e => {
+                    let sliders = e.sliders || [];
+                    let contenuCriteres = '';
+
+                    // Restitution des critères (Bug 1 corrigé)
+                    if (sliders.length === listeCriteresProf.length) {
+                        listeCriteresProf.forEach((crit, idx) => {
+                            const noteSur5 = sliders[idx];
+                            let colorClass = "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+                            if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
+                            else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
+
+                            contenuCriteres += `
+                                <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
+                                    <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
+                                    <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5}</span>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
+                                        <div class="font-bold text-white mb-1">🎯 ${crit.nom}</div>
+                                        <div class="text-slate-400 text-[10px]">${crit.description || "Aucune description."}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        contenuCriteres = `<div class="text-[10px] text-gray-600 italic py-2">Détails par critères non disponibles.</div>`;
+                    }
+
                     const estAutoEval = e.groupe_votant === e.sujet;
                     let typeLabel = e.estProf ? '👩‍🏫 Formateur' : (estAutoEval ? '🎯 Auto-Éval' : '👥 Pairs');
                     let styleLabel = e.estProf ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
@@ -340,22 +375,63 @@
                     let nomAffiche = e.groupe_votant;
                     if (!e.estProf && e.groupe_votant !== e.sujet) nomAffiche = `Pour : ${e.sujet}`;
 
+                    // Restitution de la Popup de lecture + Modération (Bug 2 corrigé)
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
+                        const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
+                        listeFeedbacksCartesCourantes.push(e.feedback);
+                        const nomAfficheEchappe = nomAffiche.replace(/'/g, "\\'");
+
                         htmlBlockFeedback = `
-                            <div class="mt-3 pt-3 border-t border-gray-800/60 text-xs text-indigo-100 italic break-words relative pb-8">
-                                <span class="font-bold text-indigo-400 not-italic uppercase text-[10px]">💬 Feedback reçu :</span><br/>
-                                ${e.feedback}
-                                <button onclick="modererFeedback(${e.id})" class="absolute bottom-0 right-0 text-[10px] text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case">🗑️ Modérer</button>
+                            <div class="mt-2.5 flex items-center justify-between gap-2 relative border-t border-gray-800/50 pt-2">
+                                <div class="group relative inline-block">
+                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}')" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
+                                        💬 Lire le feedback
+                                    </button>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
+                                        <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Feedback</div>
+                                        <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
+                                    </div>
+                                </div>
+                                <button onclick="modererFeedback(${e.id})" class="text-[10px] text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold">🗑️ Modérer</button>
                             </div>
                         `;
                     } else {
-                        htmlBlockFeedback = `<div class="mt-3 pt-3 border-t border-gray-800/60 text-[10px] text-gray-600 italic">Aucun commentaire déposé.</div>`;
+                        htmlBlockFeedback = `<div class="mt-2.5 text-[10px] text-gray-600 italic border-t border-gray-800/50 pt-2">Aucun commentaire déposé.</div>`;
+                    }
+
+                    // Restitution de la bulle d'impact en points (Bug 4 corrigé)
+                    let htmlImpactBulle = "";
+                    if (!e.estProf) {
+                        const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
+                        const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
+                        
+                        if (moyProf !== null) {
+                            const ecartAbsolu = Math.abs(e.note - moyProf);
+                            const estAline = ecartAbsolu < (moyProf * 0.20);
+                            const valeurImpact = estAline ? "+1" : "-1";
+                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/5" : "text-red-400 border-red-500/20 bg-red-500/5";
+                            const labelImpact = estAutoEval ? (estAline ? "Aligné" : "Décalé") : (estAline ? "Objectif" : "Écart");
+                            
+                            htmlImpactBulle = `
+                                <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
+                                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
+                                    <span class="text-[11px] font-bold px-2 py-0.5 border rounded-md ${couleurImpact}">${valeurImpact} pt (${labelImpact})</span>
+                                </div>
+                            `;
+                        } else {
+                            htmlImpactBulle = `
+                                <div class="text-right mt-3 pt-2 border-t border-gray-800/60 flex justify-between items-center select-none">
+                                    <span class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Impact note</span>
+                                    <span class="text-[10px] text-gray-500 italic">Attente Jury</span>
+                                </div>
+                            `;
+                        }
                     }
 
                     conteneur.innerHTML += `
-                        <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col shadow-inner">
-                            <div class="flex justify-between items-start mb-2">
+                        <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col shadow-inner hover:border-gray-700 transition-colors">
+                            <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
                                 <div>
                                     <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">${typeLabel}</span>
                                     <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${nomAffiche}</div>
@@ -365,16 +441,17 @@
                                     <div class="text-[9px] text-gray-500 font-mono font-bold -mt-1">/ 20</div>
                                 </div>
                             </div>
+                            <div class="flex-1 flex flex-col space-y-0.5 mt-1">
+                                ${contenuCriteres}
+                            </div>
                             ${htmlBlockFeedback}
+                            ${htmlImpactBulle}
                         </div>
                     `;
                 });
-            } catch(err) { alert("🚨 Erreur d'affichage des détails : " + err.message); }
+            } catch(err) { alert("🚨 Erreur d'affichage : " + err.message); }
         }
 
-        // ==========================================
-        // GESTION DE LA MATRICE ET DES RAPPORTS
-        // ==========================================
         function calculerEtAfficherTout() {
             try {
                 const structureParGroupe = {};
@@ -438,11 +515,12 @@
                 });
 
                 filtrerEtAfficherTableau();
-                const grp = document.getElementById('select-groupe-formateur').value;
-                if(grp) mettreAjourDetailsEvaluations(grp);
-            } catch (err) { alert("🚨 Erreur de calcul : " + err.message); }
+            } catch (err) { alert("🚨 Erreur calculs : " + err.message); }
         }
 
+        // ==========================================
+        // FIX : DE RETOUR DES ICONES ETOILE / MALUS (Bug 3 corrigé)
+        // ==========================================
         function filtrerEtAfficherTableau() {
             const corpsTable = document.getElementById('table-corps-resultats');
             if (!corpsTable) return; corpsTable.innerHTML = '';
@@ -457,7 +535,7 @@
             });
 
             if(listeFiltree.length === 0) {
-                corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-600 italic">Aucun résultat.</td></tr>`; return;
+                corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
             }
 
             const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe'];
@@ -472,6 +550,12 @@
             });
 
             listeFiltree.forEach(item => {
+                let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
+                let noteFinaleAffichage = item.noteProfSur20 !== -1 ? `<span class="text-sm font-black text-indigo-400">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>` : "--";
+
+                const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
+                const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
+
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono border-b border-gray-800/30">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">${item.prenomSeul}</td>
@@ -479,15 +563,49 @@
                         <td class="py-3 px-3 text-gray-400 font-sans font-medium text-xs">${item.nomGroupe}</td>
                         <td class="py-3 px-3 text-center text-sm ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
                         <td class="py-3 px-3 text-center text-sm ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
-                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5">${item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-emerald-400' : 'text-gray-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
-                        <td class="py-3 px-3 text-right font-black text-indigo-400 text-sm">${item.noteFinaleNum !== -1 ? item.noteFinaleNum.toFixed(2) : '--'}</td>
+                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5">${noteJuryText}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-green-400' : 'text-gray-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
+                        <td class="py-3 px-3 font-sans text-right">
+                            <div class="flex items-center justify-end gap-2 relative">
+                                <div>${noteFinaleAffichage}</div>
+                                <div class="group relative inline-block">
+                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
+                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
+                                        <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
+                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
+                                    </div>
+                                </div>
+                                <div class="group relative inline-block">
+                                    <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
+                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
+                                        <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
+                                        <div class="text-amber-200/80 text-[10px]">Attribuer un bonus individuel de +1.00 pt pour récompenser l'engagement de l'apprenant.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                         <td class="py-3 px-3 text-center">
                             <button onclick="ouvrirRapportApprenant('${item.prenom.replace(/'/g, "\\'")}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-xs cursor-pointer shadow-md font-sans transition-transform active:scale-95">📄 Bilan</button>
                         </td>
                     </tr>
                 `;
             });
+        }
+
+        function basculerBonusIndividuel(prenomApprenant) {
+            if(cacheBonusIndividuels[prenomApprenant] === true) { delete cacheBonusIndividuels[prenomApprenant]; } 
+            else { cacheBonusIndividuels[prenomApprenant] = true; if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            calculerEtAfficherTout();
+        }
+
+        function basculerMalusIndividuel(prenomApprenant) {
+            if(cacheMalusIndividuels[prenomApprenant] === true) { delete cacheMalusIndividuels[prenomApprenant]; } 
+            else { cacheMalusIndividuels[prenomApprenant] = true; if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            calculerEtAfficherTout();
         }
 
         function ouvrirRapportApprenant(prenomComplet) {
@@ -499,32 +617,28 @@
             
             const feedbacksJury = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && e.estProf && e.feedback).map(e => `<li><span class="text-purple-400 font-bold">[Jury]</span> ${e.feedback}</li>`).join('');
             const feedbacksPairs = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && !e.estProf && e.feedback && e.groupe_votant !== dataApp.nomGroupe).map(e => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${e.feedback}</li>`).join('');
-
-            const zoneFeedbacks = (feedbacksJury || feedbacksPairs) 
-                ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` 
-                : `<p class="text-sm text-gray-500 italic">Aucun commentaire qualitatif enregistré pour cette équipe, ou commentaires modérés.</p>`;
+            const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic">Aucun retour rédigé pour cette équipe.</p>`;
 
             conteneur.innerHTML = `
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-center shadow-inner">
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Moyenne Compétences (Jury)</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Moyenne Jury</div>
                         <div class="text-3xl font-black text-white mt-1 font-mono">${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}<span class="text-sm text-gray-600">/20</span></div>
                     </div>
                     <div class="bg-indigo-950/20 border border-indigo-900/50 p-4 rounded-xl text-center shadow-inner">
-                        <div class="text-[10px] text-indigo-400 uppercase tracking-widest font-bold mb-1">Note Définitive Apprenant</div>
+                        <div class="text-[10px] text-indigo-400 uppercase tracking-widest font-bold mb-1">Note Finale</div>
                         <div class="text-3xl font-black text-indigo-400 mt-1 font-mono">${dataApp.noteFinaleNum !== -1 ? dataApp.noteFinaleNum.toFixed(2) : '--'}<span class="text-sm text-indigo-900">/20</span></div>
                     </div>
                 </div>
-
                 <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 shadow-inner">
-                    <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-2 mb-4">🛠️ Détail de la Majoration / Minoration</h4>
+                    <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-2 mb-4">🛠️ Détail de la Pondération</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                         <div>
-                            <div class="text-xs text-gray-500">Auto-Évaluation</div>
+                            <div class="text-xs text-gray-500">Auto-Éval</div>
                             <div class="text-xl font-mono font-bold mt-1 ${dataApp.ptAuto > 0 ? 'text-green-400' : dataApp.ptAuto < 0 ? 'text-red-400' : 'text-gray-400'}">${dataApp.ptAuto > 0 ? '+'+dataApp.ptAuto : dataApp.ptAuto} pt</div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500">Évaluation par les Pairs</div>
+                            <div class="text-xs text-gray-500">Éval Pairs</div>
                             <div class="text-xl font-mono font-bold mt-1 ${dataApp.ptPairsCumule > 0 ? 'text-green-400' : dataApp.ptPairsCumule < 0 ? 'text-red-400' : 'text-gray-400'}">${dataApp.ptPairsCumule > 0 ? '+'+dataApp.ptPairsCumule : dataApp.ptPairsCumule} pt</div>
                         </div>
                         <div>
@@ -533,18 +647,25 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 shadow-inner">
                     <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-3 mb-3">💬 Synthèse des Retours</h4>
                     ${zoneFeedbacks}
                 </div>
             `;
-
             document.getElementById('modal-rapport').classList.remove('hidden');
         }
 
+        function ouvrirModalFeedback(index, auteur) {
+            const texteComplet = listeFeedbacksCartesCourantes[index] || "Aucun texte enregistré.";
+            document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${auteur}`;
+            document.getElementById('modal-feedback-corps').innerHTML = texteComplet;
+            document.getElementById('modal-feedback').classList.remove('hidden');
+        }
+
+        function fermerModalFeedback() { document.getElementById('modal-feedback').classList.add('hidden'); }
         function fermerModalRapport() { document.getElementById('modal-rapport').classList.add('hidden'); }
-        
+        function changerTri(colonne) { if (colonneTriActuelle === colonne) ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc'; else { colonneTriActuelle = colonne; ordreTriActuel = 'asc'; } filtrerEtAfficherTableau(); }
+
         window.onload = initDashboard;
     </script>
 </body>
