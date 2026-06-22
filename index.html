@@ -385,6 +385,11 @@
                 });
                 
                 calculerEtAfficherTout();
+                
+                // GARANTIE DE L'AFFICHAGE DES GRILLES À L'ACTUALISATION
+                const grp = document.getElementById('select-groupe-formateur').value;
+                if(grp) mettreAjourDetailsEvaluations(grp);
+
                 if(btn) {
                     btn.innerHTML = "✅ À jour !";
                     setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
@@ -501,7 +506,7 @@
                             
                             htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md shrink-0 ${couleurImpact}">${valeurImpact}</span>`;
                         } else {
-                            htmlImpactBulle = `<span class="text-[10px] text-gray-500 border border-gray-800 px-2 py-1 rounded-md italic shrink-0">Attente Jury</span>`;
+                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
                         }
                     }
 
@@ -723,7 +728,7 @@
                         </div>
                         <div>
                             <div class="text-xs text-emerald-500 font-bold">Impact Cumulé</div>
-                            <div class="text-xl font-mono font-bold mt-1 ${dataApp.impactTotalEntier > 0 ? 'text-emerald-400' : dataApp.impactTotalEntier < 0 ? 'text-red-500' : 'text-gray-500'}">${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt</div>
+                            <div class="text-xl font-mono font-bold mt-1 ${dataApp.impactTotalEntier > 0 ? 'text-emerald-400' : (dataApp.impactTotalEntier < 0 ? 'text-red-500' : 'text-gray-500')}">${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt</div>
                             <div class="text-[9px] text-gray-500 italic mt-1">± 2 points max</div>
                         </div>
                         <div>
