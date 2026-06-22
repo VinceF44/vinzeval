@@ -216,6 +216,16 @@
             document.getElementById('zone-annuaire-master').classList.toggle('hidden');
         }
 
+        // ACCORDÉON DYNAMIQUE DES CATÉGORIES (CLASSES / FORMATIONS)
+        function toggleGroupCollapse(targetId, iconId) {
+            const target = document.getElementById(targetId);
+            const icon = document.getElementById(iconId);
+            if (target && icon) {
+                const isHidden = target.classList.toggle('hidden');
+                icon.innerText = isHidden ? '▶' : '▼';
+            }
+        }
+
         async function chargerOrganismes() {
             const { data } = await db.from('organismes').select('*').order('nom');
             if (data) {
@@ -253,7 +263,6 @@
 
         function annuaireChangementFormPourApp(formationId) { afficherListeApprenantsMaster(formationId); }
 
-        // MODIFICATION 2 : Rendu horizontal en badge-tag hyper ergonomique pour l'appel
         async function chargerApprenantsFiltres(formationId) {
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             if (!formationId) {
@@ -434,13 +443,24 @@
                 mapGroupements[nomClasse].push(s);
             });
 
+            let groupCounter = 0;
             for (const [nomClasse, tableauSessions] of Object.entries(mapGroupements)) {
+                groupCounter++;
+                const blockTargetId = `collapse-${conteneurId}-${groupCounter}`;
+                const blockIconId = `icon-${conteneurId}-${groupCounter}`;
+
+                // MODIFICATION 2 : Détection pour rétracter/fermer automatiquement les listes "À venir" par défaut
+                const forceCollapse = (conteneurId === 'liste-sessions-avenir');
+                const hiddenStyleClass = forceCollapse ? 'hidden' : '';
+                const arrowIndicator = forceCollapse ? '▶' : '▼';
+
                 let htmlBlocClasse = `
                     <div class="space-y-2 bg-[#101828]/30 p-3 rounded-xl border border-slate-900/60">
-                        <div class="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5">
-                            📁 Classe : ${nomClasse}
+                        <div onclick="toggleGroupCollapse('${blockTargetId}', '${blockIconId}')" class="text-[10px] font-black uppercase tracking-wider text-slate-400 pl-1 flex items-center gap-1.5 cursor-pointer hover:text-white transition-all select-none">
+                            <span id="${blockIconId}" class="text-[9px] font-mono text-[#fe9a00]">${arrowIndicator}</span>
+                            📁 Classe : ${nomClasse} (${tableauSessions.length} session${tableauSessions.length > 1 ? 's' : ''})
                         </div>
-                        <div class="space-y-2 pl-1.5 border-l border-slate-800/80">
+                        <div id="${blockTargetId}" class="${hiddenStyleClass} space-y-2 pl-1.5 border-l border-slate-800/80">
                 `;
 
                 tableauSessions.forEach(s => {
@@ -457,6 +477,15 @@
 
                     const tagDate = `<span class="text-slate-400 font-mono text-xs ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
 
+                    // MODIFICATION 1 : Condition stricte pour n'injecter les liens de vote (🗳️, 👩‍🏫) QUE si le statut est actif
+                    let liensVotesHtml = "";
+                    if (s.statut === 'active') {
+                        liensVotesHtml = `
+                            <a href="vote.html?session_id=${s.id}" target="_blank" title="Lien vote apprenants" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
+                            <a href="vote_formateur.html?session_id=${s.id}" target="_blank" title="Lien évaluation formateur" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                        `;
+                    }
+
                     let boutonActionStatut = "";
                     if (s.statut === 'a_venir') {
                         boutonActionStatut = `<button onclick="changerStatutSessionDirect('${s.id}', 'active')" title="Lancer et activer la session" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-xs cursor-pointer">▶️</button>`;
@@ -472,8 +501,7 @@
                                     <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
-                                    <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                    <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                                    ${liensVotesHtml}
                                     <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                     <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
                                     <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-xs cursor-pointer">✏️</button>
@@ -484,7 +512,6 @@
                             </div>
                         `;
                     } else {
-                        // MODIFICATION 1 : Intégration du bouton réactiver (🔓) dans la liste des archives
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
                                 <div>
@@ -526,10 +553,10 @@
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
             
-            const listeApprenantsPresents = extraireApprenantsPresents();
+            const listApprenantsPresents = extraireApprenantsPresents();
 
             if (!nomSession) return alert("Le nom de la session est obligatoire.");
-            if (listeApprenantsPresents.length === 0) return alert("❌ Cochez les apprenants présents.");
+            if (listApprenantsPresents.length === 0) return alert("❌ Cochez les apprenants présents.");
 
             const { data: session, error: errSess } = await db.from('sessions').insert([{ 
                 nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null 
@@ -562,12 +589,12 @@
             const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
             const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
+            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
+                [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
             }
 
-            await db.from('apprenants').insert(listeApprenantsPresents.map((appObj, index) => ({
+            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
                 session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
             })));
 
@@ -605,7 +632,6 @@
                 const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
             }
             
-            // MODIFICATION 2 : Appel horizontal préservé également lors de l'édition d'une session
             if(apps) {
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-formation').innerHTML = `<option value="">-- Mode Édition --</option>`;
                 document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
@@ -651,9 +677,9 @@
             const nbGroupes = parseInt(document.getElementById('nb-groupes').value) || 1;
             const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
             const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
-            const listeApprenantsPresents = extraireApprenantsPresents();
+            const listApprenantsPresents = extraireApprenantsPresents();
 
-            if (!nomSession || listeApprenantsPresents.length === 0) return alert("Erreur dans les champs obligatoires.");
+            if (!nomSession || listApprenantsPresents.length === 0) return alert("Erreur dans les champs obligatoires.");
 
             await db.from('sessions').update({ nom: nomSession, type: typeSession, date_session: dateSession || null, statut: statutSession }).eq('id', idSessionEnCoursModification);
             await db.from('criteres').delete().eq('session_id', idSessionEnCoursModification);
@@ -687,11 +713,11 @@
             const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
             const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
-            for (let i = listeApprenantsPresents.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1)); [listeApprenantsPresents[i], listeApprenantsPresents[j]] = [listeApprenantsPresents[j], listeApprenantsPresents[i]];
+            for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
             }
 
-            await db.from('apprenants').insert(listeApprenantsPresents.map((appObj, index) => ({
+            await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
                 session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
             })));
 
