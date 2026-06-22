@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT (1 SEULE PAGE, ENTÊTE CONSERVÉ) */
+        /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; }
@@ -114,7 +114,6 @@
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('prenomSeul')">Prénom <span id="fleche-prenomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('nomSeul')">Nom <span id="fleche-nomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white" onclick="changerTri('nomGroupe')">Équipe <span id="fleche-nomGroupe"></span></th>
-                            <th class="py-3 px-3 text-center text-gray-400 font-bold">Email</th>
                             <th class="py-3 px-3 text-center text-blue-400 font-bold">Bonus/Malus Auto</th>
                             <th class="py-3 px-3 text-center text-purple-400 font-bold">Bonus/Malus Pairs</th>
                             <th class="py-3 px-3 text-center bg-amber-950/10 font-bold">Moy. Oral Jury</th>
@@ -129,17 +128,20 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL COMPLETÉ -->
+    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6">
-                <!-- Tout le contenu HTML (titres, méta, grilles) sera généré ici pour ne pas sauter au PDF -->
+                <!-- Contenu injecté dynamiquement -->
             </div>
             
-            <!-- FOOTER D'ACTIONS -->
+            <!-- FOOTER D'ACTIONS EXCLUSIVEMENT PDF -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide">
-                <!-- Injecté dynamiquement -->
+                <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
+                <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md">
+                    📥 Exporter / Imprimer PDF
+                </button>
             </div>
         </div>
     </div>
@@ -230,9 +232,6 @@
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
             confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
         };
-
-        window.onerror = function(msg, url, line) { alert("🚨 Erreur Système Dashboard : \n" + msg + "\nLigne: " + line); };
-        window.onunhandledrejection = function(event) { alert("🚨 Erreur Base de données Dashboard : \n" + (event.reason.message || event.reason)); };
 
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
@@ -412,10 +411,6 @@
                 const btn = document.getElementById('btn-refresh');
                 if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
 
-                const { data: apps, error: errApps } = await db.from('apprenants').select('prenom, groupe_id, email').eq('session_id', idSessionDashboard);
-                if (errApps) throw errApps;
-                if (apps) apprenantsSession = apps;
-
                 const { data: evals, error: errEvals } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
                 if (errEvals) throw errEvals;
 
@@ -435,19 +430,6 @@
                     setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
                 }
             } catch (err) { await UIModal.alert("Erreur lors du chargement des évaluations : \n" + err.message, "error"); }
-        }
-
-        async function modererFeedback(idEvaluation, depuisModal = false) {
-            try {
-                const isConfirmed = await UIModal.confirm("Voulez-vous supprimer définitivement ce feedback ? (La note chiffrée sera conservée).", "Suppression du Feedback", "error");
-                if(isConfirmed) {
-                    const { error } = await db.from('evaluations').update({ feedback: null }).eq('id', idEvaluation);
-                    if(error) throw error;
-                    if(depuisModal) fermerModalFeedback();
-                    await chargerDonneesDashboard();
-                    await UIModal.alert("Le feedback a été supprimé.", "success", "Terminé");
-                }
-            } catch(err) { await UIModal.alert("Erreur lors de la modération : " + err.message, "error"); }
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -532,9 +514,7 @@
                         if (moyProf !== null) {
                             const ecartAbsolu = Math.abs(e.note - moyProf);
                             const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
-                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
-                        } else {
-                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
+                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
                         }
                     }
 
@@ -647,8 +627,19 @@
             });
 
             if(listeFiltree.length === 0) {
-                corpsTable.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
+                corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
             }
+
+            const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe'];
+            colonnes.forEach(col => {
+                const spanFleche = document.getElementById(`fleche-${col}`);
+                if (spanFleche) {
+                    if (col === colonneTriActuelle) {
+                        spanFleche.innerText = ordreTriActuel === 'asc' ? ' ▲' : ' ▼';
+                        spanFleche.className = "text-indigo-400 font-sans font-bold text-[9px]";
+                    } else { spanFleche.innerText = ''; }
+                }
+            });
 
             listeFiltree.forEach(item => {
                 let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
@@ -656,17 +647,12 @@
 
                 const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
                 const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
-                
-                const mailRaw = item.appObj.email ? String(item.appObj.email).trim() : "";
-                const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
-                let emailIndicator = emailValid ? `<span title="${mailRaw}" class="text-emerald-400 font-bold text-[10px] bg-emerald-500/10 px-2 py-1 rounded cursor-help">✅ Oui</span>` : `<span class="text-red-400 font-bold text-[10px] bg-red-500/10 px-2 py-1 rounded">❌ Non</span>`;
 
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono border-b border-gray-800/30">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">${item.prenomSeul}</td>
                         <td class="py-3 px-3 font-bold text-slate-300 text-sm font-sans uppercase">${item.nomSeul}</td>
                         <td class="py-3 px-3 text-gray-400 font-sans font-medium text-xs">${item.nomGroupe}</td>
-                        <td class="py-3 px-3 text-center">${emailIndicator}</td>
                         <td class="py-3 px-3 text-center text-sm ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
                         <td class="py-3 px-3 text-center text-sm ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5">${noteJuryText}</td>
@@ -674,15 +660,13 @@
                         <td class="py-3 px-3 font-sans text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
-                                
                                 <div class="group relative inline-block">
-                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
+                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
                                         <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
                                         <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
                                     </div>
                                 </div>
-                                
                                 <div class="group relative inline-block">
                                     <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all text-left">
@@ -700,9 +684,22 @@
             });
         }
 
-        // ==========================================
-        // FIX INFALLIBLE DE L'EN-TÊTE PDF ET DU MAILTO
-        // ==========================================
+        function basculerBonusIndividuel(prenomApprenant) {
+            if(cacheBonusIndividuels[prenomApprenant] === true) { delete cacheBonusIndividuels[prenomApprenant]; } 
+            else { cacheBonusIndividuels[prenomApprenant] = true; if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            calculerEtAfficherTout();
+        }
+
+        function basculerMalusIndividuel(prenomApprenant) {
+            if(cacheMalusIndividuels[prenomApprenant] === true) { delete cacheMalusIndividuels[prenomApprenant]; } 
+            else { cacheMalusIndividuels[prenomApprenant] = true; if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            calculerEtAfficherTout();
+        }
+
         function ouvrirRapportApprenant(prenomComplet) {
             const dataApp = listeCalculeePourTri.find(a => a.prenom === prenomComplet);
             if(!dataApp) return;
@@ -717,14 +714,13 @@
             const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic">Aucun retour rédigé pour cette équipe.</p>`;
 
-            // TITRE PRINCIPAL TOTALEMENT INJECTÉ EN DUR DANS LE CORPS (Fige le haut du PDF)
             const enteteOfficielDocumentHtml = `
                 <div class="mb-5 pb-5 border-b-2 border-gray-800">
                     <h2 class="text-xl font-black text-white tracking-tight uppercase">📄 Bilan Individuel de Compétences</h2>
                     <h3 class="text-base font-bold text-indigo-400 mt-1 uppercase font-mono">${prenomComplet} — Équipe : ${dataApp.nomGroupe}</h3>
                     
                     <div class="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-1 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
-                        <div class="w-full sm:w-auto mb-1 sm:mb-0 flex gap-2 items-center">
+                        <div class="w-full mb-1 sm:mb-0 flex gap-2 items-center">
                             <span>📌 <b>Session :</b> <span class="text-white font-bold">${nomSessStr}</span></span>
                             <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px] print-hide">${globalTypeEvaluation}</span>
                         </div>
@@ -777,47 +773,7 @@
                 </div>
             `;
 
-            // LECTURE DIRECTE ET SECURISEE DE L'EMAIL SANS RETARD DE VARIABLE
-            const mailRaw = dataApp.appObj.email ? String(dataApp.appObj.email).trim() : "";
-            const emailValid = mailRaw !== "" && mailRaw.toLowerCase() !== "null" && mailRaw.toLowerCase() !== "undefined";
-            const mailDestinataireFinal = emailValid ? mailRaw : "";
-
-            let btnEmailHtml = "";
-            if (mailDestinataireFinal !== "") {
-                btnEmailHtml = `<button id="btn-rapport-envoyer-email" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition cursor-pointer active:scale-95 shadow-md print-hide">📧 Envoyer à l'apprenant(e)</button>`;
-            } else {
-                btnEmailHtml = `<button disabled class="bg-gray-800 text-gray-500 text-xs font-bold py-2.5 px-5 rounded-xl border border-gray-700 cursor-not-allowed print-hide">❌ Pas d'adresse e-mail</button>`;
-            }
-
-            document.getElementById('modal-rapport-footer').innerHTML = `
-                <span class="text-xs text-gray-500 italic print-hide">Relevé officiel consolidé</span>
-                <div class="flex gap-3 print-hide">
-                    <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md">
-                        📥 Exporter / Imprimer PDF
-                    </button>
-                    ${btnEmailHtml}
-                </div>
-            `;
-
             document.getElementById('modal-rapport').classList.remove('hidden');
-
-            // BRANCHEMENT ET EXECUTION DIRECTE DE L'EMAIL
-            if (mailDestinataireFinal !== "") {
-                document.getElementById('btn-rapport-envoyer-email').onclick = function() {
-                    const sujetEmail = encodeURIComponent(`[Bilan d'évaluation] Vos résultats pour la session : ${nomSessStr}`);
-                    let corpsEmailText = `Bonjour ${dataApp.prenomSeul},\n\nVoici le bilan de vos évaluations pour la session : ${nomSessStr}.\n\n--------------------------------------------\n📊 VOS RÉSULTATS CHIFFRÉS :\n- Note de base définie par le Jury : ${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}/20\n- Impact cumulé (Auto-évaluation + Pairs) : ${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt(s) (limité à ±2 points max)\n- Ajustement discrétionnaire formateur : ${dataApp.hasBonus ? '+1.00' : (dataApp.hasMalus ? '-1.00' : '0.00')} pt\n\n🏆 NOTE FINALE ENREGISTRÉE : ${dataApp.noteFinaleNum !== -1 ? dataApp.noteFinaleNum.toFixed(2) : '--'}/20\n--------------------------------------------\n\n`;
-                    
-                    if(txtJuryRaw.length > 0 || txtPairsRaw.length > 0) {
-                        corpsEmailText += `💬 SYNTHÈSE DES FEEDBACKS QUALITATIFS (MODÉRÉS) :\n`;
-                        txtJuryRaw.forEach(f => corpsEmailText += `• [Retour Jury] : "${f}"\n`);
-                        txtPairsRaw.forEach(f => corpsEmailText += `• [Retour Équipe] : "${f}"\n`);
-                        corpsEmailText += `\n`;
-                    }
-                    corpsEmailText += `En restant à votre disposition pour tout échange complémentaire.\nCordialement,\nL'équipe pédagogique.`;
-                    
-                    window.location.href = `mailto:${mailDestinataireFinal}?subject=${sujetEmail}&body=${encodeURIComponent(corpsEmailText)}`;
-                };
-            }
         }
 
         function ouvrirModalFeedback(index) {
