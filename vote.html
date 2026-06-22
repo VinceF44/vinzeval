@@ -27,21 +27,39 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
+                <!-- DROPDOWN CUSTOM : ÉQUIPE VOTANT -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
-                    <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm font-sans border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer">
-                        <option value="" disabled selected>-- Choisissez votre équipe --</option>
-                    </select>
+                    <div class="custom-dropdown-container relative w-full text-left">
+                        <input type="hidden" id="select-groupe-votant" value="">
+                        <button type="button" onclick="toggleDropdown('select-groupe-votant')" class="w-full bg-gray-950 rounded-xl p-3 text-sm font-sans border border-gray-800 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                            <span id="select-groupe-votant-label" class="truncate pr-2">-- Choisissez votre équipe --</span>
+                            <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-votant-arrow">▼</span>
+                        </button>
+                        <div id="select-groupe-votant-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-gray-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
+                            <!-- Injecté via JS -->
+                        </div>
+                    </div>
                 </div>
 
+                <!-- DROPDOWN CUSTOM : SUJET ÉVALUÉ -->
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer :</label>
-                    <select id="select-sujet-evalue" onchange="changerDeCibleEvaluation(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm font-sans border border-blue-900/50 text-white focus:outline-none focus:border-blue-500 cursor-pointer"></select>
+                    <div class="custom-dropdown-container relative w-full text-left">
+                        <input type="hidden" id="select-sujet-evalue" value="">
+                        <button type="button" onclick="toggleDropdown('select-sujet-evalue')" class="w-full bg-gray-950 rounded-xl p-3 text-sm font-sans border border-blue-900/50 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                            <span id="select-sujet-evalue-label" class="truncate pr-2">Chargement...</span>
+                            <span class="dropdown-arrow text-xs text-blue-500/50 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
+                        </button>
+                        <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-blue-800/60 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
+                            <!-- Injecté via JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60"></div>
+            <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60 relative z-10"></div>
 
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
@@ -56,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="pt-2">
+            <div class="pt-2 relative z-0">
                 <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-sm tracking-wider active:scale-[0.99]">
                     🚀 Envoyer toutes nos évaluations
                 </button>
@@ -108,7 +126,49 @@
         let votantPrecedent = "";
         let memoireEvaluations = {};
 
-        // SYSTÈME DE MODALES MODERNES ASYNCHRONES
+        // --- LOGIQUE UI DROPDOWNS CUSTOM ---
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id + '-menu');
+            const arrow = document.getElementById(id + '-arrow');
+            
+            // Fermer les autres menus ouverts
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
+                if (m.id !== id + '-menu') m.classList.add('hidden');
+            });
+            document.querySelectorAll('.dropdown-arrow').forEach(a => {
+                if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)';
+            });
+
+            const isHidden = menu.classList.toggle('hidden');
+            arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+
+        function selectOption(dropdownId, value, label) {
+            const hiddenInput = document.getElementById(dropdownId);
+            const labelSpan = document.getElementById(dropdownId + '-label');
+            
+            const valeurChangee = hiddenInput.value !== value;
+            
+            hiddenInput.value = value;
+            labelSpan.innerText = label;
+            
+            toggleDropdown(dropdownId);
+            
+            if (valeurChangee) {
+                if (dropdownId === 'select-groupe-votant') changerDeGroupeVotant(value);
+                else if (dropdownId === 'select-sujet-evalue') changerDeCibleEvaluation(value);
+            }
+        }
+
+        // Fermeture automatique en cliquant en dehors
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
+                document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
+            }
+        });
+        // -----------------------------------
+
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -204,13 +264,31 @@
                     g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
                     if (apps) apps.forEach(student => { if (membresParIdGroupe[student.groupe_id]) membresParIdGroupe[student.groupe_id].push(student.prenom); });
 
-                    const optionsHtml = g.map(grp => `<option value="${grp.nom}">${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}</option>`).join('');
+                    // Construction dynamique des options pour nos menus custom
+                    let optionsHtmlVotant = `<button type="button" onclick="selectOption('select-groupe-votant', '', '-- Choisissez votre équipe --')" class="w-full text-left block px-4 py-3 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre équipe --</button>`;
+                    let optionsHtmlSujet = ``;
+
+                    g.forEach(grp => {
+                        const label = `${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}`;
+                        const safeValue = grp.nom.replace(/'/g, "\\'");
+                        const safeLabel = label.replace(/'/g, "\\'");
+                        
+                        const btnHtml = `<button type="button" onclick="selectOption('TYPE_TARGET', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${label}</button>`;
+                        
+                        optionsHtmlVotant += btnHtml.replace('TYPE_TARGET', 'select-groupe-votant');
+                        optionsHtmlSujet += btnHtml.replace('TYPE_TARGET', 'select-sujet-evalue');
+                    });
+
+                    document.getElementById('select-groupe-votant-menu').innerHTML = optionsHtmlVotant;
+                    document.getElementById('select-sujet-evalue-menu').innerHTML = optionsHtmlSujet;
                     
-                    document.getElementById('select-groupe-votant').innerHTML = `<option value="" disabled selected>-- Choisissez votre équipe --</option>` + optionsHtml;
-                    document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
-                    
-                    ciblePrecedente = document.getElementById('select-sujet-evalue').value;
-                    votantPrecedent = document.getElementById('select-groupe-votant').value;
+                    // Initialisation du sujet par défaut (1er de la liste)
+                    const firstGrp = g[0];
+                    const firstLabel = `${firstGrp.nom}${membresParIdGroupe[firstGrp.id].length > 0 ? ` (${membresParIdGroupe[firstGrp.id].join(', ')})` : ''}`;
+                    document.getElementById('select-sujet-evalue').value = firstGrp.nom;
+                    document.getElementById('select-sujet-evalue-label').innerText = firstLabel;
+                    ciblePrecedente = firstGrp.nom;
+                    votantPrecedent = "";
                 }
 
                 const { data: crits = [] } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
@@ -325,10 +403,7 @@
                 const noteSauvegardee = blocDonnees ? (typeof blocDonnees === 'object' ? blocDonnees.note : blocDonnees) : 3;
 
                 const input = document.getElementById(`eval-crit-${index}`);
-                if (input) {
-                    input.value = noteSauvegardee;
-                    mettreAJourCouleurBadge(index, noteSauvegardee);
-                }
+                if (input) { input.value = noteSauvegardee; mettreAJourCouleurBadge(index, noteSauvegardee); }
                 
                 const inputQ = document.getElementById(`questions-crit-${index}`);
                 if (inputQ) inputQ.value = (blocDonnees && typeof blocDonnees === 'object') ? blocDonnees.questions : "";
