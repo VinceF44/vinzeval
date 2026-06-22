@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -21,6 +22,7 @@
             </button>
         </div>
 
+        <!-- ZONE DE SÉLECTION DE L'ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -33,6 +35,7 @@
             </div>
         </div>
 
+        <!-- RÉCAPITULATIF DÉTAILLÉ DES GRILLES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -44,6 +47,7 @@
             </div>
         </div>
 
+        <!-- TABLEAU DE BORD PRINCIPAL AVEC BARRE DE RECHERCHE ET TRI -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -88,10 +92,9 @@
         let nomsEvaluateursInscrits = [];
         let membresParNomGroupe = {};
 
-        // VARIABLES DE CONFIGURATION DU TRI LOCAL
         let listeCalculeePourTri = [];
         let colonneTriActuelle = 'prenom';
-        let ordreTriActuel = 'asc'; // 'asc' ou 'desc'
+        let ordreTriActuel = 'asc';
 
         async function initDashboard() {
             if (!idSessionDashboard) return;
@@ -205,6 +208,10 @@
         }
 
         function calculerEtAfficherTout() {
+            const corpsTable = document.getElementById('table-corps-resultats');
+            if (!corpsTable) return;
+            corpsTable.innerHTML = '';
+
             const structureParGroupe = {};
             groupesSession.forEach(g => {
                 structureParGroupe[g.nom] = { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
@@ -232,10 +239,8 @@
             const mapIdVersNomGroupe = {};
             groupesSession.forEach(g => mapIdVersNomGroupe[g.id] = g.nom);
 
-            // On vide le tableau de stockage temporaire
             listeCalculeePourTri = [];
 
-            // Étape 1 : On pré-calcule toutes les données chiffrées pures pour pouvoir faire des tris précis
             apprenantsSession.forEach(app => {
                 const nomGroupe = mapIdVersNomGroupe[app.groupe_id] || "Sans Équipe";
                 const donnees = structureParGroupe[nomGroupe] || { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
@@ -272,15 +277,12 @@
                 });
             });
 
-            // Étape 2 : On lance le filtrage et l'affichage à l'écran
             filtrerEtAfficherTableau();
 
-            // Rendu des grilles supérieures
             const groupeActuel = document.getElementById('select-groupe-formateur').value;
             if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
         }
 
-        // FONCTION DE TRADUCTION ET D'AFFICHAGE DU TABLEAU DYNAMIQUE (RECHERCHE + TRI LOCAL)
         function filtrerEtAfficherTableau() {
             const corpsTable = document.getElementById('table-corps-resultats');
             if (!corpsTable) return;
@@ -288,13 +290,11 @@
 
             const texteRecherche = document.getElementById('recherche-apprenant').value.toLowerCase().trim();
 
-            // 1. Gestion du Filtre de texte
             let listeFiltree = listeCalculeePourTri.filter(item => {
                 return item.prenom.toLowerCase().includes(texteRecherche) || 
                        item.nomGroupe.toLowerCase().includes(texteRecherche);
             });
 
-            // 2. Gestion de l'Algorithme de Tri Local
             listeFiltree.sort((a, b) => {
                 let valA = a[colonneTriActuelle];
                 let valB = b[colonneTriActuelle];
@@ -306,7 +306,6 @@
                 }
             });
 
-            // 3. Mise à jour visuelle des petites flèches d'en-tête (▲ / ▼)
             const colonnes = ['prenom', 'ptAuto', 'ptPairsCumule', 'noteProfSur20', 'impactTotalEntier', 'noteFinaleNum'];
             colonnes.forEach(col => {
                 const spanFlèche = document.getElementById(`flèche-${col}`);
@@ -320,7 +319,6 @@
                 }
             });
 
-            // 4. Injection finale des lignes HTML épurées
             if(listeFiltree.length === 0) {
                 corpsTable.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-600 italic">Aucun apprenant ne correspond à cette recherche.</td></tr>`;
                 return;
@@ -347,19 +345,17 @@
             });
         }
 
-        // DÉCLENCHEUR LOGIQUE AU CLIC SUR UNE EN-TÊTE de colonne
         function changerTri(colonne) {
             if (colonneTriActuelle === colonne) {
-                // Si on reclique sur la même colonne, on inverse l'ordre
                 ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
             } else {
-                // Si on change de colonne, on trie en ascendant par défaut
                 colonneTriActuelle = colonne;
-                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc'; // Descendant par défaut pour les notes pour voir les meilleurs en premier
+                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc';
             }
             filtrerEtAfficherTableau();
         }
 
+        // MODIFICATION EXPLICITE DE LA RESTITUTION DES GRILLES AVEC IMPACT SOUS LA NOTE
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -409,7 +405,7 @@
                 } else {
                     contenuCriteres = `
                         <div class="flex-1 flex items-center justify-center py-4">
-                            <span class="text-[10px] text-gray-600 italic text-center px-2">Détail par critère technique non disponible (Ancienne note sans détails).</span>
+                            <span class="text-[10px] text-gray-600 italic text-center px-2">Détail par critère technique non disponible.</span>
                         </div>
                     `;
                 }
@@ -435,6 +431,25 @@
                 
                 let noteColor = e.note >= 10 ? 'text-white' : 'text-red-400';
 
+                // NOVELLE LOGIQUE : CALCUL DE L'IMPACT INDIVIDUEL DE CETTE SÉQUENCE DE NOTE
+                let htmlImpactBulle = "";
+                if (!e.estProf) {
+                    const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
+                    const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
+                    
+                    if (moyProf !== null) {
+                        const ecartAbsolu = Math.abs(e.note - moyProf);
+                        const estAline = ecartAbsolu < (moyProf * 0.20);
+                        const valeurImpact = estAline ? "+1" : "-1";
+                        const couleurImpact = estAline ? "text-green-400" : "text-red-400";
+                        const labelImpact = estAutoEval ? (estAline ? "Aligné" : "Décalé") : (estAline ? "Objectif" : "Écart");
+                        
+                        htmlImpactBulle = `<div class="text-[10px] font-bold ${couleurImpact} mt-1.5 font-sans tracking-tight">${valeurImpact} pt (${labelImpact})</div>`;
+                    } else {
+                        htmlImpactBulle = `<div class="text-[9px] text-gray-500 mt-1.5 font-sans italic">Attente Jury</div>`;
+                    }
+                }
+
                 conteneur.innerHTML += `
                     <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col hover:border-gray-700 transition-colors shadow-inner">
                         <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
@@ -447,6 +462,8 @@
                             <div class="text-right shrink-0 pl-2">
                                 <div class="text-xl font-black font-mono tracking-tighter ${noteColor}">${e.note.toFixed(2)}</div>
                                 <div class="text-[9px] text-gray-500 font-mono font-bold -mt-1">/ 20</div>
+                                <!-- AFFICHAGE DU BONUS OU MALUS SOUS LA NOTE -->
+                                ${htmlImpactBulle}
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col space-y-0.5 mt-1">
