@@ -36,7 +36,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère pour afficher sa description complète.</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur l'icône 💬 pour afficher les détails.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -344,7 +344,6 @@
                     ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' 
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
-                // MODIFICATION APPORTÉE : L'étoile et sa bulle (right-0) sont déplacées dans la dernière colonne (Note Finale)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">
@@ -389,16 +388,7 @@
             calculerEtAfficherTout();
         }
 
-        function changerTri(colonne) {
-            if (colonneTriActuelle === colonne) {
-                ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
-            } else {
-                colonneTriActuelle = colonne;
-                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc';
-            }
-            filtrerEtAfficherTableau();
-        }
-
+        // MODIFICATION GRAPHIQUE : AJOUT DE L'ICÔNE DE FEEDBACK AVEC BULLE PRO TAILWIND ALIGNÉE
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -507,13 +497,31 @@
                     }
                 }
 
+                // INTÉGRATION STRUCTURELLE DU BOUTON BULLE DE FEEDBACK (S'affiche uniquement si la chaîne contient du texte)
+                let htmlIconeFeedback = "";
+                if (e.feedback && e.feedback.trim() !== "") {
+                    htmlIconeFeedback = `
+                        <div class="group relative inline-block ml-1.5 cursor-comment">
+                            <span class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors select-none">💬</span>
+                            
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-72 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
+                                <div class="font-bold text-white mb-1.5 border-b border-gray-800 pb-1 flex items-center gap-1">📝 Feedback Global Émis :</div>
+                                <div class="text-slate-300 max-h-40 overflow-y-auto">${e.feedback}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
                 conteneur.innerHTML += `
                     <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col hover:border-gray-700 transition-colors shadow-inner">
                         <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
                             <div>
-                                <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
-                                    ${typeLabel}
-                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
+                                        ${typeLabel}
+                                    </span>
+                                    ${htmlIconeFeedback}
+                                </div>
                                 <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${nomAffiche}</div>
                             </div>
                             <div class="text-right shrink-0 pl-2">
