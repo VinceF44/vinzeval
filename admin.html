@@ -20,45 +20,54 @@
             </div>
             <div class="flex items-center gap-2 self-stretch sm:self-auto">
                 <button onclick="basculerZoneAnnuaire()" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
-                    🗃️ Ouvrir / Fermer l'Annuaire
+                    🗃️ Ouvrir / Fermer l'Annuaire Master
                 </button>
             </div>
         </div>
 
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-5 shadow-xl transition-all">
             <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Base de Données Master (Organismes, Classes, Apprenants)</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">Alimentez directement votre référentiel global ici. Les modifications s'appliquent instantanément.</p>
+                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Moduler la Base de Données Master (Organismes, Classes, Apprenants)</h2>
+                <p class="text-[11px] text-slate-400 mt-0.5">Ajoutez, modifiez ou supprimez vos données globales. Les listes d'appel se synchronisent en temps réel.</p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
-                    <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Ajouter un Organisme</div>
-                    <div class="space-y-2">
-                        <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                        <button onclick="creerOrganismeMaster()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold py-2 px-3 rounded-lg border border-slate-700 transition cursor-pointer">Enregistrer l'organisme</button>
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold uppercase text-slate-400">🏢 1. Organismes</div>
+                        <div class="flex gap-2">
+                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                        </div>
                     </div>
+                    <div id="annuaire-liste-organismes" class="mt-4 flex-1 overflow-y-auto max-h-48 space-y-1.5 border-t border-slate-800/60 pt-3">
+                        </div>
                 </div>
 
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
-                    <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Ajouter une Formation / Groupe</div>
-                    <div class="space-y-2">
-                        <select id="annuaire-select-org-pour-formation" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold uppercase text-slate-400">🏫 2. Formations / Classes</div>
+                        <select id="annuaire-select-org-pour-formation" onchange="annuaireChangementOrgPourForm(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                             <option value="">-- Sélectionner l'organisme --</option>
                         </select>
-                        <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                        <button onclick="creerFormationMaster()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold py-2 px-3 rounded-lg border border-slate-700 transition cursor-pointer">Enregistrer le groupe</button>
+                        <div class="flex gap-2">
+                            <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                        </div>
+                    </div>
+                    <div id="annuaire-liste-formations" class="mt-4 flex-1 overflow-y-auto max-h-48 space-y-1.5 border-t border-slate-800/60 pt-3">
+                        <p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>
                     </div>
                 </div>
 
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 space-y-3">
-                    <div class="text-xs font-bold uppercase text-slate-400">👤 3. Ajouter un Apprenant</div>
-                    <div class="space-y-2">
+                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[320px]">
+                    <div class="space-y-3">
+                        <div class="text-xs font-bold uppercase text-slate-400">👤 3. Apprenants (Annuaire Général)</div>
                         <div class="grid grid-cols-2 gap-2">
                             <select id="annuaire-select-org-pour-app" onchange="annuaireFiltrerFormations(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                                 <option value="">-- Organisme --</option>
                             </select>
-                            <select id="annuaire-select-form-pour-app" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <select id="annuaire-select-form-pour-app" onchange="annuaireChangementFormPourApp(this.value)" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                                 <option value="">-- Classe --</option>
                             </select>
                         </div>
@@ -66,8 +75,13 @@
                             <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                             <input type="text" id="annuaire-nom-app" placeholder="Nom" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
                         </div>
-                        <input type="email" id="annuaire-email-app" placeholder="Adresse email académique" class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
-                        <button onclick="creerApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-lg transition hover:bg-[#e08b00] cursor-pointer">Insérer l'apprenant dans l'annuaire</button>
+                        <div class="flex gap-2">
+                            <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00]">
+                            <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer</button>
+                        </div>
+                    </div>
+                    <div id="annuaire-liste-apprenants" class="mt-4 flex-1 overflow-y-auto max-h-40 space-y-1.5 border-t border-slate-800/60 pt-3">
+                        <p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>
                     </div>
                 </div>
             </div>
@@ -170,31 +184,33 @@
         let db;
         let idSessionEnCoursModification = null;
 
+        // INDEXATION DES ETATS DE MODIFICATION DE L'ANNUAIRE
+        let idOrgEnCoursModif = null;
+        let idFormEnCoursModif = null;
+        let idAppEnCoursModif = null;
+
         async function initAdmin() {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             await chargerOrganismes();
             chargerSessions();
         }
 
-        // DESIGN ERGONOMIQUE : Basculer l'affichage coulissant de l'annuaire master
         function basculerZoneAnnuaire() {
-            const zone = document.getElementById('zone-annuaire-master');
-            zone.classList.toggle('hidden');
+            document.getElementById('zone-annuaire-master').classList.toggle('hidden');
         }
 
-        // SYNC COMPLET : Charge les organismes dans TOUS les sélecteurs de l'application
         async function chargerOrganismes() {
             const { data } = await db.from('organismes').select('*').order('nom');
             if (data) {
                 const optionsHtml = data.map(o => `<option value="${o.id}">${o.nom}</option>`).join('');
-                
                 document.getElementById('select-organisme').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
                 document.getElementById('annuaire-select-org-pour-formation').innerHTML = `<option value="">-- Sélectionner l'organisme --</option>` + optionsHtml;
                 document.getElementById('annuaire-select-org-pour-app').innerHTML = `<option value="">-- Organisme --</option>` + optionsHtml;
+                
+                afficherListeOrganismes(data);
             }
         }
 
-        // SYNC EN CASCADE : Charge les formations liées à un organisme pour le configurateur principal
         async function chargerFormationsFiltrees(organismeId) {
             const selectForm = document.getElementById('select-formation');
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
@@ -203,31 +219,35 @@
             
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
-            if (data) {
-                selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
-            }
+            if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
         }
 
-        // SYNC EN CASCADE : Charge les formations liées à un organisme dans l'outil d'annuaire
+        function annuaireChangementOrgPourForm(organismeId) {
+            afficherListeFormations(organismeId);
+        }
+
         async function annuaireFiltrerFormations(organismeId) {
             const selectForm = document.getElementById('annuaire-select-form-pour-app');
+            const conteneurApp = document.getElementById('annuaire-liste-apprenants');
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
+            conteneurApp.innerHTML = `<p class="text-slate-600 italic">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+            
             if (!organismeId) return;
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
-            if (data) {
-                selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join('');
-            }
+            if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
+        }
+
+        function annuaireChangementFormPourApp(formationId) {
+            afficherListeApprenantsMaster(formationId);
         }
 
         async function chargerApprenantsFiltres(formationId) {
             const conteneurAppel = document.getElementById('liste-appel-checkbox');
             if (!formationId) {
-                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un groupe pour faire l'appel.</p>`;
+                conteneurAppel.innerHTML = `<p class="text-slate-600 italic">Sélectionnez un organisme et un groupe pour faire l'appel.</p>`;
                 return;
             }
-            
             const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
-            
             if (data && data.length > 0) {
                 conteneurAppel.innerHTML = data.map(app => `
                     <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none">
@@ -238,49 +258,178 @@
                         </div>
                     </label>
                 `).join('');
-            } else {
-                conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré dans cette classe.</p>`;
-            }
+            } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic">Aucun apprenant enregistré.</p>`; }
         }
 
         // ==========================================
-        //  FONCTIONS D'INSERTION DIRECTE (ANNUAIRE)
+        //  RENDU VISUEL DES MATRICES DE L'ANNUAIRE
         // ==========================================
 
-        async function creerOrganismeMaster() {
+        function afficherListeOrganismes(data) {
+            const conteneur = document.getElementById('annuaire-liste-organismes');
+            if(data && data.length > 0) {
+                conteneur.innerHTML = data.map(o => `
+                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                        <span class="truncate font-medium text-slate-300">${o.nom}</span>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="entrerModifOrganisme(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
+                            <button onclick="supprimerOrganismeMaster(${o.id}, '${o.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucun organisme enregistré.</p>`; }
+        }
+
+        async function afficherListeFormations(orgId) {
+            const conteneur = document.getElementById('annuaire-liste-formations');
+            if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>`; return; }
+            
+            const { data } = await db.from('formations').select('*').eq('organisme_id', orgId).order('nom');
+            if(data && data.length > 0) {
+                conteneur.innerHTML = data.map(f => `
+                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                        <span class="truncate font-medium text-slate-300">${f.nom}</span>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="entrerModifFormation(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
+                            <button onclick="supprimerFormationMaster(${f.id}, '${f.nom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucune formation pour cet organisme.</p>`; }
+        }
+
+        async function afficherListeApprenantsMaster(formId) {
+            const conteneur = document.getElementById('annuaire-liste-apprenants');
+            if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`; return; }
+            
+            const { data } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
+            if(data && data.length > 0) {
+                conteneur.innerHTML = data.map(a => `
+                    <div class="flex justify-between items-center bg-[#030712] p-2 rounded-lg border border-slate-900 text-xs hover:border-slate-800">
+                        <div class="truncate pr-2">
+                            <span class="font-medium text-slate-300 block">${a.prenom} ${a.nom}</span>
+                            <span class="text-[10px] text-slate-500 block truncate">${a.email || 'Pas d\'email'}</span>
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 cursor-pointer">✏️</button>
+                            <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 cursor-pointer">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-[10px]">Aucun apprenant enregistré dans cette classe.</p>`; }
+        }
+
+        // ==========================================
+        //         CRUD DIRECT : 1. ORGANISMES
+        // ==========================================
+
+        function entrerModifOrganisme(id, nom) {
+            idOrgEnCoursModif = id;
+            document.getElementById('annuaire-nom-organisme').value = nom;
+            const btn = document.getElementById('btn-annuaire-org');
+            btn.innerText = "💾 Sauver";
+            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+        }
+
+        async function creerOuModifierOrganismeMaster() {
             const input = document.getElementById('annuaire-nom-organisme');
             const nom = input.value.trim();
             if (!nom) return alert("Saisissez un nom d'organisme.");
 
-            const { error } = await db.from('organismes').insert([{ nom: nom }]);
-            if (error) alert("Erreur : " + error.message);
-            else {
-                input.value = "";
-                await chargerOrganismes();
-                alert("🏢 Organisme enregistré avec succès !");
+            if (idOrgEnCoursModif) {
+                const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
+                if (error) alert(error.message);
+                else {
+                    idOrgEnCoursModif = null; input.value = "";
+                    const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "Enregistrer";
+                    btn.className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+                    await chargerOrganismes();
+                }
+            } else {
+                const { error } = await db.from('organismes').insert([{ nom: nom }]);
+                if (error) alert("Erreur : " + error.message);
+                else { input.value = ""; await chargerOrganismes(); }
             }
         }
 
-        async function creerFormationMaster() {
+        async function supprimerOrganismeMaster(id, nom) {
+            if (!confirm(`🚨 ATTENTION SUPPLÉMENTAIRE :\n\nSupprimer l'organisme [${nom}] détruira AUTOMATIQUEMENT l'intégralité de ses classes et apprenants associés.\n\nVoulez-vous valider ?`)) return;
+            const { error } = await db.from('organismes').delete().eq('id', id);
+            if (error) alert(error.message);
+            else {
+                await chargerOrganismes();
+                document.getElementById('annuaire-liste-formations').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez un organisme pour voir et gérer ses formations.</p>`;
+                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+            }
+        }
+
+        // ==========================================
+        //         CRUD DIRECT : 2. CLASSES
+        // ==========================================
+
+        function entrerModifFormation(id, nom) {
+            idFormEnCoursModif = id;
+            document.getElementById('annuaire-nom-formation').value = nom;
+            const btn = document.getElementById('btn-annuaire-form');
+            btn.innerText = "💾 Sauver";
+            btn.className = "bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+        }
+
+        async function creerOuModifierFormationMaster() {
             const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
             const input = document.getElementById('annuaire-nom-formation');
             const nom = input.value.trim();
 
-            if (!orgId) return alert("Sélectionnez un organisme d'affectation.");
-            if (!nom) return alert("Saisissez un nom pour la formation / classe.");
+            if (!orgId) return alert("Sélectionnez d'abord un organisme d'affectation.");
+            if (!nom) return alert("Saisissez un nom pour le groupe / classe.");
 
-            const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
-            if (error) alert("Erreur : " + error.message);
-            else {
-                input.value = "";
-                // Met à jour les sélecteurs du configurateur si l'organisme est identique
-                const orgPrincipal = document.getElementById('select-organisme').value;
-                if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
-                alert("🏫 Classe / Groupe créé(e) avec succès !");
+            if (idFormEnCoursModif) {
+                const { error } = await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
+                if (error) alert(error.message);
+                else {
+                    idFormEnCoursModif = null; input.value = "";
+                    const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "Enregistrer";
+                    btn.className = "bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer";
+                    await afficherListeFormations(orgId);
+                    
+                    const orgPrincipal = document.getElementById('select-organisme').value;
+                    if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
+                }
+            } else {
+                const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
+                if (error) alert(error.message);
+                else { input.value = ""; await afficherListeFormations(orgId); }
             }
         }
 
-        async function creerApprenantMaster() {
+        async function supprimerFormationMaster(id, nom) {
+            const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
+            if (!confirm(`⚠️ Supprimer la formation [${nom}] ainsi que ses apprenants liés ?`)) return;
+            const { error } = await db.from('formations').delete().eq('id', id);
+            if (error) alert(error.message);
+            else {
+                await afficherListeFormations(orgId);
+                const orgPrincipal = document.getElementById('select-organisme').value;
+                if (orgPrincipal === orgId) chargerFormationsFiltrees(orgId);
+                document.getElementById('annuaire-liste-apprenants').innerHTML = `<p class="text-slate-600 italic text-[11px]">Sélectionnez une classe pour voir et gérer ses apprenants.</p>`;
+            }
+        }
+
+        // ==========================================
+        //         CRUD DIRECT : 3. APPRENANTS
+        // ==========================================
+
+        function entrerModifApprenant(id, prenom, nom, email) {
+            idAppEnCoursModif = id;
+            document.getElementById('annuaire-prenom-app').value = prenom;
+            document.getElementById('annuaire-nom-app').value = nom;
+            document.getElementById('annuaire-email-app').value = email;
+            const btn = document.getElementById('btn-annuaire-app');
+            btn.innerText = "💾 Sauver";
+            btn.className = "bg-emerald-600 text-white text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer transition-all";
+        }
+
+        async function creerOuModifierApprenantMaster() {
             const formId = document.getElementById('annuaire-select-form-pour-app').value;
             const inputPrenom = document.getElementById('annuaire-prenom-app');
             const inputNom = document.getElementById('annuaire-nom-app');
@@ -290,28 +439,47 @@
             const nom = inputNom.value.trim();
             const email = inputEmail.value.trim();
 
-            if (!formId) return alert("Sélectionnez la formation cible.");
-            if (!prenom || !nom) return alert("Le prénom et le nom sont obligatoires.");
+            if (!formId) return alert("Sélectionnez la classe d'affectation.");
+            if (!prenom || !nom) return alert("Le prénom et le nom sont requis.");
 
-            const { error } = await db.from('apprenants_master').insert([{ 
-                prenom: prenom, 
-                nom: nom, 
-                email: email || null, 
-                formation_id: formId 
-            }]);
+            if (idAppEnCoursModif) {
+                const { error } = await db.from('apprenants_master').update({ prenom: prenom, nom: nom, email: email || null }).eq('id', idAppEnCoursModif);
+                if (error) alert(error.message);
+                else {
+                    idAppEnCoursModif = null; inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
+                    const btn = document.getElementById('btn-annuaire-app'); btn.innerText = "Enregistrer";
+                    btn.className = "bg-[#fe9a00] text-slate-950 text-[11px] font-bold py-2 px-3 rounded-xl transition hover:bg-[#e08b00] cursor-pointer";
+                    await afficherListeApprenantsMaster(formId);
+                    
+                    const formPrincipal = document.getElementById('select-formation').value;
+                    if (formPrincipal === formId) chargerApprenantsFiltres(formId);
+                }
+            } else {
+                const { error } = await db.from('apprenants_master').insert([{ prenom: prenom, nom: nom, email: email || null, formation_id: formId }]);
+                if (error) alert(error.message);
+                else {
+                    inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
+                    await afficherListeApprenantsMaster(formId);
+                    const formPrincipal = document.getElementById('select-formation').value;
+                    if (formPrincipal === formId) chargerApprenantsFiltres(formId);
+                }
+            }
+        }
 
-            if (error) alert("Erreur : " + error.message);
+        async function supprimerApprenantMaster(id, prenom) {
+            const formId = document.getElementById('annuaire-select-form-pour-app').value;
+            if (!confirm(`Retirer définitivement [${prenom}] de la base master ?`)) return;
+            const { error } = await db.from('apprenants_master').delete().eq('id', id);
+            if (error) alert(error.message);
             else {
-                inputPrenom.value = ""; inputNom.value = ""; inputEmail.value = "";
-                // Actualise en continu la table d'appel si le formateur travaille déjà sur cette classe
+                await afficherListeApprenantsMaster(formId);
                 const formPrincipal = document.getElementById('select-formation').value;
                 if (formPrincipal === formId) chargerApprenantsFiltres(formId);
-                alert(`👤 ${prenom} ${nom} a rejoint la base master !`);
             }
         }
 
         // ==========================================
-        //         FONCTIONS SESSIONS CLASSIQUES
+        //    LOGIQUE CLASSIQUE GENERATEUR SESSIONS
         // ==========================================
 
         async function chargerSessions() {
@@ -525,7 +693,7 @@
             });
             await db.from('apprenants').insert(payloadApprenants);
 
-            alert("✏️ Session reconfigurée avec succès sur la base des présents et de leurs emails !");
+            alert("✏️ Session reconfigurée avec succès sur la base des présents !");
             annulerModeModification();
             chargerSessions();
         }
@@ -623,7 +791,7 @@
                 await db.from('criteres').insert(criteresSource.map(c => ({ session_id: nouvelleSession.id, nom: c.nom, description: c.description })));
             }
 
-            alert("👥 Session et critères dupliqués ! Faites l'appel pour affecter le groupe d'élèves.");
+            alert("👥 Session dupliquée ! Faites l'appel pour affecter le groupe d'élèves.");
             chargerSessions();
         }
 
