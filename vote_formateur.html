@@ -95,7 +95,7 @@
                 ciblePrecedente = document.getElementById('select-sujet-evalue').value;
             }
 
-            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard);
+            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
             if(critsProf && critsProf.length > 0) {
                 listeCriteresProf = critsProf;
                 genererSlidersHtml();
@@ -126,7 +126,10 @@
                 <div class="bg-[#030712]/40 p-5 rounded-xl border border-slate-800/60 shadow-inner space-y-4">
                     
                     <div class="flex justify-between items-center gap-4">
-                        <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                        <div>
+                            <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                            ${c.description ? `<p class="text-xs text-slate-500 mt-0.5 leading-relaxed font-normal">${c.description}</p>` : ''}
+                        </div>
                         <div id="badge-note-prof-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
 
@@ -265,12 +268,10 @@
             if (inputFB) inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
         }
 
-        // NOUVELLE LOGIQUE GLOBALE : Enregistrement de toutes les équipes en un seul clic
         async function enregistrerToutesLesNotesFormateur() {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
             if (!evaluateurActuel) { alert("⚠️ Veuillez sélectionner votre nom d'évaluateur avant de valider."); return; }
 
-            // Étape 1 : Forcer d'abord la capture de l'équipe actuellement affichée à l'écran
             const groupeActuel = document.getElementById('select-sujet-evalue').value;
             if (groupeActuel) {
                 synchroniserNotesLocales(groupeActuel, evaluateurActuel);
@@ -284,7 +285,6 @@
 
             const paquetInsertions = [];
 
-            // Étape 2 : Parcourir l'ensemble de la mémoire pour formater chaque ligne d'évaluation
             listeSujetsEvalues.forEach(nomSujet => {
                 const dataTarget = notesFormateurLocales[nomSujet];
                 const tableauNotes = dataTarget.sliders || (Array.isArray(dataTarget) ? dataTarget : null);
@@ -296,6 +296,7 @@
 
                     const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
+                    // CORRECTION DE SYNTAXE REQUIS : Présence de la virgule de séparation
                     paquetInsertions.push({
                         session_id: idSessionDashboard,
                         groupe_votant: evaluateurActuel,
@@ -308,7 +309,6 @@
 
             if (paquetInsertions.length === 0) { alert("❌ Aucune note valide trouvée."); return; }
 
-            // Étape 3 : Nettoyer toutes les anciennes lignes de CE formateur pour CETTE session
             const { error: deleteError } = await db.from('evaluations')
                 .delete()
                 .eq('session_id', idSessionDashboard)
@@ -319,7 +319,6 @@
                 return;
             }
 
-            // Étape 4 : Insérer en bloc (Bulk insert) toutes les grilles d'évaluation validées
             const { error: insertError } = await db.from('evaluations').insert(paquetInsertions);
 
             if (insertError) {
