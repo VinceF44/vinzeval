@@ -45,21 +45,26 @@
         </div>
 
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <div class="border-b border-gray-800 pb-2">
-                <h2 class="text-base font-black text-white">📊 Matrice des Notes de Session</h2>
-                <p class="text-xs text-gray-400">Calcul automatique personnalisé décliné par apprenant sur la base des performances de son groupe.</p>
+            <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-black text-white">📊 Matrice des Notes de Session</h2>
+                    <p class="text-xs text-gray-400">Calcul automatique personnalisé décliné par apprenant sur la base des performances de son groupe.</p>
+                </div>
+                <div class="w-full sm:w-64 shrink-0">
+                    <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom ou groupe..." class="w-full bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-colors">
+                </div>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px]">
-                            <th class="py-3 px-3">Apprenant (Équipe)</th>
-                            <th class="py-3 px-3 text-center font-bold text-blue-400">Bonus/Malus Auto-Éval</th>
-                            <th class="py-3 px-3 text-center font-bold text-purple-400">Bonus/Malus Notation Pairs</th>
-                            <th class="py-3 px-3 text-center bg-amber-950/20">Moy. Oral Jury (/20)</th>
-                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900">Impact Cumulé (Max ±2)</th>
-                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm">Note Finale (/20)</th>
+                        <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px] select-none">
+                            <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('prenom')">Apprenant (Équipe) <span id="flèche-prenom"></span></th>
+                            <th class="py-3 px-3 text-center font-bold text-blue-400 cursor-pointer hover:text-white transition-colors" onclick="changerTri('ptAuto')">Bonus/Malus Auto <span id="flèche-ptAuto"></span></th>
+                            <th class="py-3 px-3 text-center font-bold text-purple-400 cursor-pointer hover:text-white transition-colors" onclick="changerTri('ptPairsCumule')">Bonus/Malus Pairs <span id="flèche-ptPairsCumule"></span></th>
+                            <th class="py-3 px-3 text-center bg-amber-950/10 cursor-pointer hover:text-white transition-colors" onclick="changerTri('noteProfSur20')">Moy. Oral Jury <span id="flèche-noteProfSur20"></span></th>
+                            <th class="py-3 px-3 text-center text-emerald-400 font-bold bg-slate-900/50 cursor-pointer hover:text-white transition-colors" onclick="changerTri('impactTotalEntier')">Impact Cumulé <span id="flèche-impactTotalEntier"></span></th>
+                            <th class="py-3 px-3 text-right text-indigo-400 font-bold text-sm cursor-pointer hover:text-white transition-colors" onclick="changerTri('noteFinaleNum')">Note Finale <span id="flèche-noteFinaleNum"></span></th>
                         </tr>
                     </thead>
                     <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60"></tbody>
@@ -77,11 +82,16 @@
         const idSessionDashboard = urlParams.get('session_id');
 
         let groupesSession = [];
-        let apprenantsSession = []; // Mémorisation globale des apprenants
+        let apprenantsSession = []; 
         let evaluationsSession = [];
         let listeCriteresProf = [];
         let nomsEvaluateursInscrits = [];
         let membresParNomGroupe = {};
+
+        // VARIABLES DE CONFIGURATION DU TRI LOCAL
+        let listeCalculeePourTri = [];
+        let colonneTriActuelle = 'prenom';
+        let ordreTriActuel = 'asc'; // 'asc' ou 'desc'
 
         async function initDashboard() {
             if (!idSessionDashboard) return;
@@ -195,10 +205,6 @@
         }
 
         function calculerEtAfficherTout() {
-            const corpsTable = document.getElementById('table-corps-resultats');
-            if (!corpsTable) return;
-            corpsTable.innerHTML = '';
-
             const structureParGroupe = {};
             groupesSession.forEach(g => {
                 structureParGroupe[g.nom] = { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
@@ -223,14 +229,13 @@
                 }
             });
 
-            // Indexation rapide des ID de groupes vers leurs noms textuels
             const mapIdVersNomGroupe = {};
             groupesSession.forEach(g => mapIdVersNomGroupe[g.id] = g.nom);
 
-            // Tri par ordre alphabétique des prénoms pour un tableau de bord impeccable
-            apprenantsSession.sort((a, b) => a.prenom.localeCompare(b.prenom));
+            // On vide le tableau de stockage temporaire
+            listeCalculeePourTri = [];
 
-            // MODIFICATION CLÉ : Le tableau génère désormais une ligne par apprenant
+            // Étape 1 : On pré-calcule toutes les données chiffrées pures pour pouvoir faire des tris précis
             apprenantsSession.forEach(app => {
                 const nomGroupe = mapIdVersNomGroupe[app.groupe_id] || "Sans Équipe";
                 const donnees = structureParGroupe[nomGroupe] || { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
@@ -251,25 +256,108 @@
                 const impactTotalEntier = Math.min(2, Math.max(-2, ptAuto + ptPairsCumule));
                 let textImpact = impactTotalEntier > 0 ? `+${impactTotalEntier}` : impactTotalEntier < 0 ? `${impactTotalEntier}` : "0";
 
+                let noteFinaleCalculée = noteProfSur20 !== null ? Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)) : -1;
+
+                listeCalculeePourTri.push({
+                    prenom: app.prenom,
+                    nomGroupe: nomGroupe,
+                    ptAuto: ptAuto,
+                    textAuto: textAuto,
+                    ptPairsCumule: ptPairsCumule,
+                    textPairs: textPairs,
+                    noteProfSur20: noteProfSur20 !== null ? noteProfSur20 : -1,
+                    impactTotalEntier: impactTotalEntier,
+                    textImpact: textImpact,
+                    noteFinaleNum: noteFinaleCalculée
+                });
+            });
+
+            // Étape 2 : On lance le filtrage et l'affichage à l'écran
+            filtrerEtAfficherTableau();
+
+            // Rendu des grilles supérieures
+            const groupeActuel = document.getElementById('select-groupe-formateur').value;
+            if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
+        }
+
+        // FONCTION DE TRADUCTION ET D'AFFICHAGE DU TABLEAU DYNAMIQUE (RECHERCHE + TRI LOCAL)
+        function filtrerEtAfficherTableau() {
+            const corpsTable = document.getElementById('table-corps-resultats');
+            if (!corpsTable) return;
+            corpsTable.innerHTML = '';
+
+            const texteRecherche = document.getElementById('recherche-apprenant').value.toLowerCase().trim();
+
+            // 1. Gestion du Filtre de texte
+            let listeFiltree = listeCalculeePourTri.filter(item => {
+                return item.prenom.toLowerCase().includes(texteRecherche) || 
+                       item.nomGroupe.toLowerCase().includes(texteRecherche);
+            });
+
+            // 2. Gestion de l'Algorithme de Tri Local
+            listeFiltree.sort((a, b) => {
+                let valA = a[colonneTriActuelle];
+                let valB = b[colonneTriActuelle];
+
+                if (typeof valA === 'string') {
+                    return ordreTriActuel === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    return ordreTriActuel === 'asc' ? valA - valB : valB - valA;
+                }
+            });
+
+            // 3. Mise à jour visuelle des petites flèches d'en-tête (▲ / ▼)
+            const colonnes = ['prenom', 'ptAuto', 'ptPairsCumule', 'noteProfSur20', 'impactTotalEntier', 'noteFinaleNum'];
+            colonnes.forEach(col => {
+                const spanFlèche = document.getElementById(`flèche-${col}`);
+                if (spanFlèche) {
+                    if (col === colonneTriActuelle) {
+                        spanFlèche.innerText = ordreTriActuel === 'asc' ? ' ▲' : ' ▼';
+                        spanFlèche.className = "text-indigo-400 font-sans font-bold text-[9px]";
+                    } else {
+                        spanFlèche.innerText = '';
+                    }
+                }
+            });
+
+            // 4. Injection finale des lignes HTML épurées
+            if(listeFiltree.length === 0) {
+                corpsTable.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-600 italic">Aucun apprenant ne correspond à cette recherche.</td></tr>`;
+                return;
+            }
+
+            listeFiltree.forEach(item => {
+                let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
+                
                 let noteFinaleAffichage = "--";
-                if (noteProfSur20 !== null) {
-                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)).toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
+                if (item.noteProfSur20 !== -1) {
+                    noteFinaleAffichage = `<span class="text-sm font-black text-indigo-400">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>`;
                 }
 
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
-                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${app.prenom} <span class="text-xs font-normal text-gray-500">(${nomGroupe})</span></td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptAuto < 0 ? 'text-red-400' : ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${textAuto}</td>
-                        <td class="py-3 px-3 text-center font-bold text-sm ${ptPairsCumule < 0 ? 'text-red-400' : ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${textPairs}</td>
-                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteProfSur20 !== null ? noteProfSur20.toFixed(2) : '--'}</td>
-                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${impactTotalEntier < 0 ? 'text-red-500' : impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${textImpact}</td>
+                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${item.prenom} <span class="text-xs font-normal text-gray-500">(${item.nomGroupe})</span></td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${item.textAuto}</td>
+                        <td class="py-3 px-3 text-center font-bold text-sm ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${item.textPairs}</td>
+                        <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteJuryText}</td>
+                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-green-500' : 'text-gray-400'}">${item.textImpact}</td>
                         <td class="py-3 px-3 text-right font-sans">${noteFinaleAffichage}</td>
                     </tr>
                 `;
             });
+        }
 
-            const groupeActuel = document.getElementById('select-groupe-formateur').value;
-            if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
+        // DÉCLENCHEUR LOGIQUE AU CLIC SUR UNE EN-TÊTE de colonne
+        function changerTri(colonne) {
+            if (colonneTriActuelle === colonne) {
+                // Si on reclique sur la même colonne, on inverse l'ordre
+                ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Si on change de colonne, on trie en ascendant par défaut
+                colonneTriActuelle = colonne;
+                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc'; // Descendant par défaut pour les notes pour voir les meilleurs en premier
+            }
+            filtrerEtAfficherTableau();
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -277,14 +365,14 @@
             if(!conteneur) return;
             conteneur.innerHTML = '';
 
-            const evalsAAfficher = evaluationsSession.filter(e => {
+            const evalsPourCeGroupe = evaluationsSession.filter(e => {
                 if (e.estProf && e.sujet === groupeAffiche) return true;
                 if (!e.estProf && e.sujet === groupeAffiche && e.groupe_votant === groupeAffiche) return true;
                 if (!e.estProf && e.groupe_votant === groupeAffiche && e.sujet !== groupeAffiche) return true;
                 return false;
             });
 
-            evalsAAfficher.sort((a, b) => {
+            evalsPourCeGroupe.sort((a, b) => {
                 if (a.estProf && !b.estProf) return -1;
                 if (!a.estProf && b.estProf) return 1;
                 if (a.groupe_votant === a.sujet) return -1;
@@ -292,12 +380,12 @@
                 return 0;
             });
 
-            if (evalsAAfficher.length === 0) {
+            if (evalsPourCeGroupe.length === 0) {
                 conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-gray-500 italic text-sm">Aucune donnée enregistrée pour cette configuration.</div>`;
                 return;
             }
 
-            evalsAAfficher.forEach(e => {
+            evalsPourCeGroupe.forEach(e => {
                 const extraction = decoderNoteEtCurseurs(e.note_brute);
                 let sliders = extraction.sliders;
                 let contenuCriteres = '';
@@ -311,7 +399,6 @@
 
                         const texteDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : crit.nom;
 
-                        // MODIFICATION CLÉ : Retrait de "Critère X :", affichage épuré direct du titre
                         contenuCriteres += `
                             <div class="flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none" title="${texteDescriptionBulle}">
                                 <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
