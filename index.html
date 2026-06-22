@@ -16,7 +16,7 @@
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
                 <h1 id="nom-session" class="text-2xl font-black text-white mt-1">Chargement du Dashboard...</h1>
             </div>
-            <button onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0">
+            <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0">
                 🔄 Rafraîchir les données
             </button>
         </div>
@@ -141,9 +141,23 @@
             return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
 
+        // CORRECTIF DE STABILITÉ ET RETOUR VISUEL DU BOUTON
         async function chargerDonneesDashboard() {
+            const btn = document.getElementById('btn-refresh');
+            if(btn) {
+                btn.innerHTML = "⏳ Mise à jour en cours...";
+                btn.disabled = true;
+            }
+
             const { data: evals, error } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
-            if (!error && evals) {
+            
+            if (error) {
+                if(btn) { btn.innerHTML = "❌ Erreur de synchro"; btn.disabled = false; }
+                alert("❌ Erreur de synchronisation Supabase : " + error.message);
+                return;
+            }
+
+            if (evals) {
                 evaluationsSession = [];
 
                 evals.forEach(e => {
@@ -158,6 +172,15 @@
                 });
 
                 calculerEtAfficherTout();
+
+                // Petit effet de validation de réussite sur le bouton
+                if(btn) {
+                    btn.innerHTML = "✅ Données à jour !";
+                    setTimeout(() => {
+                        btn.innerHTML = "🔄 Rafraîchir les données";
+                        btn.disabled = false;
+                    }, 1500);
+                }
             }
         }
 
@@ -231,24 +254,18 @@
             if(groupeActuel) mettreAjourDetailsEvaluations(groupeActuel);
         }
 
-        // CORRECTIF CLÉ : Pivot complet de la logique de filtrage et d'affichage des cartes PAIRS
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
             conteneur.innerHTML = '';
 
-            // Sélection intelligente du dossier contextuel
             const evalsAAfficher = evaluationsSession.filter(e => {
-                // 1. Les notes de Jury REÇUES par l'équipe
                 if (e.estProf && e.sujet === groupeAffiche) return true;
-                // 2. L'auto-évaluation REÇUE/ÉMISE par l'équipe sur elle-même
                 if (!e.estProf && e.sujet === groupeAffiche && e.groupe_votant === groupeAffiche) return true;
-                // 3. L'INVERSION DES PAIRS : Les notes ÉMISES PAR cette équipe VERS les autres
                 if (!e.estProf && e.groupe_votant === groupeAffiche && e.sujet !== groupeAffiche) return true;
                 return false;
             });
 
-            // Tri ordonné : Jury -> Auto-Éval -> Grilles émises
             evalsAAfficher.sort((a, b) => {
                 if (a.estProf && !b.estProf) return -1;
                 if (!a.estProf && b.estProf) return 1;
@@ -295,7 +312,6 @@
                     ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' 
                     : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                 
-                // AJUSTEMENT DU TITRE DE LA CARTE POUR INDIQUER LA CIBLE DE SA NOTE
                 let nomAffiche = e.groupe_votant;
                 if (!e.estProf && e.groupe_votant !== e.sujet) {
                     nomAffiche = `Pour : ${e.sujet}`;
