@@ -12,14 +12,25 @@
     <div id="bloc-principal-evaluation" class="w-full max-w-5xl bg-gray-900 p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
         
         <div id="ecran-formulaire" class="space-y-6">
-            <div class="border-b border-gray-800 pb-4">
-                <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
-                <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+            
+            <div class="sticky top-0 bg-gray-900 z-30 border-b border-gray-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+                <div>
+                    <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
+                    <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+                </div>
+                
+                <div class="flex items-center gap-3 bg-gray-950 px-3 py-2 rounded-xl border border-gray-800 font-mono shadow-inner text-sm select-none shrink-0 self-end sm:self-auto">
+                    <span id="timer-display" class="text-white font-bold text-base tracking-wider">00:00</span>
+                    <div class="flex items-center gap-1 border-l border-gray-800 pl-2">
+                        <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-gray-800 text-xs transition-colors cursor-pointer">▶️</button>
+                        <button onclick="resetChrono()" title="Réinitialiser" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-gray-800 text-xs transition-colors cursor-pointer">🔄</button>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
+                    <label class="block text Red-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <select id="select-groupe-votant" onchange="changerDeGroupeVotant(this.value)" class="w-full bg-gray-950 rounded p-2.5 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 cursor-pointer">
                         <option value="" disabled selected>-- Choisissez votre équipe --</option>
                     </select>
@@ -32,8 +43,7 @@
             </div>
 
             <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60">
-                <!-- Généré dynamiquement en JS -->
-            </div>
+                </div>
 
             <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
                 <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
@@ -82,6 +92,37 @@
         let votantPrecedent = "";
         let memoireEvaluations = {};
 
+        // LOGIQUE LOGICIELLE DU CHRONOMÈTRE
+        let chronoInterval = null;
+        let chronoSecondes = 0;
+
+        function toggleChrono() {
+            const btn = document.getElementById('btn-timer-play');
+            if (chronoInterval) {
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+                btn.innerText = "▶️";
+            } else {
+                chronoInterval = setInterval(() => {
+                    chronoSecondes++;
+                    const m = Math.floor(chronoSecondes / 60).toString().padStart(2, '0');
+                    const s = (chronoSecondes % 60).toString().padStart(2, '0');
+                    document.getElementById('timer-display').innerText = `${m}:${s}`;
+                }, 1000);
+                btn.innerText = "⏸️";
+            }
+        }
+
+        function resetChrono() {
+            if (chronoInterval) {
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+            }
+            chronoSecondes = 0;
+            document.getElementById('timer-display').innerText = "00:00";
+            document.getElementById('btn-timer-play').innerText = "▶️";
+        }
+
         function appliquerFormatText(commande) { document.execCommand(commande, false, null); }
 
         async function initEvaluationPage() {
@@ -112,12 +153,11 @@
 
                     const optionsHtml = g.map(grp => `<option value="${grp.nom}">${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}</option>`).join('');
                     
-                    // MODIFICATION : Ajout de l'option neutre par défaut pour éviter les votes accidentels
                     document.getElementById('select-groupe-votant').innerHTML = `<option value="" disabled selected>-- Choisissez votre équipe --</option>` + optionsHtml;
                     document.getElementById('select-sujet-evalue').innerHTML = optionsHtml;
                     
                     ciblePrecedente = document.getElementById('select-sujet-evalue').value;
-                    votantPrecedent = document.getElementById('select-groupe-votant').value; // S'initialise à ""
+                    votantPrecedent = document.getElementById('select-groupe-votant').value;
                 }
 
                 const { data: crits } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
@@ -125,7 +165,6 @@
                     listeCriteres = crits;
                     genererCurseursCriteres();
                     
-                    // Si l'utilisateur recharge la page, on récupère son cache (si on a un votant)
                     if (votantPrecedent) {
                         const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
                         if (cacheSauvegarde) {
@@ -157,7 +196,6 @@
         function genererCurseursCriteres() {
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
                 <div class="bg-gray-950/40 p-5 rounded-xl border border-gray-800/60 shadow-inner space-y-4">
-                    
                     <div class="flex justify-between items-center gap-4">
                         <div>
                             <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
@@ -165,17 +203,14 @@
                         </div>
                         <div id="badge-note-app-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
-
                     <div class="relative pt-2 pb-4">
                         <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="mettreAJourCouleurBadge(${index}, this.value); enregistrerEtatCurseursEnContinu();" 
                             class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-blue-500 relative z-10 focus:outline-none">
-                        
                         <div class="flex justify-between px-1.5 text-[11px] text-gray-500 mt-2 font-mono font-bold select-none">
                             <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
@@ -193,7 +228,7 @@
         }
 
         function sauvegarderCacheSpecifique(votant, cible) {
-            if (!votant || !cible) return; // Ne sauvegarde rien si on n'a pas sélectionné son équipe
+            if (!votant || !cible) return;
             if (!memoireEvaluations[cible]) memoireEvaluations[cible] = { criteres: {}, feedback: "" };
             
             listeCriteres.forEach((c, index) => {
@@ -261,7 +296,6 @@
         async function soumettreEvaluationGenerale() {
             const groupeVotant = document.getElementById('select-groupe-votant').value;
             
-            // CONTROLE DE SECURITE : On bloque l'envoi si le votant n'a pas sélectionné son équipe
             if (!groupeVotant) {
                 alert("⚠️ Attention : Veuillez sélectionner votre équipe dans le menu déroulant en haut de la page avant d'envoyer !");
                 return;
