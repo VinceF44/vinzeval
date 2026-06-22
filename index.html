@@ -259,6 +259,7 @@
         let globalOrganismeNom = "Organisme Non Défini";
         let globalFormationNom = "Formation Non Définie";
         let globalDateFormatee = "--/--/----";
+        let globalTypeEvaluation = "Non défini";
 
         let cacheBonusIndividuels = {};
         let cacheMalusIndividuels = {};
@@ -326,10 +327,12 @@
 
                 if(s) {
                     document.getElementById('nom-session').innerText = s.nom || "Session sans nom";
+                    
                     const badgeType = s.type === 'ecrit' 
                         ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">✍️ Écrit</span>`
                         : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-indigo-800/40 px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0">🗣️ Oral</span>`;
                     
+                    globalTypeEvaluation = s.type === 'ecrit' ? "✍️ Écrit" : "🗣️ Oral";
                     globalOrganismeNom = s.formations && s.formations.organismes ? s.formations.organismes.nom : 'Organisme Non Défini';
                     globalFormationNom = s.formations ? s.formations.nom : 'Formation Non Définie';
                     
@@ -534,8 +537,6 @@
                             const ecartAbsolu = Math.abs(e.note - moyProf);
                             const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
                             htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
-                        } else {
-                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
                         }
                     }
 
@@ -720,6 +721,8 @@
             const dataApp = listeCalculeePourTri.find(a => a.prenom === prenomComplet);
             if(!dataApp) return;
 
+            const nomSessStr = document.getElementById('nom-session').innerText;
+
             document.getElementById('rapport-sous-titre').innerText = `${prenomComplet} — ${dataApp.nomGroupe}`;
             const conteneur = document.getElementById('rapport-corps');
             
@@ -730,9 +733,12 @@
             const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic">Aucun retour rédigé pour cette équipe.</p>`;
 
-            // CREATION DE L'EN-TÊTE MÉTA-DONNÉES
             const metaDataHtml = `
-                <div class="mb-5 pb-4 border-b border-gray-800 flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
+                <div class="mb-5 pb-4 border-b border-gray-800 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-2 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
+                    <div class="w-full mb-1 flex flex-wrap gap-3 items-center">
+                        <span>📌 <span class="text-white font-bold text-xs">${nomSessStr}</span></span>
+                        <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px]">${globalTypeEvaluation}</span>
+                    </div>
                     <div>🏢 <span class="text-white">${globalOrganismeNom}</span></div>
                     <div>📁 <span class="text-white">${globalFormationNom}</span></div>
                     <div>📅 <span class="text-white">${globalDateFormatee}</span></div>
@@ -781,7 +787,6 @@
                 </div>
             `;
 
-            // PREPARATION DU FOOTER ET DU BOUTON D'ENVOI D'EMAIL
             const mailDestinataire = dataApp.appObj.email || "";
             let btnEmailHtml = "";
             
@@ -803,7 +808,6 @@
 
             document.getElementById('modal-rapport').classList.remove('hidden');
 
-            // ACTIVATION DU BOUTON EMAIL SI APPLICABLE
             const btnMail = document.getElementById('btn-rapport-envoyer-email');
             if(btnMail) {
                 btnMail.onclick = function() {
@@ -828,13 +832,10 @@
         function ouvrirModalFeedback(index) {
             const dataFeedback = listeFeedbacksCartesCourantes[index];
             if(!dataFeedback) return;
-
             document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
             document.getElementById('modal-feedback-corps').innerHTML = dataFeedback.texte || "Aucun texte enregistré.";
-            
             const btnSupprimer = document.getElementById('btn-modal-supprimer-feedback');
             btnSupprimer.onclick = function() { modererFeedback(dataFeedback.id, true); };
-
             document.getElementById('modal-feedback').classList.remove('hidden');
         }
 
