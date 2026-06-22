@@ -16,20 +16,24 @@
                 <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
                 <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
             </div>
-            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
-                <button onclick="basculerZoneAnnuaire()" class="flex-1 lg:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
+            
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0 mt-2 lg:mt-0">
+                <button onclick="basculerZoneAnnuaire()" class="flex items-center justify-center gap-2 bg-[#101828] hover:bg-slate-800 text-slate-200 text-sm font-bold py-3.5 px-5 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
                     🗃️ Annuaire pédagogique
                 </button>
-                <button onclick="basculerZoneConfigurateur()" class="flex-1 lg:flex-none bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition cursor-pointer shadow-sm">
-                    ✨ Configurer et générer une session
+                <button onclick="basculerZoneConfigurateur()" class="flex items-center justify-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold py-3.5 px-5 rounded-xl border border-blue-500/50 transition-all cursor-pointer shadow-lg active:scale-95">
+                    ✨ Configurer une session
                 </button>
             </div>
         </div>
 
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all">
-            <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Annuaire pédagogique</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants. Les modifications se répercutent instantanément sur les feuilles d'appel.</p>
+            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-[#fe9a00] flex items-center gap-2">📂 Annuaire pédagogique</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Pilotez vos structures et vos listes d'étudiants.</p>
+                </div>
+                <button onclick="basculerZoneAnnuaire()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,9 +92,12 @@
         </div>
 
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all">
-            <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2 text-[#fe9a00]">
-                <span>✨</span> Configurer et Générer une Session
-            </h2>
+            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+                <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
+                    <span>✨</span> Configurer et Générer une Session
+                </h2>
+                <button onclick="basculerZoneConfigurateur()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
@@ -257,8 +264,19 @@
             prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
-        function basculerZoneAnnuaire() { document.getElementById('zone-annuaire-master').classList.toggle('hidden'); }
-        function basculerZoneConfigurateur() { document.getElementById('zone-configurateur').classList.toggle('hidden'); }
+        function basculerZoneAnnuaire() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            ann.classList.toggle('hidden');
+            if (!ann.classList.contains('hidden')) conf.classList.add('hidden');
+        }
+
+        function basculerZoneConfigurateur() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            conf.classList.toggle('hidden');
+            if (!conf.classList.contains('hidden')) ann.classList.add('hidden');
+        }
 
         function toggleGroupCollapse(targetId, iconId) {
             const target = document.getElementById(targetId);
@@ -266,6 +284,18 @@
             if (target && icon) {
                 const isHidden = target.classList.toggle('hidden');
                 icon.innerText = isHidden ? '▶' : '▼';
+            }
+        }
+
+        async function initAdmin() {
+            try {
+                db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                document.getElementById('date-session').valueAsDate = new Date();
+                await chargerOrganismes();
+                await chargerSessions();
+            } catch(e) {
+                console.error(e);
+                UIModal.alert("Connexion à la base de données échouée.", "error");
             }
         }
 
@@ -298,6 +328,7 @@
             selectForm.innerHTML = `<option value="">-- Classe --</option>`;
             conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
             if (!organismeId) return;
+            // CORRIGÉ : 'organismeId' au lieu de la faute 'organismesId'
             const { data } = await db.from('formations').select('*').eq('organisme_id', organismeId).order('nom');
             if (data) { selectForm.innerHTML += data.map(f => `<option value="${f.id}">${f.nom}</option>`).join(''); }
         }
@@ -466,10 +497,22 @@
             await UIModal.alert("Apprenant supprimé.", "success");
         }
 
-        // MODIFICATION UX REPRISE : ANALYSE ET ALIGNEMENT AUTOMATIQUE DES STATUTS PAR LA DATE
+        // ========================================================
+        //  FONCTION UNIQUE DE CHARGEMENT ET AUTOMATISATION (CORRIGÉE)
+        // ========================================================
         async function chargerSessions() {
             const { data: sessions, error } = await db.from('sessions').select('*, formations(nom)').order('date_session', { ascending: true });
-            if (error) return;
+            if (error) {
+                await UIModal.alert("Erreur technique Supabase : " + error.message, "error");
+                return;
+            }
+
+            const list = sessions || [];
+
+            // Sécurité UX : Si la base est totalement vide, on ouvre automatiquement le configurateur
+            if (list.length === 0) {
+                document.getElementById('zone-configurateur').classList.remove('hidden');
+            }
 
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -477,21 +520,14 @@
             const arrAvenir = []; const arrActives = []; const arrTerminees = [];
             const backgroundUpdates = [];
 
-            sessions.forEach(s => {
+            list.forEach(s => {
                 let nvStatut = s.statut;
                 if (s.date_session) {
-                    if (s.date_session < todayStr) {
-                        nvStatut = 'terminee'; // Hier et avant -> Archive automatique
-                    } else if (s.date_session > todayStr) {
-                        nvStatut = 'a_venir'; // Demain et après -> À venir automatique
-                    } else if (s.date_session === todayStr) {
-                        if (s.statut === 'a_venir') {
-                            nvStatut = 'active'; // Jour J -> Devient active automatiquement si en attente
-                        }
-                    }
+                    if (s.date_session < todayStr) nvStatut = 'terminee';
+                    else if (s.date_session > todayStr) nvStatut = 'a_venir';
+                    else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
                 }
 
-                // Si le statut calculé diverge du statut réel en BDD, on met à jour en arrière-plan
                 if (s.statut !== nvStatut) {
                     backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
                     s.statut = nvStatut;
@@ -502,9 +538,7 @@
                 else arrActives.push(s);
             });
 
-            if (backgroundUpdates.length > 0) {
-                await Promise.all(backgroundUpdates);
-            }
+            if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
             regrouperEtAfficherSessionsParGroupe(arrAvenir, 'liste-sessions-avenir', false);
             regrouperEtAfficherSessionsParGroupe(arrActives, 'liste-sessions-actives', false);
@@ -513,10 +547,17 @@
 
         function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive) {
             const conteneur = document.getElementById(conteneurId);
+            if (!conteneur) return;
             conteneur.innerHTML = "";
 
             if (!sessionsList || sessionsList.length === 0) {
-                conteneur.innerHTML = `<p class="text-sm text-slate-600 italic p-2 pl-4">Aucune session enregistrée dans ce filtre.</p>`;
+                conteneur.innerHTML = `
+                    <div class="bg-[#101828]/40 border border-slate-800/60 rounded-xl p-6 text-center select-none">
+                        <span class="text-2xl mb-2 block">📭</span>
+                        <p class="text-sm font-bold text-slate-300">Aucune session enregistrée.</p>
+                        <p class="text-xs text-slate-500 mt-1">Les sessions correspondantes s'afficheront ici.</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -615,11 +656,6 @@
             }
         }
 
-        async function changerStatutSessionDirect(idSession, nvStatut) {
-            await db.from('sessions').update({ statut: nvStatut }).eq('id', idSession); chargerSessions();
-            await UIModal.alert("Statut de la session mis à jour.", "success");
-        }
-
         function extraireApprenantsPresents() {
             const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
             return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
@@ -640,7 +676,6 @@
             if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
             if (listApprenantsPresents.length === 0) return await UIModal.alert("Veuillez cocher au moins un apprenant présent dans le registre d'appel.", "warning", "Appel incomplet");
 
-            // MODIFICATION APPORTÉE : Calcul automatique du statut basé sur la date à l'insertion
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
             let statutSession = 'active';
@@ -740,7 +775,7 @@
 
             document.getElementById('conteneur-boutons-action').innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer">💾 Enregistrer les modifications</button>
+                    <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Enregistrer les modifications</button>
                     <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
                 </div>
             `;
@@ -774,7 +809,6 @@
             if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires. Vérifiez le nom et l'appel.", "error");
             if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
 
-            // MODIFICATION APPORTÉE : Calcul automatique du statut basé sur la date lors de l'enregistrement d'une modification
             const t = new Date();
             const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
             let statutSession = 'active';
