@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div>
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -22,7 +21,6 @@
             </button>
         </div>
 
-        <!-- ZONE DE SÉLECTION DE L'ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -35,11 +33,10 @@
             </div>
         </div>
 
-        <!-- RÉCAPITULATIF DÉTAILLÉ DES GRILLES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur le bouton de feedback pour afficher les détails.</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Survolez un critère pour sa description, ou cliquez sur "Lire le feedback" pour agrandir le texte.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -47,7 +44,6 @@
             </div>
         </div>
 
-        <!-- TABLEAU DE BORD PRINCIPAL AVEC BARRE DE RECHERCHE ET TRI -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -77,6 +73,22 @@
         </div>
     </div>
 
+    <div id="modal-feedback" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 id="modal-feedback-titre" class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">💬 Feedback</h3>
+                <button onclick="fermerModalFeedback()" class="text-gray-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
+            </div>
+            <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-gray-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5">
+                </div>
+            <div class="p-4 border-t border-gray-800 flex justify-end">
+                <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2 px-4 rounded-xl transition cursor-pointer">
+                    Fermer la lecture
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
@@ -93,6 +105,7 @@
         let membresParNomGroupe = {};
 
         let cacheBonusIndividuels = {};
+        let listeFeedbacksCartesCourantes = []; // Stockage temporaire sécurisé anti-bug quotes
 
         let listeCalculeePourTri = [];
         let colonneTriActuelle = 'prenom';
@@ -348,7 +361,6 @@
                     ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' 
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
-                // BULLE D'INVESTISSEMENT : Couleur spécifique (Amber/Dorée)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
                         <td class="py-3 px-3 font-black text-white text-sm font-sans">
@@ -370,7 +382,6 @@
                                         ★
                                     </button>
                                     
-                                    <!-- COULEUR SPÉCIFIQUE (bg-amber-950) POUR LA BULLE ÉTOILE -->
                                     <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
                                         <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
                                         <div class="text-amber-200/80 text-[10px]">Attribuer ou retirer un bonus individuel discrétionnaire de +1.00 point pour récompenser la participation et l'engagement de cet(te) apprenant(e).</div>
@@ -404,10 +415,25 @@
             filtrerEtAfficherTableau();
         }
 
+        // NOUVELLES FONCTIONS DE PILOTAGE DE LA POP-UP MODAL
+        function ouvrirModalFeedback(index, auteur) {
+            const texteComplet = listeFeedbacksCartesCourantes[index] || "Aucun texte enregistré.";
+            document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Édité par : ${auteur}`;
+            document.getElementById('modal-feedback-corps').innerHTML = texteComplet;
+            document.getElementById('modal-feedback').classList.remove('hidden');
+        }
+
+        function fermerModalFeedback() {
+            document.getElementById('modal-feedback').classList.add('hidden');
+        }
+
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
             conteneur.innerHTML = '';
+            
+            // Remise à zéro du tableau temporaire de la vue active
+            listeFeedbacksCartesCourantes = [];
 
             const evalsPourCeGroupe = evaluationsSession.filter(e => {
                 if (e.estProf && e.sujet === groupeAffiche) return true;
@@ -443,7 +469,6 @@
 
                         const textDescriptionBulle = crit.description && crit.description.trim() !== "" ? crit.description : "Aucune description supplémentaire définie pour ce critère.";
 
-                        // BULLE CRITÈRE : Reste sombre/neutre (bg-slate-900)
                         contenuCriteres += `
                             <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
                                 <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
@@ -513,19 +538,23 @@
                     }
                 }
 
+                // MODIFICATION APPORTÉE : Changement du bouton en action double (Group Hover pour aperçu, onclick pour Modal)
                 let htmlBlockFeedback = "";
                 if (e.feedback && e.feedback.trim() !== "") {
-                    // BULLE FEEDBACK : Couleur spécifique (Indigo/Bleu nuit)
+                    const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
+                    listeFeedbacksCartesCourantes.push(e.feedback);
+                    
+                    const nomAfficheEchappe = nomAffiche.replace(/'/g, "\\'");
+
                     htmlBlockFeedback = `
                         <div class="mt-2.5 flex justify-start relative">
                             <div class="group relative inline-block">
-                                <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 px-2 py-1 rounded-md cursor-help select-none transition-all">
+                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}')" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
                                     💬 Lire le feedback
-                                </span>
+                                </button>
                                 
-                                <!-- COULEUR SPÉCIFIQUE (bg-indigo-950) POUR LA BULLE FEEDBACK -->
-                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
-                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1 flex items-center gap-1">📝 Bilan Écrit :</div>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
+                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1 flex items-center gap-1">💬 Aperçu du Feedback :</div>
                                     <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
                                 </div>
                             </div>
