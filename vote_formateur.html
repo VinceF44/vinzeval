@@ -11,11 +11,21 @@
 
     <div class="w-full max-w-5xl bg-[#101828] p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
-        <div class="border-b border-slate-800 pb-4">
-            <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
-                👩‍🏫 Espace Évaluation Formateur
-            </span>
-            <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+        <div class="sticky top-0 bg-[#101828] z-30 border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+            <div>
+                <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
+                    👩‍🏫 Espace Évaluation Formateur
+                </span>
+                <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+            </div>
+            
+            <div class="flex items-center gap-3 bg-[#030712] px-3 py-2 rounded-xl border border-slate-800 font-mono shadow-inner text-sm select-none shrink-0 self-end sm:self-auto">
+                <span id="timer-display" class="text-white font-bold text-base tracking-wider">00:00</span>
+                <div class="flex items-center gap-1 border-l border-slate-800 pl-2">
+                    <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-xs transition-colors cursor-pointer">▶️</button>
+                    <button onclick="resetChrono()" title="Réinitialiser" class="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-800 text-xs transition-colors cursor-pointer">🔄</button>
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,6 +78,37 @@
         let notesFormateurLocales = {}; 
         let ciblePrecedente = "";
         let evaluateurPrecedent = "";
+
+        // LOGIQUE SOFTWARE DU CHRONOMÈTRE FORMATEUR
+        let chronoInterval = null;
+        let chronoSecondes = 0;
+
+        function toggleChrono() {
+            const btn = document.getElementById('btn-timer-play');
+            if (chronoInterval) {
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+                btn.innerText = "▶️";
+            } else {
+                chronoInterval = setInterval(() => {
+                    chronoSecondes++;
+                    const m = Math.floor(chronoSecondes / 60).toString().padStart(2, '0');
+                    const s = (chronoSecondes % 60).toString().padStart(2, '0');
+                    document.getElementById('timer-display').innerText = `${m}:${s}`;
+                }, 1000);
+                btn.innerText = "⏸️";
+            }
+        }
+
+        function resetChrono() {
+            if (chronoInterval) {
+                clearInterval(chronoInterval);
+                chronoInterval = null;
+            }
+            chronoSecondes = 0;
+            document.getElementById('timer-display').innerText = "00:00";
+            document.getElementById('btn-timer-play').innerText = "▶️";
+        }
 
         function appliquerFormatTextProf(commande) { document.execCommand(commande, false, null); }
 
@@ -124,7 +165,6 @@
         function genererSlidersHtml() {
             document.getElementById('conteneur-formateur-criteres').innerHTML = listeCriteresProf.map((c, index) => `
                 <div class="bg-[#030712]/40 p-5 rounded-xl border border-slate-800/60 shadow-inner space-y-4">
-                    
                     <div class="flex justify-between items-center gap-4">
                         <div>
                             <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
@@ -132,17 +172,14 @@
                         </div>
                         <div id="badge-note-prof-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
-
                     <div class="relative pt-2 pb-4">
                         <input type="range" id="prof-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="mettreAJourCouleurBadgeProf(${index}, this.value); synchroniserNotesLocales();" 
                             class="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-[#a855f7] relative z-10 focus:outline-none">
-                        
                         <div class="flex justify-between px-1.5 text-[11px] text-slate-500 mt-2 font-mono font-bold select-none">
                             <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/50">
                         <div>
                             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">❓ Questions à poser :</label>
@@ -296,7 +333,6 @@
 
                     const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
-                    // CORRECTION DE SYNTAXE REQUIS : Présence de la virgule de séparation
                     paquetInsertions.push({
                         session_id: idSessionDashboard,
                         groupe_votant: evaluateurActuel,
