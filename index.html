@@ -36,7 +36,7 @@
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur l'icône 💬 pour afficher les détails.</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur le bouton de feedback pour afficher les détails.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -296,11 +296,11 @@
             if (!corpsTable) return;
             corpsTable.innerHTML = '';
 
-            const texteRecherche = document.getElementById('recherche-apprenant').value.toLowerCase().trim();
+            const textRecherche = document.getElementById('recherche-apprenant').value.toLowerCase().trim();
 
             let listeFiltree = listeCalculeePourTri.filter(item => {
-                return item.prenom.toLowerCase().includes(texteRecherche) || 
-                       item.nomGroupe.toLowerCase().includes(texteRecherche);
+                return item.prenom.toLowerCase().includes(textRecherche) || 
+                       item.nomGroupe.toLowerCase().includes(textRecherche);
             });
 
             listeFiltree.sort((a, b) => {
@@ -388,7 +388,17 @@
             calculerEtAfficherTout();
         }
 
-        // MODIFICATION GRAPHIQUE : AJOUT DE L'ICÔNE DE FEEDBACK AVEC BULLE PRO TAILWIND ALIGNÉE
+        function changerTri(colonne) {
+            if (colonneTriActuelle === colonne) {
+                ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
+            } else {
+                colonneTriActuelle = colonne;
+                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc';
+            }
+            filtrerEtAfficherTableau();
+        }
+
+        // POSITIONNEMENT EN BAS À GAUCHE DÉFINITIF POUR LE BOUTON FEEDBACK TEXTUEL COMPLET
         function mettreAjourDetailsEvaluations(groupeAffiche) {
             const conteneur = document.getElementById('grille-details-evaluations');
             if(!conteneur) return;
@@ -497,16 +507,20 @@
                     }
                 }
 
-                // INTÉGRATION STRUCTURELLE DU BOUTON BULLE DE FEEDBACK (S'affiche uniquement si la chaîne contient du texte)
-                let htmlIconeFeedback = "";
+                // MODIFICATION APPORTÉE : L'icône brute a disparu, remplacée par un bouton-badge pro placé en bas à gauche avant l'impact
+                let htmlBlockFeedback = "";
                 if (e.feedback && e.feedback.trim() !== "") {
-                    htmlIconeFeedback = `
-                        <div class="group relative inline-block ml-1.5 cursor-comment">
-                            <span class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors select-none">💬</span>
-                            
-                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-72 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
-                                <div class="font-bold text-white mb-1.5 border-b border-gray-800 pb-1 flex items-center gap-1">📝 Feedback Global Émis :</div>
-                                <div class="text-slate-300 max-h-40 overflow-y-auto">${e.feedback}</div>
+                    htmlBlockFeedback = `
+                        <div class="mt-2.5 flex justify-start relative">
+                            <div class="group relative inline-block">
+                                <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 px-2 py-1 rounded-md cursor-help select-none transition-all">
+                                    💬 Lire le feedback
+                                </span>
+                                
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-72 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words [&_ul]:list-disc [&_ul]:pl-4">
+                                    <div class="font-bold text-white mb-1.5 border-b border-gray-800 pb-1 flex items-center gap-1">¼ Bilan Écrit :</div>
+                                    <div class="text-slate-300 max-h-40 overflow-y-auto">${e.feedback}</div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -516,12 +530,9 @@
                     <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col hover:border-gray-700 transition-colors shadow-inner">
                         <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
                             <div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
-                                        ${typeLabel}
-                                    </span>
-                                    ${htmlIconeFeedback}
-                                </div>
+                                <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${styleLabel}">
+                                    ${typeLabel}
+                                </span>
                                 <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${nomAffiche}</div>
                             </div>
                             <div class="text-right shrink-0 pl-2">
@@ -532,6 +543,7 @@
                         <div class="flex-1 flex flex-col space-y-0.5 mt-1">
                             ${contenuCriteres}
                         </div>
+                        ${htmlBlockFeedback}
                         ${htmlImpactBulle}
                     </div>
                 `;
