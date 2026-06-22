@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -23,7 +22,6 @@
             </button>
         </div>
 
-        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -43,11 +41,10 @@
             </div>
         </div>
 
-        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère ou sur le bouton de feedback pour afficher les détails.</p>
+                <p class="text-xs text-gray-400 mt-0.5">Détail des évaluations. Passez votre souris sur un critère pour afficher sa description.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -55,7 +52,6 @@
             </div>
         </div>
 
-        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -88,7 +84,6 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
@@ -113,7 +108,6 @@
         </div>
     </div>
 
-    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -121,11 +115,11 @@
                 <button onclick="fermerModalFeedback()" class="text-gray-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
             </div>
             <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-gray-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5"></div>
-            <div class="p-4 border-t border-gray-800 flex justify-between items-center">
-                <button id="btn-modal-supprimer-feedback" class="text-xs text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold flex items-center gap-1.5">
+            <div class="p-4 border-t border-gray-800 flex justify-between items-center bg-gray-950/50">
+                <button id="btn-modal-supprimer-feedback" class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-2.5 rounded-xl hover:bg-red-500/20 hover:text-red-300 transition cursor-pointer font-sans normal-case font-bold flex items-center gap-1.5 shadow-sm">
                     🗑️ Supprimer le feedback
                 </button>
-                <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2 px-4 rounded-xl transition cursor-pointer">
+                <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition cursor-pointer shadow-sm">
                     Fermer la lecture
                 </button>
             </div>
@@ -152,6 +146,8 @@
 
         let cacheBonusIndividuels = {};
         let cacheMalusIndividuels = {};
+        
+        // ARRAY SÉCURISÉ POUR LES FEEDBACKS
         let listeFeedbacksCartesCourantes = [];
 
         let listeCalculeePourTri = [];
@@ -259,7 +255,7 @@
                         const listeFormattee = (membresParIdGroupe[grp.id] || []).map(formaterPrenomInitiale);
                         const parents = listeFormattee.length > 0 ? ` (${listeFormattee.join(', ')})` : '';
                         const labelComplet = `${grp.nom}${parents}`;
-                        optionsHtml += `<button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
+                        optionsHtml += `<button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
 
@@ -327,13 +323,13 @@
 
         async function modererFeedback(idEvaluation, depuisModal = false) {
             try {
-                if(confirm("🗑️ Supprimer définitivement ce commentaire ? (La note chiffrée sera conservée).")) {
+                if(confirm("🗑️ Supprimer définitivement ce feedback ? (La note chiffrée sera conservée).")) {
                     const { error } = await db.from('evaluations').update({ feedback: null }).eq('id', idEvaluation);
                     if(error) throw error;
                     if(depuisModal) fermerModalFeedback();
                     await chargerDonneesDashboard();
                 }
-            } catch(err) { alert("🚨 Erreur suppression : " + err.message); }
+            } catch(err) { alert("🚨 Erreur modération : " + err.message); }
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -342,6 +338,7 @@
                 if(!conteneur) return;
                 conteneur.innerHTML = '';
                 
+                // On vide le tableau mémoire des feedbacks pour cette nouvelle vue
                 listeFeedbacksCartesCourantes = [];
 
                 const evalsPourCeGroupe = evaluationsSession.filter(e => {
@@ -397,18 +394,25 @@
 
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
+                        // ON ENREGISTRE L'OBJET COMPLET DANS LA MÉMOIRE POUR NE PAS CASSER LE HTML
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push(e.feedback);
-                        const nomAfficheEchappe = nomAffiche.replace(/'/g, "\\'");
+                        listeFeedbacksCartesCourantes.push({
+                            texte: e.feedback,
+                            auteur: nomAffiche,
+                            id: e.id
+                        });
 
                         htmlBlockFeedback = `
                             <div class="mt-2.5 flex items-center justify-between gap-2 relative border-t border-gray-800/50 pt-2">
                                 <div class="group relative inline-block">
-                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex}, '${nomAfficheEchappe}', ${e.id})" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
+                                    <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95">
                                         💬 Lire le feedback
                                     </button>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
+                                        <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
+                                        <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
+                                    </div>
                                 </div>
-                                <button onclick="modererFeedback(${e.id})" class="text-[10px] text-red-500 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded hover:bg-red-500/20 transition cursor-pointer font-sans normal-case font-bold">🗑️ Supprimer</button>
                             </div>
                         `;
                     } else {
@@ -529,6 +533,8 @@
                 });
 
                 filtrerEtAfficherTableau();
+                const grp = document.getElementById('select-groupe-formateur').value;
+                if(grp) mettreAjourDetailsEvaluations(grp);
             } catch (err) { alert("🚨 Erreur calculs : " + err.message); }
         }
 
@@ -667,16 +673,17 @@
         }
 
         // ==========================================
-        // GESTION POPUP FEEDBACK ET BOUTON MODÉRER (Fix)
+        // CORRECTION GLOBALE : APPEL PAR INDEX SÉCURISÉ
         // ==========================================
-        function ouvrirModalFeedback(index, auteur, evalId) {
-            const texteComplet = listeFeedbacksCartesCourantes[index] || "Aucun texte enregistré.";
-            document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${auteur}`;
-            document.getElementById('modal-feedback-corps').innerHTML = texteComplet;
+        function ouvrirModalFeedback(index) {
+            const dataFeedback = listeFeedbacksCartesCourantes[index];
+            if(!dataFeedback) return;
+
+            document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
+            document.getElementById('modal-feedback-corps').innerHTML = dataFeedback.texte || "Aucun texte enregistré.";
             
-            // On attribue dynamiquement l'action de suppression au bouton rouge de la modale
             const btnSupprimer = document.getElementById('btn-modal-supprimer-feedback');
-            btnSupprimer.onclick = function() { modererFeedback(evalId, true); };
+            btnSupprimer.onclick = function() { modererFeedback(dataFeedback.id, true); };
 
             document.getElementById('modal-feedback').classList.remove('hidden');
         }
