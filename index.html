@@ -52,7 +52,7 @@
                     <p class="text-xs text-gray-400">Calcul automatique personnalisé décliné par apprenant. Utilisez l'étoile (Bonus +1) ou le triangle (Malus -1) pour affiner la note.</p>
                 </div>
                 <div class="w-full sm:w-64 shrink-0">
-                    <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom ou groupe..." class="w-full bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-colors">
+                    <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom, nom ou groupe..." class="w-full bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-colors">
                 </div>
             </div>
             
@@ -60,7 +60,9 @@
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="border-b border-gray-800 text-gray-400 uppercase font-mono text-[11px] select-none">
-                            <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('prenom')">Apprenant (Équipe) <span id="flèche-prenom"></span></th>
+                            <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('prenomSeul')">Prénom <span id="flèche-prenomSeul"></span></th>
+                            <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('nomSeul')">Nom <span id="flèche-nomSeul"></span></th>
+                            <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('nomGroupe')">Équipe <span id="flèche-nomGroupe"></span></th>
                             <th class="py-3 px-3 text-center font-bold text-blue-400 cursor-pointer hover:text-white transition-colors" onclick="changerTri('ptAuto')">Bonus/Malus Auto <span id="flèche-ptAuto"></span></th>
                             <th class="py-3 px-3 text-center font-bold text-purple-400 cursor-pointer hover:text-white transition-colors" onclick="changerTri('ptPairsCumule')">Bonus/Malus Pairs <span id="flèche-ptPairsCumule"></span></th>
                             <th class="py-3 px-3 text-center bg-amber-950/10 cursor-pointer hover:text-white transition-colors" onclick="changerTri('noteProfSur20')">Moy. Oral Jury <span id="flèche-noteProfSur20"></span></th>
@@ -109,7 +111,7 @@
         let listeFeedbacksCartesCourantes = [];
 
         let listeCalculeePourTri = [];
-        let colonneTriActuelle = 'prenom';
+        let colonneTriActuelle = 'nomSeul';
         let ordreTriActuel = 'asc';
 
         function formaterPrenomInitiale(nomComplet) {
@@ -132,7 +134,6 @@
             const sauvegardeMalus = localStorage.getItem(`malus_invest_${idSessionDashboard}`);
             if (sauvegardeMalus) cacheMalusIndividuels = JSON.parse(sauvegardeMalus);
 
-            // MODIFICATION APPORTÉE : Extraction et éclatement visuel des métadonnées sous le titre principal
             const { data: s } = await db.from('sessions').select('nom, type, date_session, formations(nom, organismes(nom))').eq('id', idSessionDashboard).single();
             if(s) {
                 document.getElementById('nom-session').innerText = s.nom;
@@ -150,7 +151,6 @@
                     dateFormatee = `${d}/${m}/${y}`;
                 }
 
-                // Injection HTML segmentée et élégante
                 document.getElementById('session-metadonnees').innerHTML = `
                     ${badgeType}
                     <span class="flex items-center gap-1 text-slate-300">🏢 ${organismeNom}</span>
@@ -330,8 +330,18 @@
                     if (aUnMalusIndiv) noteFinaleCalculée = Math.max(0, noteFinaleCalculée - 1);
                 }
 
+                let prenomSeul = app.prenom;
+                let nomSeul = "";
+                const nameParts = app.prenom.trim().split(/\s+/);
+                if (nameParts.length > 1) {
+                    prenomSeul = nameParts[0];
+                    nomSeul = nameParts.slice(1).join(" ");
+                }
+
                 listeCalculeePourTri.push({
                     prenom: app.prenom, 
+                    prenomSeul: prenomSeul,
+                    nomSeul: nomSeul,
                     nomGroupe: nomGroupe,
                     ptAuto: ptAuto,
                     textAuto: textAuto,
@@ -375,7 +385,8 @@
                 }
             });
 
-            const colonnes = ['prenom', 'ptAuto', 'ptPairsCumule', 'noteProfSur20', 'impactTotalEntier', 'noteFinaleNum'];
+            // MODIFICATION APPORTÉE : Ajout de 'nomGroupe' à la liste des colonnes indexables pour les flèches
+            const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe', 'ptAuto', 'ptPairsCumule', 'noteProfSur20', 'impactTotalEntier', 'noteFinaleNum'];
             colonnes.forEach(col => {
                 const spanFlèche = document.getElementById(`flèche-${col}`);
                 if (spanFlèche) {
@@ -389,7 +400,8 @@
             });
 
             if(listeFiltree.length === 0) {
-                corpsTable.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-600 italic">Aucun apprenant ne correspond à cette recherche.</td></tr>`;
+                // Colspan étendu à 8 colonnes pour absorber l'isolation de l'équipe
+                corpsTable.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-600 italic">Aucun apprenant ne correspond à cette recherche.</td></tr>`;
                 return;
             }
 
@@ -409,14 +421,12 @@
                     ? 'text-red-400 bg-red-500/20 border-red-500/40'
                     : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
 
+                // CORRECTION ERGONOMIQUE : Intégration de 3 cellules distinctes (Prénom | Nom | Équipe)
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition font-mono">
-                        <td class="py-3 px-3 font-black text-white text-sm font-sans">
-                            <div>
-                                <span>${item.prenom}</span> 
-                                <span class="text-xs font-normal text-gray-500 block sm:inline sm:ml-1 font-sans">(${item.nomGroupe})</span>
-                            </div>
-                        </td>
+                        <td class="py-3 px-3 font-black text-white text-sm font-sans">${item.prenomSeul}</td>
+                        <td class="py-3 px-3 font-bold text-slate-300 text-sm font-sans uppercase">${item.nomSeul}</td>
+                        <td class="py-3 px-3 text-gray-400 font-sans font-medium text-xs">${item.nomGroupe}</td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'}">${item.textAuto}</td>
                         <td class="py-3 px-3 text-center font-bold text-sm ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'}">${item.textPairs}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-sans">${noteJuryText}</td>
@@ -480,7 +490,8 @@
                 ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc';
             } else {
                 colonneTriActuelle = colonne;
-                ordreTriActuel = colonne === 'prenom' ? 'asc' : 'desc';
+                // Intégration de 'nomGroupe' dans la détection des chaînes pour trier de A à Z par défaut
+                ordreTriActuel = (colonne === 'prenomSeul' || colonne === 'nomSeul' || colonne === 'nomGroupe') ? 'asc' : 'desc';
             }
             filtrerEtAfficherTableau();
         }
@@ -644,7 +655,7 @@
                             </div>
                         </div>
                         <div class="flex-1 flex flex-col space-y-0.5 mt-1">
-                            ${contenuCriteres}
+                            ${contentsCriteres}
                         </div>
                         ${htmlBlockFeedback}
                         ${htmlImpactBulle}
