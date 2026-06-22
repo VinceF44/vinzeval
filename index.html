@@ -6,12 +6,23 @@
     <title>Dashboard Master — Logique Multi-Jury Collaborative</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* STYLE SPÉCIFIQUE POUR L'IMPRESSION CLEAN DU PDF SANS LE DESIGN DARK DU SITE */
+        @media print {
+            body * { visibility: hidden; }
+            #modal-rapport, #modal-rapport * { visibility: visible; }
+            #modal-rapport { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: #000 !important; box-shadow: none !important; border: none !important; }
+            #modal-rapport .bg-gray-900, #modal-rapport .bg-gray-950, #modal-rapport .bg-indigo-950\/20 { background: #f3f4f6 !important; border-color: #d1d5db !important; color: #000 !important; }
+            #modal-rapport text, #modal-rapport div, #modal-rapport h3, #modal-rapport h4, #modal-rapport span { color: #000 !important; }
+            #modal-rapport .border { border-color: #9ca3af !important; }
+            #modal-rapport button, #modal-rapport span.italic { display: none !important; }
+        }
+    </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase px-2.5 py-1 rounded border border-amber-800/50">👑 Console Master — Vue Analytique</span>
@@ -23,7 +34,6 @@
             </button>
         </div>
 
-        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -43,7 +53,6 @@
             </div>
         </div>
 
-        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -55,7 +64,6 @@
             </div>
         </div>
 
-        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -88,7 +96,6 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950 rounded-t-2xl">
@@ -100,12 +107,12 @@
             </div>
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6"></div>
             <div class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center">
-                <span class="text-xs text-gray-500 italic">Fonctions d'export à venir à l'Étape 2...</span>
+                <span class="text-xs text-gray-500 italic">Génération et transmission du relevé</span>
                 <div class="flex gap-3">
-                    <button disabled class="opacity-50 cursor-not-allowed bg-red-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-red-500 transition">
-                        📥 Exporter PDF
+                    <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md">
+                        📥 Exporter / Imprimer PDF
                     </button>
-                    <button disabled class="opacity-50 cursor-not-allowed bg-blue-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition">
+                    <button id="btn-rapport-envoyer-email" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 transition cursor-pointer active:scale-95 shadow-md">
                         📧 Envoyer à l'élève
                     </button>
                 </div>
@@ -113,7 +120,6 @@
         </div>
     </div>
 
-    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
@@ -132,7 +138,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -385,11 +390,6 @@
                 });
                 
                 calculerEtAfficherTout();
-                
-                // GARANTIE DE L'AFFICHAGE DES GRILLES À L'ACTUALISATION
-                const grp = document.getElementById('select-groupe-formateur').value;
-                if(grp) mettreAjourDetailsEvaluations(grp);
-
                 if(btn) {
                     btn.innerHTML = "✅ À jour !";
                     setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
@@ -472,21 +472,13 @@
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({
-                            texte: e.feedback,
-                            auteur: nomAffiche,
-                            id: e.id
-                        });
+                        listeFeedbacksCartesCourantes.push({ text: e.feedback, auteur: nomAffiche, id: e.id });
 
                         htmlBlockFeedback = `
                             <div class="group relative inline-block">
-                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1.5 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
+                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
                                     💬 Lire le feedback
                                 </button>
-                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-40 w-72 bg-indigo-950 border border-indigo-800/60 text-indigo-50 text-[11px] rounded-xl p-3.5 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all break-words">
-                                    <div class="font-bold text-indigo-300 mb-1.5 border-b border-indigo-800/60 pb-1">💬 Aperçu du Feedback</div>
-                                    <div class="text-indigo-100 max-h-40 overflow-y-auto">${e.feedback}</div>
-                                </div>
                             </div>
                         `;
                     } else {
@@ -497,16 +489,10 @@
                     if (!e.estProf) {
                         const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
                         const moyProf = evalsProfSujet.length > 0 ? (evalsProfSujet.reduce((a,b)=>a+b.note, 0) / evalsProfSujet.length) : null;
-                        
                         if (moyProf !== null) {
                             const ecartAbsolu = Math.abs(e.note - moyProf);
-                            const estAline = ecartAbsolu < (moyProf * 0.20);
-                            const valeurImpact = estAline ? "+1 pt" : "-1 pt";
-                            const couleurImpact = estAline ? "text-green-400 border-green-500/20 bg-green-500/10" : "text-red-400 border-red-500/20 bg-red-500/10";
-                            
-                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2.5 py-1 border rounded-md shrink-0 ${couleurImpact}">${valeurImpact}</span>`;
-                        } else {
-                            htmlImpactBulle = `<span class="text-[9px] text-gray-500 border border-gray-800 px-2 py-0.5 rounded-md italic shrink-0">Attente Jury</span>`;
+                            const valeurImpact = ecartAbsolu < (moyProf * 0.20) ? "+1 pt" : "-1 pt";
+                            htmlImpactBulle = `<span class="text-[11px] font-bold font-mono px-2 py-1 border rounded-md shrink-0 ${valeurImpact.startsWith('+') ? 'text-green-400 border-green-500/20 bg-green-500/10' : 'text-red-400 border-red-500/20 bg-red-500/10'}">${valeurImpact}</span>`;
                         }
                     }
 
@@ -602,6 +588,9 @@
                 });
 
                 filtrerEtAfficherTableau();
+                
+                const grp = document.getElementById('select-groupe-formateur').value;
+                if(grp) mettreAjourDetailsEvaluations(grp);
             } catch (err) { UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
         }
 
@@ -622,17 +611,6 @@
                 corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
             }
 
-            const colonnes = ['prenomSeul', 'nomSeul', 'nomGroupe'];
-            colonnes.forEach(col => {
-                const spanFleche = document.getElementById(`fleche-${col}`);
-                if (spanFleche) {
-                    if (col === colonneTriActuelle) {
-                        spanFleche.innerText = ordreTriActuel === 'asc' ? ' ▲' : ' ▼';
-                        spanFleche.className = "text-indigo-400 font-sans font-bold text-[9px]";
-                    } else { spanFleche.innerText = ''; }
-                }
-            });
-
             listeFiltree.forEach(item => {
                 let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
                 let noteFinaleAffichage = item.noteProfSur20 !== -1 ? `<span class="text-sm font-black text-indigo-400">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-gray-500">/20</span>` : "--";
@@ -652,20 +630,8 @@
                         <td class="py-3 px-3 font-sans text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
-                                <div class="group relative inline-block">
-                                    <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
-                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
-                                        <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
-                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
-                                    </div>
-                                </div>
-                                <div class="group relative inline-block">
-                                    <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
-                                    <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-sans font-normal leading-relaxed transition-all">
-                                        <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
-                                        <div class="text-amber-200/80 text-[10px]">Attribuer un bonus individuel de +1.00 pt pour récompenser l'engagement de l'apprenant.</div>
-                                    </div>
-                                </div>
+                                <button onclick="basculerMalusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs cursor-pointer ${malusStyle}">⚠️</button>
+                                <button onclick="basculerBonusIndividuel('${item.prenom.replace(/'/g, "\\'")}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs cursor-pointer ${starStyle}">★</button>
                             </div>
                         </td>
                         <td class="py-3 px-3 text-center">
@@ -676,22 +642,9 @@
             });
         }
 
-        function basculerBonusIndividuel(prenomApprenant) {
-            if(cacheBonusIndividuels[prenomApprenant] === true) { delete cacheBonusIndividuels[prenomApprenant]; } 
-            else { cacheBonusIndividuels[prenomApprenant] = true; if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant]; }
-            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
-            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
-            calculerEtAfficherTout();
-        }
-
-        function basculerMalusIndividuel(prenomApprenant) {
-            if(cacheMalusIndividuels[prenomApprenant] === true) { delete cacheMalusIndividuels[prenomApprenant]; } 
-            else { cacheMalusIndividuels[prenomApprenant] = true; if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant]; }
-            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
-            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
-            calculerEtAfficherTout();
-        }
-
+        // ==========================================
+        // GESTION DU SYSTÈME DE PRÉPARATION EMAIL / CONFIGURATION RAPPORTS
+        // ==========================================
         function ouvrirRapportApprenant(prenomComplet) {
             const dataApp = listeCalculeePourTri.find(a => a.prenom === prenomComplet);
             if(!dataApp) return;
@@ -699,10 +652,47 @@
             document.getElementById('rapport-sous-titre').innerText = `${prenomComplet} — ${dataApp.nomGroupe}`;
             const conteneur = document.getElementById('rapport-corps');
             
-            const feedbacksJury = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && e.estProf && e.feedback).map(e => `<li><span class="text-purple-400 font-bold">[Jury]</span> ${e.feedback}</li>`).join('');
-            const feedbacksPairs = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && !e.estProf && e.feedback && e.groupe_votant !== dataApp.nomGroupe).map(e => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${e.feedback}</li>`).join('');
+            const txtJuryRaw = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && e.estProf && e.feedback).map(e => e.feedback);
+            const txtPairsRaw = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && !e.estProf && e.feedback && e.groupe_votant !== dataApp.nomGroupe).map(e => e.feedback);
+
+            const feedbacksJury = txtJuryRaw.map(f => `<li><span class="text-purple-400 font-bold">[Jury]</span> ${f}</li>`).join('');
+            const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic">Aucun retour rédigé pour cette équipe.</p>`;
 
+            // Stockage temporaire des données textuelles pour l'e-mail standard mailto
+            const mailDestinataire = dataApp.appObj.email || "";
+            const sujetEmail = encodeURIComponent(`[Bilan d'évaluation] Vos résultats pour la session : ${document.getElementById('nom-session').innerText}`);
+            
+            // Construction d'un corps d'e-mail texte très propre
+            let corpsEmailText = `Bonjour ${dataApp.prenomSeul},\n\n`;
+            corpsEmailText += `Voici le bilan de vos évaluations pour la session : ${document.getElementById('nom-session').innerText}.\n\n`;
+            corpsEmailText += `--------------------------------------------\n`;
+            corpsEmailText += `📊 VOS RÉSULTATS CHIFBRÉS :\n`;
+            corpsEmailText += `- Note de base définie par le Jury : ${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}/20\n`;
+            corpsEmailText += `- Impact cumulé (Auto-évaluation + Pairs) : ${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt(s) (limité à ±2 points max)\n`;
+            corpsEmailText += `- Ajustement discrétionnaire formateur : ${dataApp.hasBonus ? '+1.00' : (dataApp.hasMalus ? '-1.00' : '0.00')} pt\n\n`;
+            corpsEmailText += `🏆 NOTE FINALE ENREGISTRÉE : ${dataApp.noteFinaleNum !== -1 ? dataApp.noteFinaleNum.toFixed(2) : '--'}/20\n`;
+            corpsEmailText += `--------------------------------------------\n\n`;
+            
+            if(txtJuryRaw.length > 0 || txtPairsRaw.length > 0) {
+                corpsEmailText += `💬 SYNTHÈSE DES FEEDBACKS QUALITATIFS (MODÉRÉS) :\n`;
+                txtJuryRaw.forEach(f => corpsEmailText += `• [Retour Jury] : "${f}"\n`);
+                txtPairsRaw.forEach(f => corpsEmailText += `• [Retour Équipe] : "${f}"\n`);
+                corpsEmailText += `\n`;
+            }
+            corpsEmailText += `En restant à votre disposition pour tout échange complémentaire.\nCordialement,\nL'équipe pédagogique.`;
+
+            // On branche l'action sur le bouton e-mail
+            const btnMail = document.getElementById('btn-rapport-envoyer-email');
+            btnMail.onclick = function() {
+                if(!mailDestinataire) {
+                    alert("⚠️ Cet apprenant n'a pas d'adresse e-mail renseignée dans l'annuaire. Vous pouvez copier les notes manuellement ou compléter sa fiche dans l'annuaire.");
+                    return;
+                }
+                window.location.href = `mailto:${mailDestinataire}?subject=${sujetEmail}&body=${encodeURIComponent(corpsEmailText)}`;
+            };
+
+            // Injection du HTML visuel dans la modale
             conteneur.innerHTML = `
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-center shadow-inner">
@@ -714,7 +704,6 @@
                         <div class="text-3xl font-black text-indigo-400 mt-1 font-mono">${dataApp.noteFinaleNum !== -1 ? dataApp.noteFinaleNum.toFixed(2) : '--'}<span class="text-sm text-indigo-900">/20</span></div>
                     </div>
                 </div>
-                
                 <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 shadow-inner">
                     <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-2 mb-4">🛠️ Détail de la Pondération</h4>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
@@ -737,7 +726,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 shadow-inner">
                     <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-3 mb-3">💬 Synthèse des Retours</h4>
                     ${zoneFeedbacks}
@@ -749,13 +737,10 @@
         function ouvrirModalFeedback(index) {
             const dataFeedback = listeFeedbacksCartesCourantes[index];
             if(!dataFeedback) return;
-
             document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
             document.getElementById('modal-feedback-corps').innerHTML = dataFeedback.texte || "Aucun texte enregistré.";
-            
             const btnSupprimer = document.getElementById('btn-modal-supprimer-feedback');
             btnSupprimer.onclick = function() { modererFeedback(dataFeedback.id, true); };
-
             document.getElementById('modal-feedback').classList.remove('hidden');
         }
 
