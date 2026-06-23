@@ -22,19 +22,24 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
+                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                    👥 Comptes
+                </button>
+                
                 <button onclick="basculerZoneAnnuaire()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🗃️ Annuaire
                 </button>
+                
                 <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
-                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-indigo-900/50 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
-                    👥 Comptes
-                </button>
-                <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl border border-indigo-500 shadow-sm transition-all cursor-pointer shrink-0 active:scale-95">
+                
+                <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📈 Stats Globales
                 </button>
+                
                 <div class="hidden sm:block w-px h-6 bg-slate-800 mx-1"></div>
+                
                 <button onclick="executerDeconnexion()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-xl border border-red-500/20 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🚪 Quitter
                 </button>
