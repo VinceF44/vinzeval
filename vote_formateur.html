@@ -29,7 +29,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
-            <!-- DROPDOWN CUSTOM : NOM DU FORMATEUR -->
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
@@ -39,28 +38,25 @@
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-evaluateur-arrow">▼</span>
                     </button>
                     <div id="select-evaluateur-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        <!-- Injecté via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
             
-            <!-- DROPDOWN CUSTOM : GROUPE ÉVALUÉ -->
             <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                 <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
                     <input type="hidden" id="select-sujet-evalue" value="">
                     <button type="button" onclick="toggleDropdown('select-sujet-evalue')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-purple-900/40 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#a855f7] transition-all cursor-pointer shadow-sm">
-                        <span id="select-sujet-evalue-label" class="truncate pr-2">Chargement...</span>
+                        <span id="select-sujet-evalue-label" class="truncate pr-2 flex items-center gap-2">Chargement...</span>
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                     </button>
                     <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-purple-900/50 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        <!-- Injecté via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
         
-        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40 relative z-10">💡 Notez les équipes à tour de rôle en changeant de cible. Vos curseurs et blocs-notes sont sauvegardés au fur et à mesure. Cliquez sur le gros bouton en bas à la fin pour tout valider d'un coup.</p>
+        <p class="text-[11px] text-slate-500 bg-[#030712]/50 p-2 rounded-lg border border-slate-800/40 relative z-10">💡 Notez les équipes à tour de rôle en changeant de cible. Vos curseurs et blocs-notes sont sauvegardés au fur et à mesure. N'oubliez pas d'enregistrer chaque évaluation finalisée.</p>
 
         <div id="conteneur-formateur-criteres" class="space-y-5 pt-2 border-t border-slate-800/60 relative z-0"></div>
 
@@ -78,13 +74,12 @@
         </div>
 
         <div class="pt-2">
-            <button onclick="enregistrerToutesLesNotesFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-sm tracking-wider active:scale-[0.99]">
-                💾 Enregistrer toutes les évaluations de la session
+            <button onclick="enregistrerEvaluationCouranteFormateur()" class="w-full bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-purple-950/50 uppercase text-sm tracking-wider active:scale-[0.99]">
+                💾 Enregistrer l'évaluation de cette équipe
             </button>
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -110,24 +105,20 @@
         const urlParams = new URLSearchParams(window.location.search);
         const idSessionDashboard = urlParams.get('session_id');
 
-        let groupesSession = [];
         let listeCriteresProf = [];
+        let groupesSessionGlobal = [];
+        let membresParIdGroupeGlobal = {};
+        let groupesEnregistresDB = [];
+
         let notesFormateurLocales = {}; 
         let ciblePrecedente = "";
         let evaluateurPrecedent = "";
 
-        // --- LOGIQUE UI DROPDOWNS CUSTOM ---
         function toggleDropdown(id) {
             const menu = document.getElementById(id + '-menu');
             const arrow = document.getElementById(id + '-arrow');
-            
-            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                if (m.id !== id + '-menu') m.classList.add('hidden');
-            });
-            document.querySelectorAll('.dropdown-arrow').forEach(a => {
-                if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)';
-            });
-
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => { if (m.id !== id + '-menu') m.classList.add('hidden'); });
+            document.querySelectorAll('.dropdown-arrow').forEach(a => { if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)'; });
             const isHidden = menu.classList.toggle('hidden');
             arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
         }
@@ -135,12 +126,10 @@
         function selectOption(dropdownId, value, label) {
             const hiddenInput = document.getElementById(dropdownId);
             const labelSpan = document.getElementById(dropdownId + '-label');
-            
             const valeurChangee = hiddenInput.value !== value;
             
             hiddenInput.value = value;
             labelSpan.innerHTML = label;
-            
             toggleDropdown(dropdownId);
             
             if (valeurChangee) {
@@ -155,57 +144,55 @@
                 document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
             }
         });
-        // -----------------------------------
+
+        function formaterPrenomInitiale(nomComplet) {
+            if (!nomComplet) return "";
+            const parties = nomComplet.trim().split(/\s+/);
+            if (parties.length <= 1) return nomComplet;
+            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
+        }
 
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
-                    try {
-                        const modal = document.getElementById('ui-modal');
-                        const box = document.getElementById('ui-modal-box');
-                        const title = document.getElementById('ui-modal-title');
-                        const msg = document.getElementById('ui-modal-message');
-                        const icon = document.getElementById('ui-modal-icon');
-                        const input = document.getElementById('ui-modal-input');
-                        const btnCancel = document.getElementById('ui-btn-cancel');
-                        const btnConfirm = document.getElementById('ui-btn-confirm');
+                    const modal = document.getElementById('ui-modal');
+                    const box = document.getElementById('ui-modal-box');
+                    const title = document.getElementById('ui-modal-title');
+                    const msg = document.getElementById('ui-modal-message');
+                    const icon = document.getElementById('ui-modal-icon');
+                    const input = document.getElementById('ui-modal-input');
+                    const btnCancel = document.getElementById('ui-btn-cancel');
+                    const btnConfirm = document.getElementById('ui-btn-confirm');
 
-                        title.innerText = options.title || 'Information';
-                        msg.innerHTML = options.message || '';
-                        
-                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-[#a855f7] mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#a855f7] hover:bg-[#9333ea] shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    title.innerText = options.title || 'Information';
+                    msg.innerHTML = options.message || '';
+                    
+                    if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                    else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-[#a855f7] mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#a855f7] hover:bg-[#9333ea] shadow-md transition-all active:scale-95 cursor-pointer"; }
 
-                        if (options.isPrompt) {
-                            input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
-                        } else { input.classList.add('hidden'); }
+                    if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
+                    else { input.classList.add('hidden'); }
 
-                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
-                        btnConfirm.innerText = options.confirmText || 'OK';
+                    if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
+                    btnConfirm.innerText = options.confirmText || 'OK';
 
-                        const cleanup = () => {
-                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                            setTimeout(() => modal.classList.add('hidden'), 200);
-                            btnConfirm.onclick = null; btnCancel.onclick = null;
-                        };
+                    const cleanup = () => {
+                        modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
+                        setTimeout(() => modal.classList.add('hidden'), 200);
+                        btnConfirm.onclick = null; btnCancel.onclick = null;
+                    };
 
-                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
-                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
+                    btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
+                    btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
 
-                        modal.classList.remove('hidden'); void modal.offsetWidth;
-                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
-                    } catch (err) {
-                        if(options.isConfirm) resolve(window.confirm(options.message));
-                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
-                        else { window.alert(options.message); resolve(true); }
-                    }
+                    modal.classList.remove('hidden'); void modal.offsetWidth;
+                    modal.classList.add('opacity-100'); box.classList.add('scale-100');
                 });
             },
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
-            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
         };
 
         let chronoInterval = null;
@@ -234,77 +221,107 @@
         }
 
         function appliquerFormatTextProf(commande) { document.execCommand(commande, false, null); }
-        
-        function formaterPrenomInitiale(nomComplet) {
-            if (!nomComplet) return "";
-            const parties = nomComplet.trim().split(/\s+/);
-            if (parties.length <= 1) return nomComplet;
-            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
-        }
 
         async function initFormulaire() {
-            if (!idSessionDashboard) { document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant.</p>"; return; }
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
-            if(s) document.getElementById('nom-session').innerText = s.nom;
-
-            const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
-            
-            const selectEvalMenu = document.getElementById('select-evaluateur-menu');
-            let evalOptions = `<button type="button" onclick="selectOption('select-evaluateur', '', '-- Choisissez votre nom --')" class="w-full text-left block px-4 py-3 text-sm text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre nom --</button>`;
-            
-            if(evals && evals.length > 0) {
-                evals.forEach(e => { 
-                    const safeNom = e.nom.replace(/'/g, "\\'");
-                    evalOptions += `<button type="button" onclick="selectOption('select-evaluateur', '${safeNom}', '${safeNom}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${e.nom}</button>`;
-                });
-            } else {
-                evalOptions += `<button type="button" onclick="selectOption('select-evaluateur', 'Formateur Principal', 'Formateur Principal')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">Formateur Principal</button>`;
-            }
-            selectEvalMenu.innerHTML = evalOptions;
-            evaluateurPrecedent = ""; 
-
-            const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
-            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
-
-            if(g && g.length > 0) {
-                groupesSession = g;
-                const membresParIdGroupe = {};
+            try {
+                if (!idSessionDashboard) { document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant.</p>"; return; }
+                db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
-                if (apps) {
-                    apps.forEach(a => {
-                        if(!membresParIdGroupe[a.groupe_id]) membresParIdGroupe[a.groupe_id] = [];
-                        membresParIdGroupe[a.groupe_id].push(a.prenom);
+                const { data: s } = await db.from('sessions').select('nom').eq('id', idSessionDashboard).single();
+                if(s) document.getElementById('nom-session').innerText = s.nom;
+
+                const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
+                
+                const selectEvalMenu = document.getElementById('select-evaluateur-menu');
+                let evalOptions = `<button type="button" onclick="selectOption('select-evaluateur', '', '-- Choisissez votre nom --')" class="w-full text-left block px-4 py-3 text-sm text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre nom --</button>`;
+                
+                if(evals && evals.length > 0) {
+                    evals.forEach(e => { 
+                        const safeNom = e.nom.replace(/'/g, "\\'");
+                        evalOptions += `<button type="button" onclick="selectOption('select-evaluateur', '${safeNom}', '${safeNom}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${e.nom}</button>`;
                     });
+                } else {
+                    evalOptions += `<button type="button" onclick="selectOption('select-evaluateur', 'Formateur Principal', 'Formateur Principal')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">Formateur Principal</button>`;
+                }
+                selectEvalMenu.innerHTML = evalOptions;
+                evaluateurPrecedent = ""; 
+
+                const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
+                const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
+
+                if(g && g.length > 0) {
+                    groupesSessionGlobal = g;
+                    membresParIdGroupeGlobal = {};
+                    
+                    if (apps) {
+                        apps.forEach(a => {
+                            if(!membresParIdGroupeGlobal[a.groupe_id]) membresParIdGroupeGlobal[a.groupe_id] = [];
+                            membresParIdGroupeGlobal[a.groupe_id].push(a.prenom);
+                        });
+                    }
+
+                    let sujetOptions = '';
+                    g.forEach(grp => {
+                        const safeNom = grp.nom.replace(/'/g, "\\'");
+                        const listeMembres = (membresParIdGroupeGlobal[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                        const labelComplet = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
+                        const safeLabel = labelComplet.replace(/'/g, "\\'");
+
+                        sujetOptions += `<button type="button" onclick="selectOption('select-sujet-evalue', '${safeNom}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
+                    });
+                    document.getElementById('select-sujet-evalue-menu').innerHTML = sujetOptions;
+                    
+                    const firstGroupMembres = (membresParIdGroupeGlobal[g[0].id] || []).map(formaterPrenomInitiale).join(', ');
+                    const firstGroupLabel = firstGroupMembres ? `${g[0].nom} (${firstGroupMembres})` : g[0].nom;
+
+                    document.getElementById('select-sujet-evalue').value = g[0].nom;
+                    document.getElementById('select-sujet-evalue-label').innerText = firstGroupLabel;
+                    ciblePrecedente = g[0].nom;
                 }
 
-                let sujetOptions = '';
-                g.forEach(grp => {
-                    const safeNom = grp.nom.replace(/'/g, "\\'");
-                    const listeMembres = (membresParIdGroupe[grp.id] || []).map(formaterPrenomInitiale).join(', ');
-                    const labelComplet = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
-                    const safeLabel = labelComplet.replace(/'/g, "\\'");
+                const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
+                if(critsProf && critsProf.length > 0) {
+                    listeCriteresProf = critsProf;
+                    genererSlidersHtml();
+                }
 
-                    sujetOptions += `<button type="button" onclick="selectOption('select-sujet-evalue', '${safeNom}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
-                });
-                document.getElementById('select-sujet-evalue-menu').innerHTML = sujetOptions;
-                
-                const firstGroupMembres = (membresParIdGroupe[g[0].id] || []).map(formaterPrenomInitiale).join(', ');
-                const firstGroupLabel = firstGroupMembres ? `${g[0].nom} (${firstGroupMembres})` : g[0].nom;
+                // Pour un formateur, on ne charge les notes qu'après qu'il ait sélectionné son profil
+                // Mettre un indicateur visuel au cas où :
+                document.getElementById('select-sujet-evalue-menu').innerHTML = `<div class="p-3 text-sm text-gray-500 italic text-center">Sélectionnez d'abord votre profil Évaluateur</div>`;
 
-                document.getElementById('select-sujet-evalue').value = g[0].nom;
-                document.getElementById('select-sujet-evalue-label').innerText = firstGroupLabel;
-                ciblePrecedente = g[0].nom;
+            } catch (errorGlobal) { await UIModal.alert("Erreur fatale : " + errorGlobal.message, "error", "Erreur Système"); }
+        }
+
+        function actualiserMenuSujetsFormateur() {
+            let optionsHtmlSujet = ``;
+            groupesSessionGlobal.forEach(grp => {
+                const listeMembres = (membresParIdGroupeGlobal[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                let labelComplet = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
+                const safeValue = grp.nom.replace(/'/g, "\\'");
+
+                if (groupesEnregistresDB.includes(grp.nom)) {
+                    labelComplet += ` <span class="text-emerald-400 text-[10px] font-bold tracking-wider ml-1 uppercase">(Enregistré)</span>`;
+                }
+
+                const safeLabel = labelComplet.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                optionsHtmlSujet += `<button type="button" onclick="selectOption('select-sujet-evalue', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">${labelComplet}</button>`;
+            });
+
+            document.getElementById('select-sujet-evalue-menu').innerHTML = optionsHtmlSujet;
+            
+            // Mise à jour visuelle du label de la cible actuellement sélectionnée s'il a changé d'état
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            if (cibleActuelle) {
+                const grpObj = groupesSessionGlobal.find(g => g.nom === cibleActuelle);
+                if (grpObj) {
+                    const listeMembres = (membresParIdGroupeGlobal[grpObj.id] || []).map(formaterPrenomInitiale).join(', ');
+                    let label = listeMembres ? `${grpObj.nom} (${listeMembres})` : grpObj.nom;
+                    if (groupesEnregistresDB.includes(cibleActuelle)) {
+                        label += ` <span class="text-emerald-400 text-[10px] font-bold tracking-wider ml-1 uppercase">(Enregistré)</span>`;
+                    }
+                    document.getElementById('select-sujet-evalue-label').innerHTML = label;
+                }
             }
-
-            const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
-            if(critsProf && critsProf.length > 0) {
-                listeCriteresProf = critsProf;
-                genererSlidersHtml();
-            }
-
-            await chargerNotesExistantes();
         }
 
         function mettreAJourCouleurBadgeProf(index, valeur) {
@@ -373,26 +390,34 @@
             return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
         }
 
-        async function chargerNotesExistantes() {
-            const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            if (!evaluateurActuel) return;
-
-            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', evaluateurActuel);
-            notesFormateurLocales = {}; 
+        async function changerDeFormateurVotant(nouveauEvaluateur) {
+            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
+            if (evaluateurPrecedent && cibleActuelle) synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
             
+            const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${nouveauEvaluateur}`);
+            notesFormateurLocales = cacheSauvegarde ? JSON.parse(cacheSauvegarde) : {};
+
+            // Interroger la BDD pour voir ce qui est DEJA enregistré pour CET évaluateur
+            const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', nouveauEvaluateur);
+            
+            groupesEnregistresDB = [];
             if (data) {
                 data.forEach(e => {
-                    const extraction = decoderNoteEtCurseurs(e.note);
-                    if (extraction.sliders.length === listeCriteresProf.length) {
-                        notesFormateurLocales[e.sujet] = { sliders: extraction.sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: e.feedback || "" };
+                    groupesEnregistresDB.push(e.sujet);
+                    if (!notesFormateurLocales[e.sujet]) {
+                        const extraction = decoderNoteEtCurseurs(e.note);
+                        if (extraction.sliders.length === listeCriteresProf.length) {
+                            notesFormateurLocales[e.sujet] = { sliders: extraction.sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: e.feedback || "" };
+                        }
                     }
                 });
             }
 
-            const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${evaluateurActuel}`);
-            if (cacheSauvegarde) Object.assign(notesFormateurLocales, JSON.parse(cacheSauvegarde));
-
-            restituerSlidersPourCible(ciblePrecedente);
+            actualiserMenuSujetsFormateur();
+            
+            const premierCibleActuelle = document.getElementById('select-sujet-evalue').value;
+            restituerSlidersPourCible(premierCibleActuelle);
+            evaluateurPrecedent = nouveauEvaluateur;
         }
 
         function synchroniserNotesLocales(groupeForce, evaluateurForce) {
@@ -425,13 +450,6 @@
             ciblePrecedente = nouvelleCible;
         }
 
-        function changerDeFormateurVotant(nouveauEvaluateur) {
-            const cibleActuelle = document.getElementById('select-sujet-evalue').value;
-            if (evaluateurPrecedent && cibleActuelle) synchroniserNotesLocales(cibleActuelle, evaluateurPrecedent);
-            evaluateurPrecedent = nouveauEvaluateur;
-            chargerNotesExistantes();
-        }
-
         function restituerSlidersPourCible(cible) {
             const blocExistante = notesFormateurLocales[cible];
             const isOldFormat = Array.isArray(blocExistante);
@@ -457,52 +475,49 @@
             if (inputFB) inputFB.innerHTML = (blocExistante && !isOldFormat && blocExistante.feedback) ? blocExistante.feedback : "";
         }
 
-        async function enregistrerToutesLesNotesFormateur() {
+        async function enregistrerEvaluationCouranteFormateur() {
             const evaluateurActuel = document.getElementById('select-evaluateur').value;
-            if (!evaluateurActuel) { await UIModal.alert("Veuillez sélectionner votre nom d'évaluateur avant de valider.", "warning", "Évaluateur manquant"); return; }
+            const sujetActuel = document.getElementById('select-sujet-evalue').value;
 
-            const groupeActuel = document.getElementById('select-sujet-evalue').value;
-            if (groupeActuel) synchroniserNotesLocales(groupeActuel, evaluateurActuel);
+            if (!evaluateurActuel) { await UIModal.alert("Veuillez sélectionner votre nom d'évaluateur en haut avant d'enregistrer.", "warning", "Évaluateur manquant"); return; }
+            if (!sujetActuel) { await UIModal.alert("Aucune équipe ciblée.", "warning"); return; }
 
-            const listSujetsEvalues = Object.keys(notesFormateurLocales);
-            if (listSujetsEvalues.length === 0) { await UIModal.alert("Aucune note n'a été saisie pour le moment.", "warning", "Formulaire vide"); return; }
+            synchroniserNotesLocales(sujetActuel, evaluateurActuel);
 
-            const paquetInsertions = [];
+            const dataTarget = notesFormateurLocales[sujetActuel];
+            const tableauNotes = dataTarget.sliders || (Array.isArray(dataTarget) ? dataTarget : null);
 
-            listSujetsEvalues.forEach(nomSujet => {
-                const dataTarget = notesFormateurLocales[nomSujet];
-                const tableauNotes = dataTarget.sliders || (Array.isArray(dataTarget) ? dataTarget : null);
+            if (!tableauNotes || tableauNotes.length === 0) return;
 
-                if (tableauNotes && tableauNotes.length > 0) {
-                    const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
-                    let empreinteDecimale = "";
-                    tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
+            const moyenneSur20 = (tableauNotes.reduce((a, b) => a + b, 0) / tableauNotes.length / 5) * 20;
+            let empreinteDecimale = "";
+            tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
+            const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
-                    const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
+            const payload = {
+                session_id: idSessionDashboard,
+                groupe_votant: evaluateurActuel,
+                sujet: sujetActuel,
+                note: noteCompletePayload,
+                feedback: dataTarget.feedback || ""
+            };
 
-                    paquetInsertions.push({
-                        session_id: idSessionDashboard,
-                        groupe_votant: evaluateurActuel,
-                        sujet: nomSujet,
-                        note: noteCompletePayload,
-                        feedback: dataTarget.feedback || ""
-                    });
-                }
-            });
-
-            if (paquetInsertions.length === 0) { await UIModal.alert("Aucune note valide trouvée.", "error"); return; }
-
-            const { error: deleteError } = await db.from('evaluations')
+            // Suppression propre de la précédente note pour cette même équipe / formateur
+            await db.from('evaluations')
                 .delete()
                 .eq('session_id', idSessionDashboard)
-                .eq('groupe_votant', evaluateurActuel);
+                .eq('groupe_votant', evaluateurActuel)
+                .eq('sujet', sujetActuel);
 
-            if (deleteError) { await UIModal.alert("Erreur lors du nettoyage de la base de données : " + deleteError.message, "error"); return; }
+            const { error: insertError } = await db.from('evaluations').insert([payload]);
 
-            const { error: insertError } = await db.from('evaluations').insert(paquetInsertions);
-
-            if (insertError) { await UIModal.alert("Erreur lors de l'enregistrement : " + insertError.message, "error");
-            } else { await UIModal.alert(`Toutes vos grilles d'évaluations (${paquetInsertions.length}) ont été sauvegardées pour la session par ${evaluateurActuel}.`, "success", "Sauvegarde réussie 🎉"); }
+            if (insertError) { 
+                await UIModal.alert("Erreur lors de l'enregistrement : " + insertError.message, "error");
+            } else { 
+                if(!groupesEnregistresDB.includes(sujetActuel)) groupesEnregistresDB.push(sujetActuel);
+                actualiserMenuSujetsFormateur();
+                await UIModal.alert(`L'évaluation pour l'équipe ${sujetActuel} a bien été enregistrée. Vous pouvez passer à l'équipe suivante ou revenir dessus plus tard.`, "success", "Sauvegarde réussie 🎉"); 
+            }
         }
 
         window.onload = initFormulaire;
