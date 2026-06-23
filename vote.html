@@ -28,7 +28,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
-                <!-- DROPDOWN CUSTOM : ÉQUIPE VOTANT -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
@@ -38,23 +37,20 @@
                             <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-votant-arrow">▼</span>
                         </button>
                         <div id="select-groupe-votant-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-gray-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            <!-- Injecté via JS -->
-                        </div>
+                            </div>
                     </div>
                 </div>
 
-                <!-- DROPDOWN CUSTOM : SUJET ÉVALUÉ -->
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
                         <input type="hidden" id="select-sujet-evalue" value="">
                         <button type="button" onclick="toggleDropdown('select-sujet-evalue')" class="w-full bg-gray-950 rounded-xl p-3 text-sm font-sans border border-blue-900/50 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
-                            <span id="select-sujet-evalue-label" class="truncate pr-2">Chargement...</span>
+                            <span id="select-sujet-evalue-label" class="truncate pr-2 flex items-center gap-2">Chargement...</span>
                             <span class="dropdown-arrow text-xs text-blue-500/50 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                         </button>
                         <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-blue-800/60 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            <!-- Injecté via JS -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -75,8 +71,8 @@
             </div>
 
             <div class="pt-2 relative z-0">
-                <button onclick="soumettreEvaluationGenerale()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-sm tracking-wider active:scale-[0.99]">
-                    🚀 Envoyer toutes nos évaluations
+                <button onclick="soumettreEvaluationCourante()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition cursor-pointer shadow-lg shadow-blue-950/50 uppercase text-sm tracking-wider active:scale-[0.99]">
+                    🚀 Valider et envoyer l'évaluation de cette équipe
                 </button>
             </div>
         </div>
@@ -84,7 +80,7 @@
         <div id="ecran-rapport" class="hidden space-y-5 text-center py-4">
             <div class="text-5xl">🎉</div>
             <div>
-                <h2 class="text-2xl font-black text-white">Évaluations Émises !</h2>
+                <h2 class="text-2xl font-black text-white">Évaluations Terminées !</h2>
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
             <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
@@ -95,7 +91,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -122,23 +117,19 @@
         const idSessionEvaluation = urlParams.get('session_id');
 
         let listeCriteres = [];
+        let groupesSessionGlobal = [];
+        let membresParIdGroupeGlobal = {};
+        let groupesSoumisDB = [];
+
         let ciblePrecedente = ""; 
         let votantPrecedent = "";
         let memoireEvaluations = {};
 
-        // --- LOGIQUE UI DROPDOWNS CUSTOM ---
         function toggleDropdown(id) {
             const menu = document.getElementById(id + '-menu');
             const arrow = document.getElementById(id + '-arrow');
-            
-            // Fermer les autres menus ouverts
-            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                if (m.id !== id + '-menu') m.classList.add('hidden');
-            });
-            document.querySelectorAll('.dropdown-arrow').forEach(a => {
-                if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)';
-            });
-
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => { if (m.id !== id + '-menu') m.classList.add('hidden'); });
+            document.querySelectorAll('.dropdown-arrow').forEach(a => { if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)'; });
             const isHidden = menu.classList.toggle('hidden');
             arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
         }
@@ -146,12 +137,10 @@
         function selectOption(dropdownId, value, label) {
             const hiddenInput = document.getElementById(dropdownId);
             const labelSpan = document.getElementById(dropdownId + '-label');
-            
             const valeurChangee = hiddenInput.value !== value;
             
             hiddenInput.value = value;
-            labelSpan.innerText = label;
-            
+            labelSpan.innerHTML = label;
             toggleDropdown(dropdownId);
             
             if (valeurChangee) {
@@ -160,14 +149,12 @@
             }
         }
 
-        // Fermeture automatique en cliquant en dehors
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.custom-dropdown-container')) {
                 document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
                 document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
             }
         });
-        // -----------------------------------
 
         function formaterPrenomInitiale(nomComplet) {
             if (!nomComplet) return "Inconnu";
@@ -196,9 +183,8 @@
                     else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
                     else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
 
-                    if (options.isPrompt) {
-                        input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
-                    } else { input.classList.add('hidden'); }
+                    if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
+                    else { input.classList.add('hidden'); }
 
                     if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
                     btnConfirm.innerText = options.confirmText || 'OK';
@@ -217,8 +203,7 @@
                 });
             },
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
-            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
         };
 
         let chronoInterval = null;
@@ -263,59 +248,76 @@
                     document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
                 }
 
-                const { data: g = [] } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
+                const { data: g = [] } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation).order('nom');
                 const { data: apps = [] } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
 
                 if (g && g.length > 0) {
-                    const membresParIdGroupe = {};
-                    g.forEach(grp => { membresParIdGroupe[grp.id] = []; });
-                    if (apps) apps.forEach(student => { if (membresParIdGroupe[student.groupe_id]) membresParIdGroupe[student.groupe_id].push(student.prenom); });
+                    groupesSessionGlobal = g;
+                    membresParIdGroupeGlobal = {};
+                    g.forEach(grp => { membresParIdGroupeGlobal[grp.id] = []; });
+                    if (apps) apps.forEach(student => { if (membresParIdGroupeGlobal[student.groupe_id]) membresParIdGroupeGlobal[student.groupe_id].push(student.prenom); });
 
-                    // Construction dynamique des options pour nos menus custom
                     let optionsHtmlVotant = `<button type="button" onclick="selectOption('select-groupe-votant', '', '-- Choisissez votre équipe --')" class="w-full text-left block px-4 py-3 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre équipe --</button>`;
-                    let optionsHtmlSujet = ``;
 
                     g.forEach(grp => {
-                        const listeMembres = (membresParIdGroupe[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                        const listeMembres = (membresParIdGroupeGlobal[grp.id] || []).map(formaterPrenomInitiale).join(', ');
                         const label = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
-                        
                         const safeValue = grp.nom.replace(/'/g, "\\'");
                         const safeLabel = label.replace(/'/g, "\\'");
                         
-                        const btnHtml = `<button type="button" onclick="selectOption('TYPE_TARGET', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${label}</button>`;
-                        
-                        optionsHtmlVotant += btnHtml.replace('TYPE_TARGET', 'select-groupe-votant');
-                        optionsHtmlSujet += btnHtml.replace('TYPE_TARGET', 'select-sujet-evalue');
+                        optionsHtmlVotant += `<button type="button" onclick="selectOption('select-groupe-votant', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${label}</button>`;
                     });
 
                     document.getElementById('select-groupe-votant-menu').innerHTML = optionsHtmlVotant;
-                    document.getElementById('select-sujet-evalue-menu').innerHTML = optionsHtmlSujet;
                     
-                    // Initialisation du sujet par défaut (1er de la liste)
-                    const firstGrp = g[0];
-                    const firstGrpMembres = (membresParIdGroupe[firstGrp.id] || []).map(formaterPrenomInitiale).join(', ');
-                    const firstLabel = firstGrpMembres ? `${firstGrp.nom} (${firstGrpMembres})` : firstGrp.nom;
-
-                    document.getElementById('select-sujet-evalue').value = firstGrp.nom;
-                    document.getElementById('select-sujet-evalue-label').innerText = firstLabel;
-                    ciblePrecedente = firstGrp.nom;
-                    votantPrecedent = "";
+                    // On force l'utilisateur à choisir son équipe avant d'afficher le menu des cibles
+                    document.getElementById('select-sujet-evalue-menu').innerHTML = `<div class="p-3 text-sm text-gray-500 italic text-center">Sélectionnez d'abord votre équipe</div>`;
                 }
 
                 const { data: crits = [] } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
                 if (crits && crits.length > 0) {
                     listeCriteres = crits;
                     genererCurseursCriteres();
-                    
-                    if (votantPrecedent) {
-                        const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${votantPrecedent}`);
-                        if (cacheSauvegarde) {
-                            memoireEvaluations = JSON.parse(cacheSauvegarde);
-                            if (ciblePrecedente) restituerCurseursDepuisMemoire(ciblePrecedente);
-                        }
-                    }
                 }
             } catch (errorGlobal) { await UIModal.alert("Erreur fatale : " + errorGlobal.message, "error", "Erreur Système"); }
+        }
+
+        function actualiserMenuSujetsCibles() {
+            let optionsHtmlSujet = ``;
+            let premierDispoTrouve = null;
+            let labelPremierDispo = "";
+
+            groupesSessionGlobal.forEach(grp => {
+                const listeMembres = (membresParIdGroupeGlobal[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                let labelComplet = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
+                const safeValue = grp.nom.replace(/'/g, "\\'");
+                
+                if (groupesSoumisDB.includes(grp.nom)) {
+                    // Équipe déjà évaluée => barrée et désactivée
+                    optionsHtmlSujet += `<button type="button" disabled class="w-full text-left block px-4 py-3 text-sm text-gray-600 line-through bg-gray-900/50 cursor-not-allowed font-sans">${labelComplet} <span class="text-gray-500 text-[10px] uppercase font-bold tracking-wider ml-1">(évaluation envoyée)</span></button>`;
+                } else {
+                    const safeLabel = labelComplet.replace(/'/g, "\\'");
+                    if (!premierDispoTrouve) { premierDispoTrouve = grp.nom; labelPremierDispo = labelComplet; }
+                    optionsHtmlSujet += `<button type="button" id="btn-cible-${safeValue}" onclick="selectOption('select-sujet-evalue', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
+                }
+            });
+
+            document.getElementById('select-sujet-evalue-menu').innerHTML = optionsHtmlSujet;
+
+            if (premierDispoTrouve) {
+                document.getElementById('select-sujet-evalue').value = premierDispoTrouve;
+                document.getElementById('select-sujet-evalue-label').innerHTML = labelPremierDispo;
+                ciblePrecedente = premierDispoTrouve;
+                restituerCurseursDepuisMemoire(premierDispoTrouve);
+            } else {
+                terminerToutesEvaluations();
+            }
+        }
+
+        async function chargerEvaluationsVotantActuel(nouveauVotant) {
+            const { data } = await db.from('evaluations').select('sujet').eq('session_id', idSessionEvaluation).eq('groupe_votant', nouveauVotant);
+            groupesSoumisDB = data ? data.map(d => d.sujet) : [];
+            actualiserMenuSujetsCibles();
         }
 
         function mettreAJourCouleurBadge(index, valeur) {
@@ -396,13 +398,13 @@
             ciblePrecedente = nouvelleCible;
         }
 
-        function changerDeGroupeVotant(nouveauVotant) {
+        async function changerDeGroupeVotant(nouveauVotant) {
             if (votantPrecedent && ciblePrecedente) sauvegarderCacheSpecifique(votantPrecedent, ciblePrecedente);
 
             const cacheSauvegarde = localStorage.getItem(`cache_vote_${idSessionEvaluation}_${nouveauVotant}`);
             memoireEvaluations = cacheSauvegarde ? JSON.parse(cacheSauvegarde) : {};
 
-            restituerCurseursDepuisMemoire(document.getElementById('select-sujet-evalue').value);
+            await chargerEvaluationsVotantActuel(nouveauVotant);
             votantPrecedent = nouveauVotant;
         }
 
@@ -427,74 +429,72 @@
             if (inputFB) inputFB.innerHTML = (dataCible && dataCible.feedback) ? dataCible.feedback : "";
         }
 
-        async function soumettreEvaluationGenerale() {
+        function terminerToutesEvaluations() {
             const groupeVotant = document.getElementById('select-groupe-votant').value;
+            const nbEvaluationsGlobal = groupesSoumisDB.length;
+            const aFaitSonAutoEval = groupesSoumisDB.includes(groupeVotant);
+
+            localStorage.removeItem(`cache_vote_${idSessionEvaluation}_${groupeVotant}`);
+            document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
+            document.getElementById('rapport-nb-groupes').innerText = nbEvaluationsGlobal;
             
-            if (!groupeVotant) {
-                await UIModal.alert("Veuillez sélectionner votre équipe dans le menu déroulant en haut de la page avant d'envoyer !", "warning", "Équipe manquante");
+            const baliseAutoEval = document.getElementById('rapport-auto-statut');
+            baliseAutoEval.innerText = aFaitSonAutoEval ? "Validée et Incluse ✅" : "Manquante ❌";
+            baliseAutoEval.className = aFaitSonAutoEval ? "font-bold text-emerald-400 font-mono" : "font-bold text-red-400 font-mono";
+
+            document.getElementById('ecran-formulaire').classList.add('hidden');
+            document.getElementById('ecran-rapport').classList.remove('hidden');
+        }
+
+        async function soumettreEvaluationCourante() {
+            const groupeVotant = document.getElementById('select-groupe-votant').value;
+            const sujetEvalue = document.getElementById('select-sujet-evalue').value;
+            
+            if (!groupeVotant || !sujetEvalue) {
+                await UIModal.alert("Veuillez sélectionner votre équipe et l'équipe à évaluer.", "warning", "Données manquantes");
+                return;
+            }
+
+            if (groupesSoumisDB.includes(sujetEvalue)) {
+                await UIModal.alert("Vous avez déjà évalué cette équipe. Il n'est plus possible de modifier cette note.", "error", "Action impossible");
                 return;
             }
             
             enregistrerEtatCurseursEnContinu();
 
-            const { data: verifDejaFait } = await db.from('evaluations').select('id').eq('session_id', idSessionEvaluation).eq('groupe_votant', groupeVotant).limit(1);
-            if (verifDejaFait && verifDejaFait.length > 0) { 
-                await UIModal.alert(`Votre équipe a déjà validé et transmis ses évaluations.`, "warning", "Évaluations déjà reçues");
-                return; 
-            }
+            let totalNotes = 0;
+            const tableauNotes = [];
+            const dataCible = memoireEvaluations[sujetEvalue];
 
-            const listeGroupesEvalues = Object.keys(memoireEvaluations);
-            const paquetInsertions = [];
-            let aFaitSonAutoEval = false;
-
-            listeGroupesEvalues.forEach(nomSujet => {
-                let totalNotes = 0;
-                const tableauNotes = [];
-                const dataCible = memoireEvaluations[nomSujet];
-
-                listeCriteres.forEach((c, index) => { 
-                    const bloc = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
-                    let val = bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
-                    tableauNotes.push(val);
-                    totalNotes += val;
-                });
-
-                if (nomSujet === groupeVotant) aFaitSonAutoEval = true;
-
-                const moyenneSur20 = (totalNotes / listeCriteres.length / 5) * 20;
-
-                let empreinteDecimale = "";
-                tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
-                const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
-
-                paquetInsertions.push({
-                    session_id: idSessionEvaluation,
-                    groupe_votant: groupeVotant,
-                    sujet: nomSujet,
-                    note: noteCompletePayload,
-                    feedback: dataCible.feedback || ""
-                });
+            listeCriteres.forEach((c, index) => { 
+                const bloc = (dataCible && dataCible.criteres && dataCible.criteres[index]) ? dataCible.criteres[index] : null;
+                let val = bloc ? (typeof bloc === 'object' ? bloc.note : bloc) : 3;
+                tableauNotes.push(val);
+                totalNotes += val;
             });
 
-            if (paquetInsertions.length === 0) { 
-                await UIModal.alert("Aucune note saisie à transmettre. Le formulaire est vide.", "error", "Soumission annulée"); 
-                return; 
-            }
+            const moyenneSur20 = (totalNotes / listeCriteres.length / 5) * 20;
+            let empreinteDecimale = "";
+            tableauNotes.forEach(val => empreinteDecimale += Math.round(val * 10).toString().padStart(2, '0'));
+            const noteCompletePayload = parseFloat(moyenneSur20.toFixed(4) + empreinteDecimale);
 
-            const { error } = await db.from('evaluations').insert(paquetInsertions);
+            const payload = {
+                session_id: idSessionEvaluation,
+                groupe_votant: groupeVotant,
+                sujet: sujetEvalue,
+                note: noteCompletePayload,
+                feedback: dataCible.feedback || ""
+            };
+
+            const { error } = await db.from('evaluations').insert([payload]);
 
             if (!error) {
-                localStorage.removeItem(`cache_vote_${idSessionEvaluation}_${groupeVotant}`);
-                document.getElementById('rapport-nom-groupe').innerText = `Équipe : ${groupeVotant}`;
-                document.getElementById('rapport-nb-groupes').innerText = listeGroupesEvalues.length;
-                
-                const baliseAutoEval = document.getElementById('rapport-auto-statut');
-                baliseAutoEval.innerText = aFaitSonAutoEval ? "Validée et Incluse ✅" : "Manquante ❌";
-                baliseAutoEval.className = aFaitSonAutoEval ? "font-bold text-emerald-400" : "font-bold text-red-400";
-
-                document.getElementById('ecran-formulaire').classList.add('hidden');
-                document.getElementById('ecran-rapport').classList.remove('hidden');
-            } else { await UIModal.alert("Erreur de synchronisation : " + error.message, "error", "Erreur technique"); }
+                groupesSoumisDB.push(sujetEvalue);
+                await UIModal.alert(`L'évaluation pour ${sujetEvalue} a été envoyée et scellée avec succès !`, "success", "Évaluation transmise");
+                actualiserMenuSujetsCibles();
+            } else { 
+                await UIModal.alert("Erreur de transmission : " + error.message, "error", "Erreur technique"); 
+            }
         }
 
         window.onload = initEvaluationPage;
