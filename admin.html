@@ -12,6 +12,13 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        /* Animation subtile pour le badge de notification */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
@@ -34,8 +41,10 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
-                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                
+                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👥 Comptes & Droits
+                    <span id="badge-notif-comptes" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
                 </button>
                 
                 <button onclick="basculerZoneAnnuaire()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
@@ -121,7 +130,7 @@
                 </div>
                 
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col">
-                    <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Simulation</div>
+                    <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Gestion</div>
                     <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres">
                         <p class="text-slate-600 italic text-xs py-2">Chargement...</p>
                     </div>
@@ -407,7 +416,7 @@
         // Système des évaluateurs
         let annuaireEvaluateurs = []; 
         let listFavorisIds = [];
-        let evaluateursSelectionnes = []; // [{id: null, nom: "Texte"}] id null = manuel
+        let evaluateursSelectionnes = [];
 
         // ==========================================
         // UI CORE
@@ -525,7 +534,6 @@
                 
                 realUserRole = realProfil.role;
 
-                // Logique Impersonation
                 const targetImpersonation = sessionStorage.getItem('impersonation_id');
                 const targetImpersonationName = sessionStorage.getItem('impersonation_name');
                 
@@ -533,7 +541,6 @@
                     isImpersonating = true;
                     activeUserId = targetImpersonation;
                     
-                    // Fetch impersonated role
                     const { data: impProfil } = await db.from('profils').select('role').eq('id', activeUserId).single();
                     roleConnecte = impProfil ? impProfil.role : 'formateur';
 
@@ -546,7 +553,8 @@
                     document.getElementById('user-email').innerText = session.user.email;
                 }
 
-                document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'SUPER ADMIN' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
+                // MODIFICATION DE LA NOMENCLATURE DU BADGE ICI
+                document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'ADMINISTRATEUR' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
                 if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
                     document.getElementById('btn-tab-comptes').classList.remove('hidden');
@@ -555,7 +563,6 @@
 
                 document.getElementById('date-session').valueAsDate = new Date();
                 
-                // Load global data
                 const [{ data: orgs }, { data: forms }] = await Promise.all([
                     db.from('organismes').select('*').order('nom'),
                     db.from('formations').select('*').order('nom')
@@ -567,10 +574,12 @@
                 afficherListeOrganismes(globalOrganismes);
                 afficherListeFormations("");
                 
-                // Load specific data
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await chargerSessions();
                 await calculerStatistiquesDashboard();
+                
+                // Vérifier les notifications (Seulement pour les Administrateurs natifs)
+                await verifierNotifications();
 
             } catch(e) {
                 console.error(e);
@@ -597,8 +606,23 @@
         }
 
         // ==========================================
-        // GESTION COMPTES & VALIDATION 
+        // GESTION COMPTES & VALIDATION & NOTIFS
         // ==========================================
+        async function verifierNotifications() {
+            if (realUserRole !== 'super_admin') return;
+            try {
+                const { count, error } = await db.from('profils').select('*', { count: 'exact', head: true }).eq('statut', 'en_attente');
+                const badge = document.getElementById('badge-notif-comptes');
+                
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch(e) { console.error("Erreur check notifs :", e); }
+        }
+
         function configurerFormulaireComptes() {
             const menu = document.getElementById('compte-role-menu');
             let html = '';
@@ -611,7 +635,6 @@
 
         async function chargerListeComptes() {
             try {
-                // 1. Charger les en_attente (Uniquement Super Admin)
                 if (roleConnecte === 'super_admin') {
                     const blocAttente = document.getElementById('bloc-validations-attente');
                     blocAttente.classList.remove('hidden');
@@ -628,8 +651,8 @@
                                 </div>
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     <span class="uppercase font-mono text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/50 mr-2">${u.role}</span>
-                                    <button onclick="validerCompte('${u.id}', '${(u.prenom||'')}')" class="h-7 w-7 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Valider l'accès">✅</button>
-                                    <button onclick="refuserCompte('${u.id}', '${(u.prenom||'')}')" class="h-7 w-7 rounded bg-red-600 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Refuser">❌</button>
+                                    <button onclick="validerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Valider l'accès">✅</button>
+                                    <button onclick="refuserCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-red-600 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Refuser">❌</button>
                                 </div>
                             </div>
                         `).join('');
@@ -638,7 +661,6 @@
                     }
                 }
 
-                // 2. Charger les actifs
                 let requete = db.from('profils').select('*').eq('statut', 'valide');
                 if (roleConnecte === 'rp') { requete = requete.eq('createur_id', activeUserId); }
                 const { data: usersActifs } = await requete.order('date_creation', { ascending: false });
@@ -648,17 +670,23 @@
                 if (usersActifs && usersActifs.length > 0) {
                     corpsActifs.innerHTML = usersActifs.map(u => {
                         const isSimulable = (roleConnecte === 'super_admin' && u.id !== realUserId);
-                        const btnSimul = isSimulable ? `<button onclick="simulerCompte('${u.id}', '${u.prenom||''}', '${u.nom||''}')" class="ml-2 h-6 w-6 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Simuler cet utilisateur">👁️</button>` : '';
+                        const nomFormatte = (u.prenom || '') + ' ' + (u.nom || '');
+                        
+                        const btnSimul = isSimulable ? `<button onclick="simulerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}', '${(u.nom||'').replace(/'/g, "\\'")}')" class="ml-2 h-6 w-6 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Simuler cet utilisateur">👁️</button>` : '';
+                        
+                        // INTÉGRATION DE LA SUPPRESSION MANUELLE (Administrateur)
+                        const btnDelete = isSimulable ? `<button onclick="supprimerCompteActif('${u.id}', '${(nomFormatte || u.email).trim().replace(/'/g, "\\'")}')" class="ml-1 h-6 w-6 rounded bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Supprimer cet accès">🗑️</button>` : '';
                         
                         return `
-                        <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
+                        <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800 transition-colors">
                             <div>
-                                <span class="font-bold text-slate-200 text-xs">${u.prenom || ''} ${u.nom || ''}</span>
+                                <span class="font-bold text-slate-200 text-xs">${nomFormatte.trim() || '—'}</span>
                                 <span class="block text-[10px] text-slate-500">${u.email}</span>
                             </div>
                             <div class="flex items-center">
                                 <span class="uppercase font-mono text-[9px] text-emerald-400 font-bold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">${u.role}</span>
                                 ${btnSimul}
+                                ${btnDelete}
                             </div>
                         </div>
                     `}).join('');
@@ -674,19 +702,34 @@
                 if (error) throw error;
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
-                await UIModal.alert(`L'accès de ${prenom} a été validé.`, "success");
+                await verifierNotifications();
+                await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
             } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
         }
 
         async function refuserCompte(id, prenom) {
             try {
-                if (!(await UIModal.confirm(`Refuser définitivement la demande de ${prenom} ?`, "Refus d'accès", "error"))) return;
-                // La suppression dans profils empêchera la connexion car pas de profil applicatif
+                if (!(await UIModal.confirm(`Refuser définitivement la demande de ${prenom || 'cet utilisateur'} ?`, "Refus d'accès", "error"))) return;
                 const { error } = await db.from('profils').delete().eq('id', id);
                 if (error) throw error;
                 await chargerListeComptes();
+                await verifierNotifications();
                 await UIModal.alert(`Demande refusée et effacée.`, "success");
             } catch (err) { await UIModal.alert("Erreur suppression : " + err.message, "error"); }
+        }
+
+        // FONCTION DE SUPPRESSION POUR LES COMPTES ACTIFS
+        async function supprimerCompteActif(id, nomAffiche) {
+            try {
+                if (!(await UIModal.confirm(`Révoquer définitivement l'accès de <b>${nomAffiche}</b> à la plateforme ?\n\nCela bloquera immédiatement sa connexion sans altérer l'historique de ses évaluations.`, "Suppression Critique", "error"))) return;
+                
+                const { error } = await db.from('profils').delete().eq('id', id);
+                if (error) throw error;
+                
+                await chargerListeComptes();
+                await chargerAnnuaireEvaluateursEtFavoris();
+                await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
+            } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
         }
 
         async function creerCompteCollaborateur(e) {
@@ -735,8 +778,7 @@
 
         function configurerMoteurRechercheEvaluateurs() {
             const input = document.getElementById('input-recherche-eval');
-            const menu = document.getElementById('menu-recherche-eval');
-
+            
             input.addEventListener('focus', renderRechercheEvaluateurs);
             input.addEventListener('input', renderRechercheEvaluateurs);
             
@@ -759,7 +801,6 @@
                 return fullName.includes(searchStr);
             });
 
-            // Retirer ceux qui sont déjà sélectionnés
             filtered = filtered.filter(u => !evaluateursSelectionnes.some(sel => sel.id === u.id));
 
             let favs = filtered.filter(u => listFavorisIds.includes(u.id));
@@ -817,7 +858,7 @@
                     listFavorisIds.push(targetId);
                 }
                 renderRechercheEvaluateurs();
-                await calculerStatistiquesDashboard(); // Met à jour le compteur du dashboard
+                await calculerStatistiquesDashboard(); 
             } catch (err) { console.error("Erreur favori", err); }
         }
 
@@ -860,9 +901,8 @@
         }
 
         // ==========================================
-        // GESTION STRUCTURES (CLASSES / FORMATIONS / ORGANISMES)
+        // GESTION STRUCTURES (ANNUAIRE)
         // ==========================================
-        // [Les fonctions de l'annuaire existantes restent identiques et opérationnelles]
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
             const conf = document.getElementById('zone-configurateur');
@@ -1133,7 +1173,7 @@
                     const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value }).eq('id', idAppEnCoursModif);
                     if (error) throw error;
                     const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
-                    await db.from('apprenants').update({ prenom: nomCompletInstancie }).eq('id', idAppEnCoursModif); // Update nom in sessions
+                    await db.from('apprenants').update({ prenom: nomCompletInstancie }).eq('id', idAppEnCoursModif); 
 
                     idAppEnCoursModif = null; p.value = ""; n.value = "";
                     document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
@@ -1177,7 +1217,6 @@
                     evaluateurs ( nom )
                 `);
                 
-                // Utilisation de activeUserId pour l'impersonation
                 if (roleConnecte === 'formateur') {
                     requete = requete.eq('proprietaire_id', activeUserId);
                 } else if (roleConnecte === 'rp') {
