@@ -1381,12 +1381,21 @@
         async function dupliquerSession(idSessionSource, nomActuel) {
             try {
                 const nouveauNom = await UIModal.prompt("Définir le nom de la copie :", `${nomActuel} - Copie`); if (!nouveauNom) return;
+                
                 const { data: src, error: e1 } = await db.from('sessions').select('type, date_session, formation_id').eq('id', idSessionSource).single();
                 if(e1) throw e1;
                 
-                // FORCE LE STATUT À "A_VENIR" POUR POUVOIR MODIFIER LA DATE
+                // On injecte la date du jour par défaut pour éviter l'archivage automatique
+                const t = new Date();
+                const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+                
                 const { data: nv, error: e2 } = await db.from('sessions').insert([{ 
-                    nom: nouveauNom.trim(), statut: 'a_venir', type: src.type, date_session: src.date_session, formation_id: src.formation_id, proprietaire_id: userConnecte.id 
+                    nom: nouveauNom.trim(), 
+                    statut: 'a_venir', 
+                    type: src.type, 
+                    date_session: todayStr, 
+                    formation_id: src.formation_id, 
+                    proprietaire_id: userConnecte.id 
                 }]).select().single();
                 if(e2) throw e2;
 
@@ -1398,7 +1407,10 @@
                 }
                 
                 await chargerSessions();
-                await UIModal.alert("Session dupliquée et placée dans la liste 'À venir'.", "success");
+                
+                // Ouverture immédiate du panneau de modification pour la nouvelle session
+                entrerEnModeModification(nv.id);
+                
             } catch(e) { await UIModal.alert("Erreur de duplication : " + e.message, "error"); }
         }
 
