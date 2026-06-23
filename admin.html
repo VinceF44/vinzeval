@@ -21,6 +21,7 @@
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
 
+    <!-- BANNIÈRE D'IMPERSONATION -->
     <div id="banner-impersonation" class="hidden fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
         <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
         <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
@@ -28,6 +29,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
+        <!-- HEADER GLOBAL -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -39,6 +41,7 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
+                <!-- Bouton Comptes (Notif uniquement pour Admin) -->
                 <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👥 Comptes & Droits
                     <span id="badge-notif-comptes" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
@@ -59,65 +62,99 @@
             </div>
         </div>
 
-        <div id="banner-invitations" class="hidden bg-indigo-900/40 border border-indigo-500/50 p-4 rounded-2xl flex justify-between items-center relative z-40 shadow-lg animate-pulse-soft">
+        <!-- BANNIÈRE MESSAGERIE / INVITATIONS (Pour Formateurs et RP) -->
+        <div id="banner-invitations" class="hidden bg-indigo-900/40 border border-indigo-500/50 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-40 shadow-lg animate-pulse-soft">
             <div>
                 <h3 class="text-indigo-400 font-bold text-sm flex items-center gap-2">🔔 Nouvelles Invitations</h3>
-                <p class="text-xs text-slate-300 mt-1">Vous avez <span id="count-invits" class="font-black text-white">X</span> invitation(s) pour co-évaluer des sessions.</p>
+                <p class="text-xs text-slate-300 mt-1">Vous avez <span id="count-invits" class="font-black text-white">X</span> invitation(s) en attente pour co-évaluer des sessions.</p>
             </div>
-            <button onclick="ouvrirModalInvitations()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-md cursor-pointer">Voir les invitations</button>
+            <button onclick="ouvrirModalInvitations()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-md cursor-pointer">Voir les invitations</button>
         </div>
 
-        <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40">
-            </div>
+        <!-- DASHBOARD STATISTIQUES DYNAMIQUE -->
+        <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
 
+        <!-- ESPACE GESTION COMPTES ET DROITS (Multi-Vues) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">👥 Gestion des Comptes & Droits</h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Validez les inscriptions ou créez de nouveaux accès.</p>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">👥 Comptes & Droits</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Gérez vos accès et vos droits sur la plateforme.</p>
                 </div>
                 <button onclick="basculerZoneComptes()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
 
-            <div id="bloc-validations-attente" class="hidden bg-[#030712]/50 p-4 rounded-xl border border-amber-500/30">
-                <div class="text-[11px] font-bold uppercase text-amber-400 mb-3 flex items-center gap-2">⚠️ Demandes d'accès en attente de validation</div>
-                <div class="flex-1 overflow-y-auto max-h-48 space-y-2 pr-1" id="liste-comptes-attente"></div>
+            <!-- VUE : SUPER ADMIN -->
+            <div id="admin-comptes-view" class="hidden space-y-6">
+                <div id="bloc-validations-attente" class="hidden bg-[#030712]/50 p-4 rounded-xl border border-amber-500/30">
+                    <div class="text-[11px] font-bold uppercase text-amber-400 mb-3 flex items-center gap-2">⚠️ Demandes d'accès en attente de validation</div>
+                    <div class="flex-1 overflow-y-auto max-h-48 space-y-2 pr-1" id="liste-comptes-attente"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
+                        <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Créer un nouvel accès manuel</div>
+                        <form onsubmit="creerCompteCollaborateur(event)" class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase text-slate-500">Adresse Email</label>
+                                <input type="email" id="compte-email" required class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase text-slate-500">Mot de passe provisoire</label>
+                                <input type="password" id="compte-password" required placeholder="Min. 6 caractères" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase text-slate-500">Rôle</label>
+                                <div class="custom-dropdown-container relative w-full text-left">
+                                    <input type="hidden" id="compte-role" value="formateur">
+                                    <button type="button" onclick="toggleDropdown('compte-role')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                                        <span id="compte-role-label" class="truncate pr-2">Formateur / Évaluateur</span>
+                                        <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="compte-role-arrow">▼</span>
+                                    </button>
+                                    <div id="compte-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-2.5 rounded-xl transition cursor-pointer">Générer l'accès</button>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col">
+                        <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Gestion</div>
+                        <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
-                    <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Créer un nouvel accès manuel</div>
-                    <form onsubmit="creerCompteCollaborateur(event)" class="space-y-4">
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold uppercase text-slate-500">Adresse Email</label>
-                            <input type="email" id="compte-email" required class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold uppercase text-slate-500">Mot de passe provisoire</label>
-                            <input type="password" id="compte-password" required placeholder="Min. 6 caractères" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold uppercase text-slate-500">Rôle</label>
-                            <div class="custom-dropdown-container relative w-full text-left">
-                                <input type="hidden" id="compte-role" value="formateur">
-                                <button type="button" onclick="toggleDropdown('compte-role')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm">
-                                    <span id="compte-role-label" class="truncate pr-2">Formateur / Évaluateur</span>
-                                    <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="compte-role-arrow">▼</span>
-                                </button>
-                                <div id="compte-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
+            <!-- VUE : FORMATEUR / RP -->
+            <div id="user-comptes-view" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Infos et Changement de mot de passe -->
+                    <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
+                        <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Mes Informations Sécurisées</div>
+                        <p class="text-sm text-slate-300 mb-5">Adresse Email : <span id="mon-email-display" class="font-bold text-white bg-slate-800 px-2 py-1 rounded">...</span></p>
+                        
+                        <form onsubmit="changerMotDePasse(event)" class="space-y-4 border-t border-slate-800 pt-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase text-slate-500">Changer mon mot de passe</label>
+                                <input type="password" id="new-password" required placeholder="Saisir min. 6 caractères" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
                             </div>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-2.5 rounded-xl transition cursor-pointer">Générer l'accès</button>
-                    </form>
-                </div>
-                
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col">
-                    <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Gestion</div>
-                    <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres"></div>
+                            <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold py-2.5 rounded-xl transition cursor-pointer">Mettre à jour mon accès</button>
+                        </form>
+                    </div>
+
+                    <!-- Récapitulatif des droits -->
+                    <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
+                        <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Tableau de bord de mes Droits</div>
+                        <ul class="text-sm text-slate-300 space-y-3 pl-1" id="liste-mes-droits">
+                            <!-- Rempli en JS -->
+                        </ul>
+                    </div>
                 </div>
             </div>
+
         </div>
 
+        <!-- ESPACE ANNUAIRE CLOISONNÉ -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -157,7 +194,9 @@
                             </div>
                         </div>
                     </div>
-                    <div id="annuaire-liste-formations" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
+                    <div id="annuaire-liste-formations" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3">
+                        <p class="text-slate-600 italic text-xs col-span-full">Sélectionnez un organisme pour voir ses formations.</p>
+                    </div>
                 </div>
             </div>
 
@@ -196,6 +235,7 @@
             </div>
         </div>
 
+        <!-- ESPACE CONFIGURATEUR (CRÉATION SESSION) -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
@@ -205,6 +245,7 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Colonne Gauche -->
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="sm:col-span-1">
@@ -237,6 +278,7 @@
                     </div>
                 </div>
 
+                <!-- Colonne Droite -->
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -295,6 +337,7 @@
                             </div>
                             <div id="tags-evaluateurs" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -306,6 +349,7 @@
             </div>
         </div>
 
+        <!-- LISTE GLOBALE DES SESSIONS -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -346,6 +390,7 @@
         </div>
     </div>
 
+    <!-- UI MODAL PRINCIPAL (Alertes) -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -363,7 +408,8 @@
         </div>
     </div>
 
-    <div id="modal-invitations" class="hidden fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+    <!-- UI MODAL INVITATIONS (Pour le bandeau clignotant) -->
+    <div id="modal-invitations" class="hidden fixed inset-0 z-[350] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
         <div class="bg-[#101828] border border-indigo-500/40 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="modal-invitations-box">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-indigo-950/20">
                 <h3 class="text-lg font-black text-indigo-400 uppercase tracking-wide flex items-center gap-2">🔔 Vos Invitations en attente</h3>
@@ -539,15 +585,24 @@
 
                 document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'ADMINISTRATEUR' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
-                // GESTION AFFICHAGE SELON ROLE
+                document.getElementById('btn-tab-comptes').classList.remove('hidden'); 
+
                 if (roleConnecte === 'super_admin') {
-                    document.getElementById('btn-tab-comptes').classList.remove('hidden');
-                } else if (roleConnecte === 'rp') {
-                    document.getElementById('btn-tab-comptes').classList.remove('hidden');
-                    document.getElementById('bloc-creation-organismes').classList.add('hidden'); // Masquer Organisme pour RP
-                    document.getElementById('bloc-creation-formations').classList.replace('lg:col-span-2', 'lg:col-span-3');
+                    document.getElementById('admin-comptes-view').classList.remove('hidden');
+                    document.getElementById('user-comptes-view').classList.add('hidden');
                 } else {
-                    document.getElementById('bloc-creation-organismes').classList.add('hidden'); // Masquer Organisme pour Formateur
+                    document.getElementById('admin-comptes-view').classList.add('hidden');
+                    document.getElementById('user-comptes-view').classList.remove('hidden');
+                    document.getElementById('mon-email-display').innerText = session.user.email;
+                    
+                    const ulDroits = document.getElementById('liste-mes-droits');
+                    if (roleConnecte === 'rp') {
+                        ulDroits.innerHTML = `<li>✅ Créer et gérer des sessions</li><li>✅ Gérer mes classes et apprenants</li><li>✅ Inviter des co-évaluateurs</li><li>✅ Accéder aux statistiques globales</li><li>❌ Administrer les organismes</li><li>❌ Créer ou supprimer des accès tiers</li>`;
+                    } else {
+                        ulDroits.innerHTML = `<li>✅ Créer et gérer mes sessions</li><li>✅ Gérer mes classes et apprenants</li><li>✅ Inviter des co-évaluateurs</li><li>✅ Accéder à mes statistiques</li><li>❌ Administrer les organismes</li><li>❌ Créer ou supprimer des accès tiers</li>`;
+                    }
+
+                    document.getElementById('bloc-creation-organismes').classList.add('hidden');
                     document.getElementById('bloc-creation-formations').classList.replace('lg:col-span-2', 'lg:col-span-3');
                 }
 
@@ -615,6 +670,18 @@
             } catch(e) { console.error("Erreur check notifs :", e); }
         }
 
+        async function changerMotDePasse(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            if (newPassword.length < 6) return await UIModal.alert("Le mot de passe doit faire au moins 6 caractères.", "error");
+            try {
+                const { error } = await db.auth.updateUser({ password: newPassword });
+                if (error) throw error;
+                document.getElementById('new-password').value = '';
+                await UIModal.alert("Votre mot de passe a été mis à jour avec succès.", "success");
+            } catch (err) { await UIModal.alert("Erreur lors de la mise à jour : " + err.message, "error"); }
+        }
+
         function configurerFormulaireComptes() {
             const menu = document.getElementById('compte-role-menu');
             let html = '';
@@ -626,42 +693,45 @@
         }
 
         async function chargerListeComptes() {
+            if (roleConnecte !== 'super_admin') return;
+
             try {
-                if (roleConnecte === 'super_admin') {
-                    const blocAttente = document.getElementById('bloc-validations-attente');
-                    blocAttente.classList.remove('hidden');
-                    const conteneurAttente = document.getElementById('liste-comptes-attente');
-                    
-                    const { data: usersAttente } = await db.from('profils').select('*').eq('statut', 'en_attente').order('date_creation', { ascending: false });
-                    
-                    if (usersAttente && usersAttente.length > 0) {
-                        conteneurAttente.innerHTML = usersAttente.map(u => `
-                            <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-amber-500/30 text-sm font-sans">
-                                <div>
-                                    <span class="font-bold text-amber-100 text-xs">${u.prenom || ''} ${u.nom || ''}</span>
-                                    <span class="block text-[10px] text-slate-400">${u.email}</span>
-                                </div>
-                                <div class="flex items-center gap-1.5 shrink-0">
-                                    <span class="uppercase font-mono text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/50 mr-2">${u.role}</span>
-                                    <button onclick="validerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Valider l'accès">✅</button>
-                                    <button onclick="refuserCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-red-600 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Refuser">❌</button>
-                                </div>
+                const blocAttente = document.getElementById('bloc-validations-attente');
+                blocAttente.classList.remove('hidden');
+                const conteneurAttente = document.getElementById('liste-comptes-attente');
+                
+                const { data: usersAttente } = await db.from('profils').select('*').eq('statut', 'en_attente').order('date_creation', { ascending: false });
+                
+                const badge = document.getElementById('badge-notif-comptes');
+                if (usersAttente && usersAttente.length > 0) {
+                    badge.innerText = usersAttente.length;
+                    badge.classList.remove('hidden');
+
+                    conteneurAttente.innerHTML = usersAttente.map(u => `
+                        <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-amber-500/30 text-sm font-sans">
+                            <div>
+                                <span class="font-bold text-amber-100 text-xs">${u.prenom || ''} ${u.nom || ''}</span>
+                                <span class="block text-[10px] text-slate-400">${u.email}</span>
                             </div>
-                        `).join('');
-                    } else {
-                        conteneurAttente.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucune demande en attente.</p>`;
-                    }
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="uppercase font-mono text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/50 mr-2">${u.role}</span>
+                                <button onclick="validerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Valider l'accès">✅</button>
+                                <button onclick="refuserCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}')" class="h-7 w-7 rounded bg-red-600 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Refuser">❌</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    badge.classList.add('hidden');
+                    conteneurAttente.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucune demande en attente.</p>`;
                 }
 
-                let requete = db.from('profils').select('*').eq('statut', 'valide');
-                if (roleConnecte === 'rp') { requete = requete.eq('createur_id', activeUserId); }
-                const { data: usersActifs } = await requete.order('date_creation', { ascending: false });
-
+                let requete = db.from('profils').select('*').eq('statut', 'valide').order('date_creation', { ascending: false });
+                const { data: usersActifs } = await requete;
                 const corpsActifs = document.getElementById('liste-comptes-geres');
                 
                 if (usersActifs && usersActifs.length > 0) {
                     corpsActifs.innerHTML = usersActifs.map(u => {
-                        const isSimulable = (roleConnecte === 'super_admin' && u.id !== realUserId);
+                        const isSimulable = (u.id !== realUserId);
                         const nomFormatte = (u.prenom || '') + ' ' + (u.nom || '');
                         
                         const btnSimul = isSimulable ? `<button onclick="simulerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}', '${(u.nom||'').replace(/'/g, "\\'")}')" class="ml-2 h-6 w-6 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Simuler cet utilisateur">👁️</button>` : '';
@@ -680,9 +750,7 @@
                             </div>
                         </div>
                     `}).join('');
-                } else {
-                    corpsActifs.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucun compte sous votre gestion.</p>`;
-                }
+                } else { corpsActifs.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucun compte sous votre gestion.</p>`; }
             } catch(err) { console.error(err); }
         }
 
@@ -712,10 +780,8 @@
         async function supprimerCompteActif(id, nomAffiche) {
             try {
                 if (!(await UIModal.confirm(`Révoquer définitivement l'accès de <b>${nomAffiche}</b> à la plateforme ?\n\nCela bloquera immédiatement sa connexion sans altérer l'historique de ses évaluations.`, "Suppression Critique", "error"))) return;
-                
                 const { error } = await db.from('profils').delete().eq('id', id);
                 if (error) throw error;
-                
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await calculerStatistiquesDashboard();
@@ -1019,7 +1085,7 @@
         }
 
         function afficherListeOrganismes(data) {
-            if(roleConnecte !== 'super_admin') return; // Sécurité
+            if(roleConnecte !== 'super_admin') return; 
             const conteneur = document.getElementById('annuaire-liste-organismes');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(o => `
@@ -1081,7 +1147,7 @@
         }
 
         async function creerOuModifierOrganismeMaster() {
-            if(roleConnecte !== 'super_admin') return; // Sécurité
+            if(roleConnecte !== 'super_admin') return; 
             try {
                 const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
                 if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
@@ -1221,9 +1287,9 @@
         // ==========================================
         async function chargerSessions() {
             try {
-                // 1. Sessions dont je suis le propriétaire
                 let reqMySessions = db.from('sessions').select(`
-                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation )
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation ),
+                    profils (prenom, nom)
                 `);
                 
                 if (roleConnecte === 'formateur') {
@@ -1234,12 +1300,12 @@
                     reqMySessions = reqMySessions.in('proprietaire_id', listIds);
                 }
 
-                // 2. Sessions où je suis invité
                 const { data: myEvals } = await db.from('evaluateurs').select('session_id, statut_invitation').eq('utilisateur_id', activeUserId);
                 const invitedSessionIds = myEvals ? myEvals.map(e => e.session_id) : [];
 
                 let reqInvited = db.from('sessions').select(`
-                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation )
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation ),
+                    profils (prenom, nom)
                 `).in('id', invitedSessionIds);
 
                 const [ { data: sessionsOwned, error: errS }, { data: sessionsInvited, error: errI }, { data: evalVotes, error: errV } ] = await Promise.all([
@@ -1250,13 +1316,11 @@
 
                 if (errS || errI || errV) throw new Error("Erreur de chargement des données.");
 
-                // Merge and deduplicate
                 const allSessionsMap = new Map();
                 (sessionsOwned || []).forEach(s => allSessionsMap.set(s.id, { ...s, est_invite: false }));
                 (sessionsInvited || []).forEach(s => {
                     if (!allSessionsMap.has(s.id)) {
                         const monEval = s.evaluateurs.find(e => e.utilisateur_id === activeUserId);
-                        // On intègre la session seulement si l'invitation n'est pas refusée
                         if (monEval && monEval.statut_invitation !== 'refuse') {
                             allSessionsMap.set(s.id, { ...s, est_invite: true, mon_statut_invitation: monEval.statut_invitation });
                         }
@@ -1274,11 +1338,11 @@
                 rawList.forEach(s => {
                     if (s.est_invite && s.mon_statut_invitation === 'en_attente') {
                         invitationsEnAttenteGlobal.push(s);
-                        return; // On ne l'affiche pas dans la liste normale
+                        return; 
                     }
 
                     let nvStatut = s.statut;
-                    if (s.date_session && !s.est_invite) { // Seul le proprio met à jour le statut réel
+                    if (s.date_session && !s.est_invite) { 
                         if (s.date_session < todayStr) nvStatut = 'terminee';
                         else if (s.date_session > todayStr) nvStatut = 'a_venir';
                         else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
@@ -1293,16 +1357,16 @@
 
                 if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
-                // Mise à jour de la bannière d'invitation
                 const banner = document.getElementById('banner-invitations');
-                if (invitationsEnAttenteGlobal.length > 0) {
-                    document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
-                    banner.classList.remove('hidden');
-                } else {
-                    banner.classList.add('hidden');
+                if (roleConnecte !== 'super_admin') {
+                    if (invitationsEnAttenteGlobal.length > 0) {
+                        document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
+                        banner.classList.remove('hidden');
+                    } else {
+                        banner.classList.add('hidden');
+                    }
                 }
 
-                // Filtrer les sessions en attente pour la vue globale
                 cacheSessionsGlobal = rawList.filter(s => !(s.est_invite && s.mon_statut_invitation === 'en_attente'));
                 
                 cacheSessionsGlobal.sort((a, b) => {
@@ -1323,18 +1387,17 @@
             const container = document.getElementById('liste-invitations-modal');
 
             container.innerHTML = invitationsEnAttenteGlobal.map(s => {
-                const safeNom = s.nom.replace(/'/g, "\\'");
-                const dateFr = s.date_session ? s.date_session.split('-').reverse().join('/') : 'Date non définie';
+                const invDate = new Date(s.created_at || s.date_session).toLocaleDateString('fr-FR');
+                const sessDate = s.date_session ? s.date_session.split('-').reverse().join('/') : 'Date non définie';
+                const inviterName = s.profils ? `${s.profils.prenom || ''} ${s.profils.nom || ''}`.trim() : 'Un administrateur';
+                const phrase = `Le ${invDate}, <span class="font-bold text-white">${inviterName}</span> vous a invité à la session <span class="font-bold text-indigo-300">"${s.nom}"</span> du ${sessDate}.`;
+                
                 return `
                     <div class="bg-[#030712] p-4 rounded-xl border border-indigo-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <h4 class="font-bold text-slate-100 text-sm">📅 ${s.nom}</h4>
-                            <p class="text-[11px] text-slate-400 mt-1">Date prévue : <span class="text-white">${dateFr}</span></p>
-                            <p class="text-[10px] text-indigo-400 mt-0.5">Rôle proposé : Co-évaluateur</p>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="repondreInvitation('${s.id}', 'accepte')" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition shadow-md">Accepter</button>
-                            <button onclick="repondreInvitation('${s.id}', 'refuse')" class="flex-1 sm:flex-none bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white text-xs font-bold py-2 px-4 rounded-lg transition">Refuser</button>
+                        <div class="text-sm text-slate-300 flex-1 pr-4">${phrase}</div>
+                        <div class="flex gap-2 w-full sm:w-auto shrink-0 mt-3 sm:mt-0">
+                            <button onclick="repondreInvitation('${s.id}', 'accepte')" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition shadow-md cursor-pointer">Accepter</button>
+                            <button onclick="repondreInvitation('${s.id}', 'refuse')" class="flex-1 sm:flex-none bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white text-xs font-bold py-2 px-4 rounded-lg transition cursor-pointer">Refuser</button>
                         </div>
                     </div>
                 `;
@@ -1368,7 +1431,6 @@
                 const conteneurStats = document.getElementById('zone-stats-rapides');
 
                 if (roleConnecte === 'super_admin') {
-                    // Statistiques globales Administrateur
                     const [ { count: cFormateurs }, { count: cRP }, { count: cOrgs }, { count: cSess } ] = await Promise.all([
                         db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'formateur').eq('statut', 'valide'),
                         db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'rp').eq('statut', 'valide'),
@@ -1395,7 +1457,6 @@
                         </div>
                     `;
                 } else {
-                    // Statistiques Personnelles
                     let totalApprenantsEvalues = 0;
                     let classesUniques = new Set();
                     
@@ -1545,35 +1606,66 @@
                     const countApprenants = s.apprenants ? s.apprenants.length : 0;
                     const countCriteres = s.criteres ? s.criteres.length : 0;
                     
-                    const evalsAcceptes = s.evaluateurs ? s.evaluateurs.filter(e => e.statut_invitation !== 'refuse') : [];
-                    const stringEvaluateurs = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
-                    const stringFullEvaluateurs = evalsAcceptes.map(e => e.nom).join(', ');
+                    const hasPendingEvaluator = s.evaluateurs && s.evaluateurs.some(e => e.statut_invitation === 'en_attente');
+                    
+                    let stringEvaluateursHtml = '';
+                    if (hasPendingEvaluator && !s.est_invite) {
+                        stringEvaluateursHtml = `<span class="italic text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded border border-amber-700/50">Évaluateur en cours d'acceptation</span>`;
+                    } else {
+                        const evalsAcceptes = s.evaluateurs ? s.evaluateurs.filter(e => e.statut_invitation !== 'refuse') : [];
+                        const names = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
+                        stringEvaluateursHtml = `<span class="truncate max-w-[160px]" title="${evalsAcceptes.map(e => e.nom).join(', ')}">👩‍🏫 ${names}</span>`;
+                    }
 
                     const tagsStatsInfos = `
                         <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center flex-wrap gap-x-2 gap-y-1.5">
                             ${tagDate}
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">👥 ${countApprenants} apprenant(s)</span>
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">📋 ${countCriteres} critère(s)</span>
-                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 truncate max-w-[160px]" title="${stringFullEvaluateurs}">👩‍🏫 ${stringEvaluateurs}</span>
+                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">${stringEvaluateursHtml}</span>
                         </div>
                     `;
 
                     let liensVotesHtml = "";
+                    let boutonDashboard = "";
+                    let cardClasses = "bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80";
 
-                    if (s.statut === 'active') {
+                    if (hasPendingEvaluator && !s.est_invite) {
                         liensVotesHtml = `
                             <div class="group relative inline-block">
-                                <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluations apprenants</div>
+                                <button class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 text-slate-600 cursor-not-allowed text-sm">🗳️</button>
                             </div>
                             <div class="group relative inline-block">
-                                <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluation formateur</div>
+                                <button class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 text-slate-600 cursor-not-allowed text-sm">👩‍🏫</button>
+                            </div>
+                        `;
+                        boutonDashboard = `
+                            <div class="group relative inline-block">
+                                <button class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 text-slate-600 cursor-not-allowed text-sm font-bold">📊</button>
+                            </div>
+                        `;
+                        cardClasses = "bg-[#101828]/60 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all opacity-60 grayscale";
+                    } else {
+                        if (s.statut === 'active') {
+                            liensVotesHtml = `
+                                <div class="group relative inline-block">
+                                    <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluations apprenants</div>
+                                </div>
+                                <div class="group relative inline-block">
+                                    <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluation formateur</div>
+                                </div>
+                            `;
+                        }
+                        boutonDashboard = `
+                            <div class="group relative inline-block">
+                                <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
                             </div>
                         `;
                     }
 
-                    // Les invités n'ont pas le droit de modifier/supprimer la session
                     let boutonEdition = "";
                     let boutonActionStatut = "";
                     let boutonDeleteDupli = "";
@@ -1621,18 +1713,15 @@
 
                     if (!estArchive) {
                         htmlBlocClasse += `
-                            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
+                            <div class="${cardClasses}">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-2 font-sans">${nomValide} ${badgeType} ${badgeInvite}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
-                                    <div class="group relative inline-block">
-                                        <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
-                                    </div>
-                                    ${s.est_invite ? '' : `<div class="w-[1px] h-5 bg-slate-800 mx-1"></div>`}
+                                    ${boutonDashboard}
+                                    ${s.est_invite || hasPendingEvaluator ? '' : `<div class="w-[1px] h-5 bg-slate-800 mx-1"></div>`}
                                     ${boutonEdition}
                                     ${boutonActionStatut}
                                     ${boutonDeleteDupli}
@@ -1647,10 +1736,7 @@
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
-                                    <div class="group relative inline-block">
-                                        <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
-                                    </div>
+                                    ${boutonDashboard}
                                     ${boutonDeleteDupli}
                                 </div>
                             </div>
@@ -1662,11 +1748,6 @@
             }
         }
 
-        function extraireApprenantsPresents() {
-            const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
-            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
-        }
-
         async function genererSessionComplete() {
             try {
                 const nomSession = document.getElementById('nouveau-nom-session').value.trim();
@@ -1676,7 +1757,8 @@
                 const criteresRaw = document.getElementById('criteres-session').value.trim();
                 const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
                 const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const listApprenantsPresents = extraireApprenantsPresents();
+                const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
+                const listApprenantsPresents = Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
 
                 if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
                 if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
@@ -1696,12 +1778,11 @@
                 if (criteresRaw) {
                     const arrCriteres = criteresRaw.split('\n').map(c => c.trim()).filter(c => c !== "");
                     if (arrCriteres.length > 0) {
-                        const { error: eCrit } = await db.from('criteres').insert(arrCriteres.map(ligne => {
+                        await db.from('criteres').insert(arrCriteres.map(ligne => {
                             const idx = ligne.indexOf(':'); let nom = ligne, description = "";
                             if (idx !== -1) { nom = ligne.substring(0, idx).trim(); description = ligne.substring(idx + 1).trim(); }
                             return { session_id: session.id, nom: nom, description: description };
                         }));
-                        if(eCrit) throw eCrit;
                     }
                 }
 
@@ -1709,11 +1790,10 @@
                     const payloadEvals = evaluateursSelectionnes.map(ev => ({ 
                         session_id: session.id, 
                         nom: ev.nom,
-                        utilisateur_id: ev.id, // null if manual
+                        utilisateur_id: ev.id,
                         statut_invitation: ev.id ? 'en_attente' : 'accepte'
                     }));
-                    const { error: eEval } = await db.from('evaluateurs').insert(payloadEvals);
-                    if(eEval) throw eEval;
+                    await db.from('evaluateurs').insert(payloadEvals);
                 }
 
                 const listeNomsGroupes = []; const payloadGroupes = [];
@@ -1721,20 +1801,16 @@
                     const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
                     payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
                 }
-                const { data: groupesInseres, error: eGrp } = await db.from('groupes').insert(payloadGroupes).select();
-                if(eGrp) throw eGrp;
-                
+                const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
                 const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
                 for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
+                    const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
                 }
 
-                const { error: eApp } = await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
+                await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
                     session_id: session.id, prenom: appObj.nomComplet, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
                 })));
-                if(eApp) throw eApp;
 
                 await UIModal.alert("La session a été générée avec succès ! Les invitations ont été envoyées aux co-évaluateurs.", "success", "Session Créée");
                 
@@ -1742,10 +1818,7 @@
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
                 document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
                 document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-                
-                evaluateursSelectionnes = [];
-                renderTagsEvaluateurs();
-                document.getElementById('input-recherche-eval').value = "";
+                evaluateursSelectionnes = []; renderTagsEvaluateurs(); document.getElementById('input-recherche-eval').value = "";
                 
                 document.getElementById('zone-configurateur').classList.add('hidden');
                 await chargerSessions();
@@ -1816,10 +1889,7 @@
             document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
 
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; 
-            
-            evaluateursSelectionnes = [];
-            renderTagsEvaluateurs();
-
+            evaluateursSelectionnes = []; renderTagsEvaluateurs();
             document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
             document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
@@ -1837,7 +1907,8 @@
                 const criteresRaw = document.getElementById('criteres-session').value.trim();
                 const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
                 const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const listApprenantsPresents = extraireApprenantsPresents();
+                const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
+                const listApprenantsPresents = Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
 
                 if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
                 if (!dateSession) return await UIModal.alert("La date de la session est obligatoire.", "warning");
