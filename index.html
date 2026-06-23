@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Master — Logique Multi-Jury Collaborative</title>
+    <title>Dashboard Analytique — Spireo</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES SANS BARRES BLANCHES */
+        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -24,11 +24,18 @@
             background: #475569; 
         }
 
+        /* ANIMATION IMPERSONATION */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
-            .max-w-7xl, #ui-modal, #modal-feedback, #modal-projection, .print-hide { display: none !important; }
+            .max-w-7xl, #ui-modal, #modal-feedback, #modal-projection, .print-hide, #banner-impersonation { display: none !important; }
             
             #modal-rapport {
                 display: block !important;
@@ -50,47 +57,68 @@
             }
             
             #modal-rapport * { color: black !important; border-color: #ddd !important; }
-            .bg-gray-950, .bg-indigo-950\/20 { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; }
+            .bg-[#030712], .bg-[#101828], .bg-indigo-950\/20 { background-color: #f9fafb !important; border: 1px solid #e5e7eb !important; }
             .text-emerald-400, .text-emerald-500 { color: #059669 !important; }
             .text-red-400, .text-red-500 { color: #dc2626 !important; }
             .text-amber-400, .text-amber-500 { color: #d97706 !important; }
             .text-indigo-400 { color: #4f46e5 !important; }
             .text-blue-400 { color: #2563eb !important; }
             .text-purple-400 { color: #7c3aed !important; }
-            .text-gray-500, .text-gray-400 { color: #4b5563 !important; }
+            .text-slate-500, .text-slate-400 { color: #4b5563 !important; }
         }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 select-none">
+<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 select-none relative">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div id="banner-impersonation" class="hidden print-hide fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
+        <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
+        <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div class="space-y-2">
-                <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-amber-800/50 font-sans">👑 Console Master — Vue Analytique</span>
-                <h1 id="nom-session" class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight font-sans">Chargement du Dashboard...</h1>
-                <div id="session-metadonnees" class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-gray-400 font-medium pt-0.5 font-mono"></div>
+        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div class="flex items-start gap-4">
+                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80 mt-1">
+                    <svg class="w-8 h-8 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo-idx)" stroke-width="3.5" stroke-linecap="round"/>
+                        <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
+                        <circle cx="20" cy="14" r="3" fill="#fe9a00"/>
+                        <defs>
+                            <linearGradient id="grad-spireo-idx" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8"/>
+                                <stop offset="1" stop-color="#3b82f6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="space-y-1">
+                    <span class="bg-amber-950/50 text-amber-400 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border border-amber-800/50 font-sans">👑 Console Analytique</span>
+                    <h1 id="nom-session" class="text-xl md:text-2xl font-black text-white mt-1 tracking-tight font-sans">Chargement du Dashboard...</h1>
+                    <div id="session-metadonnees" class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-slate-400 font-medium pt-0.5 font-mono"></div>
+                </div>
             </div>
-            <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 disabled:border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0 sm:self-center font-sans tracking-wide">
+            
+            <button id="btn-refresh" onclick="chargerDonneesDashboard()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-blue-500 shadow-lg transition cursor-pointer shrink-0 sm:self-center font-sans tracking-wide">
                 🔄 Rafraîchir les données
             </button>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
+        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
                     <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider font-sans">👑 Équipe à analyser & Feedbacks</h2>
-                    <p class="text-xs text-gray-400 leading-relaxed font-sans">Consultez les notes et feedbacks reçus par cette équipe. Vous pouvez supprimer un feedback non-objectif avant l'édition des rapports.</p>
+                    <p class="text-xs text-slate-400 leading-relaxed font-sans">Consultez les notes et feedbacks reçus par cette équipe. Vous pouvez supprimer un feedback non-objectif avant l'édition des rapports.</p>
                 </div>
                 <div class="w-full md:w-auto flex flex-col sm:flex-row gap-3 shrink-0">
                     <div class="w-full sm:w-80">
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="select-groupe-formateur" value="">
-                            <button type="button" onclick="toggleDropdown('select-groupe-formateur')" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white font-semibold flex justify-between items-center focus:outline-none focus:border-amber-500 transition-all cursor-pointer shadow-sm font-sans">
+                            <button type="button" onclick="toggleDropdown('select-groupe-formateur')" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-white font-semibold flex justify-between items-center focus:outline-none focus:border-amber-500 transition-all cursor-pointer shadow-sm font-sans">
                                 <span id="select-groupe-formateur-label" class="truncate pr-2">-- Sélectionner une équipe --</span>
-                                <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
+                                <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
                             </button>
-                            <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto overflow-x-hidden z-50 transition-all font-sans"></div>
+                            <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto overflow-x-hidden z-50 transition-all font-sans"></div>
                         </div>
                     </div>
                     <button onclick="ouvrirProjection()" class="bg-purple-950/40 hover:bg-purple-900/40 text-purple-400 font-bold p-3 text-sm rounded-xl border border-purple-900/50 shadow-md transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans shrink-0 active:scale-95">
@@ -100,54 +128,54 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
-            <div class="border-b border-gray-800 pb-3">
+        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+            <div class="border-b border-slate-800 pb-3">
                 <h2 class="text-base font-black text-white font-sans">🔎 Grilles d'Évaluations Détaillées</h2>
-                <p class="text-xs text-gray-400 mt-0.5 font-sans">Détail des évaluations. Passez votre souris sur un critère pour afficher sa description.</p>
+                <p class="text-xs text-slate-400 mt-0.5 font-sans">Détail des évaluations. Passez votre souris sur un critère pour afficher sa description.</p>
             </div>
             
             <div id="grille-details-evaluations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 font-sans">
-                <div class="col-span-full text-center p-6 text-gray-600 italic text-sm">Chargement des grilles d'évaluation...</div>
+                <div class="col-span-full text-center p-6 text-slate-600 italic text-sm">Chargement des grilles d'évaluation...</div>
             </div>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
-            <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+            <div class="border-b border-slate-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-base font-black text-white font-sans">📊 Matrice des Notes & Édition des Bilans</h2>
-                    <p class="text-xs text-gray-400 font-sans">Calcul automatique personnalisé décliné par apprenant. Cliquez sur les entêtes pour trier. Utilisez l'étoile ou le triangle pour affiner la note.</p>
+                    <p class="text-xs text-slate-400 font-sans">Calcul automatique personnalisé décliné par apprenant. Cliquez sur les entêtes pour trier. Utilisez l'étoile ou le triangle pour affiner la note.</p>
                 </div>
                 <div class="w-full sm:w-64 shrink-0">
-                    <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom, nom ou groupe..." class="w-full bg-gray-950 rounded-xl p-2.5 text-xs border border-gray-800 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#2563eb] transition-colors font-sans">
+                    <input type="text" id="recherche-apprenant" oninput="filtrerEtAfficherTableau()" placeholder="🔍 Recherche prénom, nom ou groupe..." class="w-full bg-[#030712] rounded-xl p-2.5 text-xs border border-slate-800 text-white placeholder:text-slate-600 focus:outline-none focus:border-[#2563eb] transition-colors font-sans">
                 </div>
             </div>
             
             <div class="w-full pt-2">
                 <table class="w-full text-left border-collapse text-xs font-sans">
                     <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 uppercase tracking-wider font-semibold text-[11px] select-none relative z-10">
+                        <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold text-[11px] select-none relative z-10">
                             <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('prenomSeul')">Prénom <span id="fleche-prenomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('nomSeul')">Nom <span id="fleche-nomSeul"></span></th>
                             <th class="py-3 px-3 cursor-pointer hover:text-white transition-colors" onclick="changerTri('nomGroupe')">Équipe <span id="fleche-nomGroupe"></span></th>
                             <th class="py-3 px-3 text-center text-blue-400 font-bold cursor-pointer hover:text-blue-300 transition-colors" onclick="changerTri('ptAuto')">Bonus/Malus Auto <span id="fleche-ptAuto"></span></th>
                             <th class="py-3 px-3 text-center text-purple-400 font-bold cursor-pointer hover:text-purple-300 transition-colors" onclick="changerTri('ptPairsCumule')">Bonus/Malus Pairs <span id="fleche-ptPairsCumule"></span></th>
                             <th class="py-3 px-3 text-center text-amber-400 bg-amber-950/10 font-bold cursor-pointer hover:bg-amber-900/30 transition-colors" onclick="changerTri('noteProfSur20')">Moy. Oral Jury <span id="fleche-noteProfSur20"></span></th>
-                            <th class="py-3 px-3 text-center text-emerald-400 bg-slate-900/50 font-bold cursor-pointer hover:bg-slate-800 transition-colors" onclick="changerTri('impactTotalEntier')">Impact Cumulé <span id="fleche-impactTotalEntier"></span></th>
+                            <th class="py-3 px-3 text-center text-emerald-400 bg-[#030712]/50 font-bold cursor-pointer hover:bg-slate-800 transition-colors" onclick="changerTri('impactTotalEntier')">Impact Cumulé <span id="fleche-impactTotalEntier"></span></th>
                             <th class="py-3 px-3 text-right text-indigo-400 font-bold cursor-pointer hover:text-indigo-300 transition-colors" onclick="changerTri('noteFinaleNum')">Note Finale <span id="fleche-noteFinaleNum"></span></th>
                             <th class="py-3 px-3 text-center text-white font-bold">Rapport</th>
                         </tr>
                     </thead>
-                    <tbody id="table-corps-resultats" class="divide-y divide-gray-800/60 font-sans"></tbody>
+                    <tbody id="table-corps-resultats" class="divide-y divide-slate-800/60 font-sans"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
-        <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+        <div class="bg-[#101828] border border-slate-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans"></div>
-            <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide font-sans">
-                <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
+            <div id="modal-rapport-footer" class="p-4 border-t border-slate-800 bg-[#030712] rounded-b-2xl flex justify-between items-center print-hide font-sans">
+                <span class="text-xs text-slate-500 italic">Relevé officiel consolidé</span>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
                     📥 Exporter / Imprimer PDF
                 </button>
@@ -156,43 +184,43 @@
     </div>
 
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
-            <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
+        <div class="bg-[#101828] border border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center font-sans">
                 <h3 id="modal-feedback-titre" class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">💬 Feedback</h3>
-                <button onclick="fermerModalFeedback()" class="text-gray-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
+                <button onclick="fermerModalFeedback()" class="text-slate-500 hover:text-white text-lg font-bold px-2 cursor-pointer transition-colors">✕</button>
             </div>
-            <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-gray-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5 font-sans"></div>
-            <div class="p-4 border-t border-gray-800 flex justify-between items-center bg-gray-950/50 font-sans">
+            <div id="modal-feedback-corps" class="p-6 overflow-y-auto text-sm text-slate-300 leading-relaxed flex-1 [&_ul]:list-disc [&_ul]:pl-5 font-sans"></div>
+            <div class="p-4 border-t border-slate-800 flex justify-between items-center bg-[#030712]/50 font-sans">
                 <button id="btn-modal-supprimer-feedback" class="text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-2.5 rounded-xl hover:bg-red-500/20 hover:text-red-300 transition cursor-pointer font-bold flex items-center gap-1.5 shadow-sm">
                     🗑️ Supprimer le feedback
                 </button>
-                <button onclick="fermerModalFeedback()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition cursor-pointer shadow-sm">
+                <button onclick="fermerModalFeedback()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition cursor-pointer shadow-sm">
                     Fermer la lecture
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="modal-projection" class="hidden fixed inset-0 z-[300] bg-gray-950 flex flex-col">
-        <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
+    <div id="modal-projection" class="hidden fixed inset-0 z-[300] bg-[#030712] flex flex-col">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-[#101828]">
             <div>
                 <span class="bg-indigo-950/50 text-indigo-400 text-sm font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-indigo-800/50 font-sans">📺 Bilan de Présentation</span>
                 <h2 id="projection-titre" class="text-4xl font-black text-white mt-2 tracking-tight">Groupe X</h2>
             </div>
-            <button onclick="fermerProjection()" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-xl border border-gray-700 font-bold text-sm transition-all cursor-pointer">Fermer la projection ✕</button>
+            <button onclick="fermerProjection()" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl border border-slate-700 font-bold text-sm transition-all cursor-pointer">Fermer la projection ✕</button>
         </div>
         
         <div class="flex-1 overflow-y-auto p-6 md:p-8">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 h-full">
-                <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
-                    <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider text-center">Radar des Compétences</h3>
+                <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
+                    <h3 class="text-lg font-bold text-slate-300 mb-6 uppercase tracking-wider text-center">Radar des Compétences</h3>
                     <div class="flex-1 relative w-full h-full flex items-center justify-center">
                         <canvas id="projection-radar-chart"></canvas>
                     </div>
                 </div>
 
-                <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
-                    <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider">Ce qui a été retenu (Anonymisé)</h3>
+                <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
+                    <h3 class="text-lg font-bold text-slate-300 mb-6 uppercase tracking-wider">Ce qui a été retenu (Anonymisé)</h3>
                     <div id="projection-feedbacks-corps" class="flex-1 overflow-y-auto space-y-4 pr-2"></div>
                 </div>
             </div>
@@ -200,24 +228,23 @@
     </div>
 
     <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+        <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
                 <div class="flex-1 pt-1">
                     <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
-                    <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
-                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white focus:outline-none focus:border-blue-500 transition-all" />
+                    <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
+                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-white focus:outline-none focus:border-blue-500 transition-all" />
                 </div>
             </div>
-            <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end gap-3 font-sans" id="ui-modal-actions">
-                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">Annuler</button>
+            <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3 font-sans" id="ui-modal-actions">
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
                 <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Définition globale de UIModal pour éviter l'erreur "ReferenceError"
         window.UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -236,7 +263,7 @@
                         
                         if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
                         else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-slate-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
                         else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
 
                         if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
@@ -264,7 +291,8 @@
                 });
             },
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
+            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
@@ -336,6 +364,12 @@
             return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
         }
 
+        function quitterSimulation() {
+            sessionStorage.removeItem('impersonation_id');
+            sessionStorage.removeItem('impersonation_name');
+            window.location.href = "admin.html";
+        }
+
         async function initDashboard() {
             try {
                 if (!idSessionDashboard) {
@@ -344,9 +378,14 @@
                 }
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                const { data: { session } } = await db.auth.getSession();
-                if (!session) { window.location.href = "login.html"; return; }
-                
+                // GESTION IMPERSONATION
+                const targetImpersonation = sessionStorage.getItem('impersonation_id');
+                const targetImpersonationName = sessionStorage.getItem('impersonation_name');
+                if (targetImpersonation) {
+                    document.getElementById('banner-impersonation').classList.remove('hidden');
+                    document.getElementById('impersonation-name').innerText = targetImpersonationName || "un utilisateur";
+                }
+
                 const sauvegardeBonus = localStorage.getItem(`bonus_invest_${idSessionDashboard}`);
                 if (sauvegardeBonus) cacheBonusIndividuels = JSON.parse(sauvegardeBonus);
                 const sauvegardeMalus = localStorage.getItem(`malus_invest_${idSessionDashboard}`);
@@ -408,7 +447,7 @@
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
                         optionsHtml += `
-                            <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans truncate">
+                            <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans truncate">
                                 ${labelComplet}
                             </button>
                         `;
@@ -510,7 +549,7 @@
                 });
 
                 if (evalsPourCeGroupe.length === 0) {
-                    conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-gray-500 italic text-sm">Aucune donnée pour cette équipe.</div>`;
+                    conteneur.innerHTML = `<div class="col-span-full text-center p-6 text-slate-500 italic text-sm">Aucune donnée pour cette équipe.</div>`;
                     return;
                 }
 
@@ -525,12 +564,11 @@
                             if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                             else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
-                            // BULLES INFO FLOTTANTES SUR LES CRITÈRES
                             contenuCriteres += `
-                                <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
-                                    <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
+                                <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-slate-800/50 last:border-0 cursor-help select-none">
+                                    <span class="text-slate-400 truncate pr-2 font-medium">${crit.nom}</span>
                                     <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5.toFixed(1)}</span>
-                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed transition-all">
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 bg-[#030712] border border-slate-700 text-slate-300 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed transition-all">
                                         <div class="font-bold text-white mb-1">🎯 ${crit.nom}</div>
                                         <div class="text-slate-400 text-[10px]">${crit.description || "Aucune description."}</div>
                                     </div>
@@ -538,24 +576,23 @@
                             `;
                         });
                     } else {
-                        contenuCriteres = `<div class="text-[10px] text-gray-600 italic py-2">Détails par critères non disponibles.</div>`;
+                        contenuCriteres = `<div class="text-[10px] text-slate-600 italic py-2">Détails par critères non disponibles.</div>`;
                     }
 
                     const estAutoEval = e.groupe_votant === e.sujet;
                     let typeLabel = e.estProf ? ' FORMATEUR' : (estAutoEval ? ' AUTO' : ' PAIRS');
-                    let styleLabel = e.estProf ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
+                    let styleLabel = e.estProf ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-slate-800 text-slate-300 border-slate-700');
                     
                     let nomAfficheHtml = '';
                     if (e.estProf) {
-                        nomAfficheHtml = `<div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>`;
+                        nomAfficheHtml = `<div class="font-bold text-slate-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>`;
                     } else if (e.groupe_votant === e.sujet) {
                         const membres = membresParNomGroupe[e.groupe_votant] || [];
                         const htmlTooltipMembres = membres.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
                         
-                        // BULLE INFO FLOTTANTE SUR LE NOM DE L'ÉQUIPE
                         nomAfficheHtml = `
                             <div class="group relative inline-block cursor-help select-none mt-1.5">
-                                <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
+                                <span class="font-bold text-slate-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
                                 <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
                                     <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
                                     ${htmlTooltipMembres || '<div class="italic text-slate-500">Aucun membre</div>'}
@@ -566,11 +603,10 @@
                         const membresSujet = membresParNomGroupe[e.sujet] || [];
                         const htmlTooltipSujet = membresSujet.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
 
-                        // BULLE INFO FLOTTANTE SUR L'ÉVAL PAIRS
                         nomAfficheHtml = `
                             <div class="group relative inline-block cursor-help select-none mt-1.5">
-                                <span class="text-xs text-gray-500 font-medium">Pour : </span>
-                                <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.sujet}</span>
+                                <span class="text-xs text-slate-500 font-medium">Pour : </span>
+                                <span class="font-bold text-slate-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.sujet}</span>
                                 <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
                                     <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
                                     ${htmlTooltipSujet || '<div class="italic text-slate-500">Aucun membre</div>'}
@@ -592,7 +628,7 @@
                             </button>
                         `;
                     } else {
-                        htmlBlockFeedback = `<span class="text-[10px] text-gray-600 italic">Aucun commentaire.</span>`;
+                        htmlBlockFeedback = `<span class="text-[10px] text-slate-600 italic">Aucun commentaire.</span>`;
                     }
 
                     let htmlImpactBulle = "";
@@ -607,22 +643,22 @@
                     }
 
                     let bottomBarHtml = `
-                        <div class="mt-3 pt-3 border-t border-gray-800/50 flex items-center justify-between gap-2">
+                        <div class="mt-3 pt-3 border-t border-slate-800/50 flex items-center justify-between gap-2">
                             ${htmlBlockFeedback}
                             ${htmlImpactBulle}
                         </div>
                     `;
 
                     conteneur.innerHTML += `
-                        <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col shadow-inner hover:border-gray-700 transition-colors">
-                            <div class="flex justify-between items-start border-b border-gray-900 pb-3 mb-2">
+                        <div class="bg-[#030712] p-4 rounded-xl border border-slate-800 flex flex-col shadow-inner hover:border-slate-700 transition-colors">
+                            <div class="flex justify-between items-start border-b border-slate-900 pb-3 mb-2">
                                 <div>
                                     <span class="text-[9px] font-bold px-2 py-0.5 rounded border ${styleLabel}">${typeLabel}</span>
                                     ${nomAfficheHtml}
                                 </div>
                                 <div class="text-right shrink-0 pl-2">
                                     <div class="text-xl font-black font-mono tracking-tighter ${e.note >= 10 ? 'text-white' : 'text-red-400'}">${e.note.toFixed(2)}</div>
-                                    <div class="text-[9px] text-gray-500 font-mono font-bold -mt-1">/ 20</div>
+                                    <div class="text-[9px] text-slate-500 font-mono font-bold -mt-1">/ 20</div>
                                 </div>
                             </div>
                             <div class="flex-1 flex flex-col space-y-0.5 mt-1">
@@ -742,26 +778,25 @@
             });
 
             if(listeFiltree.length === 0) {
-                corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-600 italic">Aucun résultat trouvé.</td></tr>`; return;
+                corpsTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-slate-600 italic">Aucun résultat trouvé.</td></tr>`; return;
             }
 
             listeFiltree.forEach(item => {
                 let noteJuryText = item.noteProfSur20 !== -1 ? item.noteProfSur20.toFixed(2) : '--';
-                let noteFinaleAffichage = item.noteProfSur20 !== -1 ? `<span class="text-sm font-black text-indigo-400 font-mono">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-gray-500 font-mono">/20</span>` : "--";
+                let noteFinaleAffichage = item.noteProfSur20 !== -1 ? `<span class="text-sm font-black text-indigo-400 font-mono">${item.noteFinaleNum.toFixed(2)}</span> <span class="text-[10px] text-slate-500 font-mono">/20</span>` : "--";
 
-                const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
-                const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-gray-600 bg-gray-900 border-gray-800/80 hover:text-gray-400 hover:border-gray-700';
+                const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-slate-600 bg-[#030712] border-slate-800/80 hover:text-slate-400 hover:border-slate-700';
+                const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-slate-600 bg-[#030712] border-slate-800/80 hover:text-slate-400 hover:border-slate-700';
 
                 const stringPrenomEchappe = item.prenom.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
                 const fullMembresList = membresParNomGroupe[item.nomGroupe] || [];
                 const htmlTooltipMembres = fullMembresList.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
 
-                // BULLES INFO FLOTTANTES DANS LE TABLEAU
                 corpsTable.innerHTML += `
-                    <tr class="hover:bg-gray-900/40 transition border-b border-gray-800/30 hover:relative hover:z-50">
+                    <tr class="hover:bg-[#101828]/60 transition border-b border-slate-800/50 hover:relative hover:z-50">
                         <td class="py-3 px-3 font-black text-white text-sm">${item.prenomSeul}</td>
                         <td class="py-3 px-3 font-bold text-slate-300 text-sm tracking-wide uppercase">${item.nomSeul}</td>
-                        <td class="py-3 px-3 text-gray-400 font-medium text-xs">
+                        <td class="py-3 px-3 text-slate-400 font-medium text-xs">
                             <div class="group relative inline-block cursor-help select-none">
                                 <span class="border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${item.nomGroupe}</span>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
@@ -770,10 +805,10 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3 px-3 text-center text-sm font-mono ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
-                        <td class="py-3 px-3 text-center text-sm font-mono ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
+                        <td class="py-3 px-3 text-center text-sm font-mono ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-emerald-400' : 'text-slate-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
+                        <td class="py-3 px-3 text-center text-sm font-mono ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-emerald-400' : 'text-slate-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
                         <td class="py-3 px-3 text-center font-bold text-amber-400 bg-amber-950/5 font-mono">${noteJuryText}</td>
-                        <td class="py-3 px-3 text-center bg-slate-900 text-sm font-black font-mono ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-emerald-400' : 'text-gray-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
+                        <td class="py-3 px-3 text-center bg-[#030712] text-sm font-black font-mono ${item.impactTotalEntier < 0 ? 'text-red-500' : item.impactTotalEntier > 0 ? 'text-emerald-400' : 'text-slate-500'}">${item.impactTotalEntier > 0 ? '+'+item.impactTotalEntier : item.impactTotalEntier}</td>
                         <td class="py-3 px-3 text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
@@ -831,17 +866,17 @@
 
             const feedbacksJury = txtJuryRaw.map(f => `<li><span class="text-purple-400 font-bold">[Formateur]</span> ${f}</li>`).join('');
             const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
-            const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300 leading-relaxed">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic font-sans">Aucun retour rédigé pour cette équipe.</p>`;
+            const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-slate-300 leading-relaxed">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-slate-500 italic font-sans">Aucun retour rédigé pour cette équipe.</p>`;
 
             const enteteOfficielDocumentHtml = `
-                <div class="mb-5 pb-5 border-b-2 border-gray-800">
+                <div class="mb-5 pb-5 border-b-2 border-slate-800">
                     <h2 class="text-xl font-black text-white tracking-tight uppercase">📄 Bilan Individuel de Compétences</h2>
                     <h3 class="text-base font-bold text-indigo-400 mt-1 uppercase tracking-wide font-sans">${dataApp.prenomSeul} ${dataApp.nomSeul} — Équipe : ${dataApp.nomGroupe}</h3>
                     
-                    <div class="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-1 text-[11px] text-gray-400 font-mono uppercase tracking-wider">
+                    <div class="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-400 font-mono uppercase tracking-wider">
                         <div class="w-full sm:w-auto mb-1 sm:mb-0 flex gap-2 items-center font-sans">
                             <span>📌 <b>Session :</b> <span class="text-white font-bold">${nomSessStr}</span></span>
-                            <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px] print-hide">${globalTypeEvaluation}</span>
+                            <span class="px-2 py-0.5 rounded bg-[#030712] text-slate-200 border border-slate-800 text-[10px] print-hide">${globalTypeEvaluation}</span>
                         </div>
                         <div class="font-sans">🏢 <b>Organisme :</b> <span class="text-white">${globalOrganismeNom}</span></div>
                         <div class="font-sans">📁 <b>Formation :</b> <span class="text-white">${globalFormationNom}</span></div>
@@ -853,9 +888,9 @@
             conteneur.innerHTML = `
                 ${enteteOfficielDocumentHtml}
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-center shadow-inner">
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 font-sans">Moyenne Formateur</div>
-                        <div class="text-3xl font-black text-white mt-1 font-mono">${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}<span class="text-sm text-gray-600 font-sans">/20</span></div>
+                    <div class="bg-[#030712] border border-slate-800 p-4 rounded-xl text-center shadow-inner">
+                        <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1 font-sans">Moyenne Formateur</div>
+                        <div class="text-3xl font-black text-white mt-1 font-mono">${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}<span class="text-sm text-slate-600 font-sans">/20</span></div>
                     </div>
                     <div class="bg-indigo-950/20 border border-indigo-900/50 p-4 rounded-xl text-center shadow-inner">
                         <div class="text-[10px] text-indigo-400 uppercase tracking-widest font-bold mb-1 font-sans">Note Finale</div>
@@ -863,31 +898,31 @@
                     </div>
                 </div>
                 
-                <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 mt-6 shadow-inner">
-                    <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-2 mb-4 font-sans">🛠️ Détail de la Pondération</h4>
+                <div class="bg-[#030712] border border-slate-800 rounded-xl p-5 mt-6 shadow-inner">
+                    <h4 class="text-sm font-bold text-slate-400 uppercase border-b border-slate-800 pb-2 mb-4 font-sans">🛠️ Détail de la Pondération</h4>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center font-mono">
                         <div>
-                            <div class="text-xs text-gray-500 font-sans">Auto-Éval</div>
-                            <div class="text-xl font-bold mt-1 ${dataApp.ptAuto > 0 ? 'text-green-400' : dataApp.ptAuto < 0 ? 'text-red-400' : 'text-gray-400'}">${dataApp.ptAuto > 0 ? '+'+dataApp.ptAuto : dataApp.ptAuto} pt</div>
+                            <div class="text-xs text-slate-500 font-sans">Auto-Éval</div>
+                            <div class="text-xl font-bold mt-1 ${dataApp.ptAuto > 0 ? 'text-emerald-400' : dataApp.ptAuto < 0 ? 'text-red-400' : 'text-slate-400'}">${dataApp.ptAuto > 0 ? '+'+dataApp.ptAuto : dataApp.ptAuto} pt</div>
                         </div>
                         <div>
-                            <div class="text-xs text-gray-500 font-sans">Éval Pairs</div>
-                            <div class="text-xl font-bold mt-1 ${dataApp.ptPairsCumule > 0 ? 'text-green-400' : dataApp.ptPairsCumule < 0 ? 'text-red-400' : 'text-gray-400'}">${dataApp.ptPairsCumule > 0 ? '+'+dataApp.ptPairsCumule : dataApp.ptPairsCumule} pt</div>
+                            <div class="text-xs text-slate-500 font-sans">Éval Pairs</div>
+                            <div class="text-xl font-bold mt-1 ${dataApp.ptPairsCumule > 0 ? 'text-emerald-400' : dataApp.ptPairsCumule < 0 ? 'text-red-400' : 'text-slate-400'}">${dataApp.ptPairsCumule > 0 ? '+'+dataApp.ptPairsCumule : dataApp.ptPairsCumule} pt</div>
                         </div>
                         <div>
                             <div class="text-xs text-emerald-500 font-bold font-sans">Impact Cumulé</div>
-                            <div class="text-xl font-bold mt-1 ${dataApp.impactTotalEntier > 0 ? 'text-emerald-400' : (dataApp.impactTotalEntier < 0 ? 'text-red-500' : 'text-gray-500')}">${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt</div>
-                            <div class="text-[9px] text-gray-500 italic mt-1 font-sans">± 2 points max</div>
+                            <div class="text-xl font-bold mt-1 ${dataApp.impactTotalEntier > 0 ? 'text-emerald-400' : (dataApp.impactTotalEntier < 0 ? 'text-red-500' : 'text-slate-500')}">${dataApp.impactTotalEntier > 0 ? '+'+dataApp.impactTotalEntier : dataApp.impactTotalEntier} pt</div>
+                            <div class="text-[9px] text-slate-500 italic mt-1 font-sans">± 2 points max</div>
                         </div>
                         <div>
                             <div class="text-xs text-amber-500 font-sans">Ajust. Formateur</div>
-                            <div class="text-xl font-bold mt-1 ${dataApp.hasBonus ? 'text-amber-400' : (dataApp.hasMalus ? 'text-red-400' : 'text-gray-600')}">${dataApp.hasBonus ? '+1' : (dataApp.hasMalus ? '-1' : '0')} pt</div>
+                            <div class="text-xl font-bold mt-1 ${dataApp.hasBonus ? 'text-amber-400' : (dataApp.hasMalus ? 'text-red-400' : 'text-slate-600')}">${dataApp.hasBonus ? '+1' : (dataApp.hasMalus ? '-1' : '0')} pt</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-gray-950 border border-gray-800 rounded-xl p-5 mt-6 shadow-inner">
-                    <h4 class="text-sm font-bold text-gray-400 uppercase border-b border-gray-800 pb-3 mb-3 font-sans">💬 Synthèse des Retours</h4>
+                <div class="bg-[#030712] border border-slate-800 rounded-xl p-5 mt-6 shadow-inner">
+                    <h4 class="text-sm font-bold text-slate-400 uppercase border-b border-slate-800 pb-3 mb-3 font-sans">💬 Synthèse des Retours</h4>
                     ${zoneFeedbacks}
                 </div>
             `;
@@ -984,15 +1019,15 @@
                     let titreFb = e.estProf ? "💬 Retour du Jury" : (e.groupe_votant === cible ? "💬 Auto-analyse" : "💬 Retour d'un pair");
                     let couleurBordure = e.estProf ? "border-purple-500" : (e.groupe_votant === cible ? "border-emerald-500" : "border-blue-500");
                     fbHtml += `
-                        <div class="bg-gray-800/50 p-4 rounded-xl border-l-4 ${couleurBordure}">
-                            <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">${titreFb}</div>
-                            <div class="text-sm text-gray-200 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">${e.feedback}</div>
+                        <div class="bg-[#030712]/50 p-4 rounded-xl border-l-4 ${couleurBordure}">
+                            <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">${titreFb}</div>
+                            <div class="text-sm text-slate-200 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">${e.feedback}</div>
                         </div>
                     `;
                 }
             });
 
-            zoneFeedbacks.innerHTML = fbHtml || `<p class="text-gray-500 italic">Aucun retour détaillé n'a été rédigé pour cette présentation.</p>`;
+            zoneFeedbacks.innerHTML = fbHtml || `<p class="text-slate-500 italic">Aucun retour détaillé n'a été rédigé pour cette présentation.</p>`;
             document.getElementById('modal-projection').classList.remove('hidden');
         }
 
