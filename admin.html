@@ -41,7 +41,6 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
-                <!-- Bouton Comptes (Notif uniquement pour Admin) -->
                 <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👥 Comptes & Droits
                     <span id="badge-notif-comptes" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
@@ -70,6 +69,9 @@
             </div>
             <button onclick="ouvrirModalInvitations()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-md cursor-pointer">Voir les invitations</button>
         </div>
+
+        <!-- BANNIÈRE DES ACCEPTATIONS (Pour les créateurs de sessions) -->
+        <div id="banner-acceptations" class="hidden flex flex-col gap-3 relative z-40"></div>
 
         <!-- DASHBOARD STATISTIQUES DYNAMIQUE -->
         <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
@@ -128,7 +130,6 @@
             <!-- VUE : FORMATEUR / RP -->
             <div id="user-comptes-view" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Infos et Changement de mot de passe -->
                     <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
                         <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Mes Informations Sécurisées</div>
                         <p class="text-sm text-slate-300 mb-5">Adresse Email : <span id="mon-email-display" class="font-bold text-white bg-slate-800 px-2 py-1 rounded">...</span></p>
@@ -142,12 +143,9 @@
                         </form>
                     </div>
 
-                    <!-- Récapitulatif des droits -->
                     <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
                         <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Tableau de bord de mes Droits</div>
-                        <ul class="text-sm text-slate-300 space-y-3 pl-1" id="liste-mes-droits">
-                            <!-- Rempli en JS -->
-                        </ul>
+                        <ul class="text-sm text-slate-300 space-y-3 pl-1" id="liste-mes-droits"></ul>
                     </div>
                 </div>
             </div>
@@ -200,6 +198,7 @@
                 </div>
             </div>
 
+            <!-- Apprenants -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
@@ -326,6 +325,7 @@
                             </div>
                         </div>
 
+                        <!-- RECHERCHE & SÉLECTION DES ÉVALUATEURS -->
                         <div class="relative">
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Ajouter des évaluateurs / co-formateurs :</label>
                             <div class="flex gap-2">
@@ -823,7 +823,8 @@
         async function chargerAnnuaireEvaluateursEtFavoris() {
             try {
                 const [{ data: profils }, { data: favs }] = await Promise.all([
-                    db.from('profils').select('id, prenom, nom, role').in('role', ['rp', 'formateur']).eq('statut', 'valide').neq('id', activeUserId),
+                    // L'Admin est désormais dans la liste de recherche
+                    db.from('profils').select('id, prenom, nom, role').in('role', ['rp', 'formateur', 'super_admin']).eq('statut', 'valide'),
                     db.from('favoris').select('favori_id').eq('user_id', activeUserId)
                 ]);
                 
@@ -864,21 +865,27 @@
             let favs = filtered.filter(u => listFavorisIds.includes(u.id));
             let formateurs = filtered.filter(u => !listFavorisIds.includes(u.id) && u.role === 'formateur');
             let rps = filtered.filter(u => !listFavorisIds.includes(u.id) && u.role === 'rp');
+            let admins = filtered.filter(u => !listFavorisIds.includes(u.id) && u.role === 'super_admin');
 
             let html = "";
 
             const buildUserRow = (u, isFav) => {
                 const favIcon = isFav ? '⭐' : '☆';
                 const favColor = isFav ? 'text-amber-400' : 'text-slate-600 hover:text-amber-400';
-                const roleBadge = u.role === 'rp' ? `<span class="bg-indigo-950/50 text-indigo-400 text-[9px] px-1.5 py-0.5 rounded ml-2">RP</span>` : `<span class="bg-blue-950/50 text-blue-400 text-[9px] px-1.5 py-0.5 rounded ml-2">Formateur</span>`;
+                
+                let roleBadge = '';
+                if (u.role === 'rp') roleBadge = `<span class="bg-indigo-950/50 text-indigo-400 text-[9px] px-1.5 py-0.5 rounded ml-2">RP</span>`;
+                else if (u.role === 'super_admin') roleBadge = `<span class="bg-red-950/50 text-red-400 text-[9px] px-1.5 py-0.5 rounded ml-2">ADMIN</span>`;
+                else roleBadge = `<span class="bg-blue-950/50 text-blue-400 text-[9px] px-1.5 py-0.5 rounded ml-2">Formateur</span>`;
+                
                 const safeNom = `${u.prenom || ''} ${u.nom || ''}`.replace(/'/g, "\\'");
                 
                 return `
                     <div class="flex items-center justify-between p-2 hover:bg-slate-800 rounded-lg group transition-colors">
-                        <button type="button" onclick="ajouterEvaluateurUI('${u.id}', '${safeNom}')" class="flex-1 text-left text-sm text-slate-300 group-hover:text-white cursor-pointer font-sans truncate">
-                            ${safeNom} ${roleBadge}
+                        <button type="button" onclick="ajouterEvaluateurUI('${u.id}', '${safeNom}')" class="flex-1 text-left text-sm text-slate-300 group-hover:text-white cursor-pointer font-sans truncate flex items-center">
+                            ${safeNom} ${roleBadge} ${u.id === activeUserId ? `<span class="text-[9px] text-slate-500 ml-2 italic">(Vous)</span>` : ''}
                         </button>
-                        <button type="button" onclick="toggleFavori('${u.id}')" class="${favColor} text-sm px-2 cursor-pointer" title="Ajouter/Retirer des favoris">${favIcon}</button>
+                        <button type="button" onclick="toggleFavori('${u.id}')" class="${favColor} text-sm px-2 cursor-pointer shrink-0" title="Ajouter/Retirer des favoris">${favIcon}</button>
                     </div>
                 `;
             };
@@ -896,6 +903,11 @@
             if (rps.length > 0) {
                 html += `<div class="text-[10px] font-bold uppercase text-slate-500 mb-1 mt-3 px-2 border-b border-slate-700/50 pb-1">Responsables Pédagogiques</div>`;
                 html += rps.map(u => buildUserRow(u, false)).join('');
+            }
+
+            if (admins.length > 0) {
+                html += `<div class="text-[10px] font-bold uppercase text-slate-500 mb-1 mt-3 px-2 border-b border-slate-700/50 pb-1">Administrateurs Plateforme</div>`;
+                html += admins.map(u => buildUserRow(u, false)).join('');
             }
 
             if (filtered.length === 0) {
@@ -947,8 +959,9 @@
             const container = document.getElementById('tags-evaluateurs');
             container.innerHTML = evaluateursSelectionnes.map((ev, index) => {
                 const isPlateforme = ev.id !== null;
+                const isMe = ev.id === activeUserId;
                 const badgeColor = isPlateforme ? "bg-blue-900/40 text-blue-300 border-blue-700/50" : "bg-slate-800 text-slate-300 border-slate-600";
-                const icon = isPlateforme ? "👤" : "📝";
+                const icon = isMe ? "🙋‍♂️" : (isPlateforme ? "👤" : "📝");
                 return `
                     <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-sans shadow-sm ${badgeColor}">
                         <span>${icon} ${ev.nom}</span>
@@ -1285,11 +1298,19 @@
         // ==========================================
         // GESTION DES SESSIONS & INVITATIONS
         // ==========================================
+        async function masquerAlerteAcceptation(evalId) {
+            try {
+                await db.from('evaluateurs').update({ statut_invitation: 'actif' }).eq('id', evalId);
+                await chargerSessions();
+            } catch(e) { console.error(e); }
+        }
+
         async function chargerSessions() {
             try {
                 let reqMySessions = db.from('sessions').select(`
-                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation ),
-                    profils (prenom, nom)
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( id, nom, utilisateur_id, statut_invitation, created_at ),
+                    profils (prenom, nom),
+                    formations ( id, nom, organismes ( id, nom ) )
                 `);
                 
                 if (roleConnecte === 'formateur') {
@@ -1304,8 +1325,9 @@
                 const invitedSessionIds = myEvals ? myEvals.map(e => e.session_id) : [];
 
                 let reqInvited = db.from('sessions').select(`
-                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation ),
-                    profils (prenom, nom)
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( id, nom, utilisateur_id, statut_invitation, created_at ),
+                    profils (prenom, nom),
+                    formations ( id, nom, organismes ( id, nom ) )
                 `).in('id', invitedSessionIds);
 
                 const [ { data: sessionsOwned, error: errS }, { data: sessionsInvited, error: errI }, { data: evalVotes, error: errV } ] = await Promise.all([
@@ -1317,7 +1339,20 @@
                 if (errS || errI || errV) throw new Error("Erreur de chargement des données.");
 
                 const allSessionsMap = new Map();
-                (sessionsOwned || []).forEach(s => allSessionsMap.set(s.id, { ...s, est_invite: false }));
+                const alertesAcceptation = [];
+
+                (sessionsOwned || []).forEach(s => {
+                    allSessionsMap.set(s.id, { ...s, est_invite: false });
+                    
+                    if(s.evaluateurs) {
+                        s.evaluateurs.forEach(e => {
+                            if (e.statut_invitation === 'accepte' && e.utilisateur_id !== activeUserId) {
+                                alertesAcceptation.push({ evalId: e.id, evalNom: e.nom, sessionNom: s.nom });
+                            }
+                        });
+                    }
+                });
+
                 (sessionsInvited || []).forEach(s => {
                     if (!allSessionsMap.has(s.id)) {
                         const monEval = s.evaluateurs.find(e => e.utilisateur_id === activeUserId);
@@ -1326,6 +1361,27 @@
                         }
                     }
                 });
+
+                // Rendu de la notification d'acceptation (Créateur)
+                const bannerAcc = document.getElementById('banner-acceptations');
+                if (alertesAcceptation.length > 0) {
+                    bannerAcc.innerHTML = alertesAcceptation.map(a => `
+                        <div class="bg-emerald-900/40 border border-emerald-500/50 p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg animate-pulse-soft">
+                            <div class="flex items-center gap-3">
+                                <div class="text-2xl">🎉</div>
+                                <div>
+                                    <h3 class="text-emerald-400 font-bold text-sm">Invitation Acceptée !</h3>
+                                    <p class="text-xs text-slate-300 mt-0.5"><span class="font-bold text-white">${a.evalNom}</span> a accepté de co-évaluer votre session <span class="font-bold text-emerald-300">"${a.sessionNom}"</span>.</p>
+                                </div>
+                            </div>
+                            <button onclick="masquerAlerteAcceptation('${a.evalId}')" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition shadow-md cursor-pointer shrink-0">Ok, super !</button>
+                        </div>
+                    `).join('');
+                    bannerAcc.classList.remove('hidden');
+                } else {
+                    bannerAcc.classList.add('hidden');
+                    bannerAcc.innerHTML = '';
+                }
 
                 const rawList = Array.from(allSessionsMap.values());
                 const sessionsVerrouillees = new Set((evalVotes || []).map(e => e.session_id));
@@ -1357,13 +1413,13 @@
 
                 if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
-                const banner = document.getElementById('banner-invitations');
+                const bannerInvit = document.getElementById('banner-invitations');
                 if (roleConnecte !== 'super_admin') {
                     if (invitationsEnAttenteGlobal.length > 0) {
                         document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
-                        banner.classList.remove('hidden');
+                        bannerInvit.classList.remove('hidden');
                     } else {
-                        banner.classList.add('hidden');
+                        bannerInvit.classList.add('hidden');
                     }
                 }
 
@@ -1505,10 +1561,8 @@
                     const nomSess = (s.nom || "").toLowerCase();
                     const typeSess = (s.type === "ecrit" ? "écrit" : "oral").toLowerCase();
                     
-                    const formationObj = globalFormations.find(f => f.id === s.formation_id);
-                    const formationNom = formationObj ? formationObj.nom.toLowerCase() : "";
-                    const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
-                    const organismeNom = orgObj ? orgObj.nom.toLowerCase() : "";
+                    const formationNom = s.formations ? s.formations.nom.toLowerCase() : "";
+                    const organismeNom = (s.formations && s.formations.organismes) ? s.formations.organismes.nom.toLowerCase() : "";
                     
                     let dateFormateeFr = "";
                     if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
@@ -1551,10 +1605,8 @@
 
             const mapGroupements = {};
             sessionsList.forEach(s => {
-                const formationObj = globalFormations.find(f => f.id === s.formation_id);
-                const nomClasse = formationObj ? formationObj.nom : "Sans affectation";
-                const orgObj = formationObj ? globalOrganismes.find(o => o.id === formationObj.organisme_id) : null;
-                const nomOrg = orgObj ? orgObj.nom : "Manuel";
+                const nomClasse = s.formations ? s.formations.nom : "Sans affectation";
+                const nomOrg = (s.formations && s.formations.organismes) ? s.formations.organismes.nom : "Manuel";
                 
                 const cleGroupement = `${nomOrg} : ${nomClasse}`;
                 if (!mapGroupements[cleGroupement]) mapGroupements[cleGroupement] = [];
@@ -1606,19 +1658,35 @@
                     const countApprenants = s.apprenants ? s.apprenants.length : 0;
                     const countCriteres = s.criteres ? s.criteres.length : 0;
                     
-                    const hasPendingEvaluator = s.evaluateurs && s.evaluateurs.some(e => e.statut_invitation === 'en_attente');
+                    const evalsAcceptes = [];
+                    const evalsEnAttente = [];
+                    
+                    if (s.evaluateurs) {
+                        s.evaluateurs.forEach(e => {
+                            if (e.statut_invitation === 'en_attente') evalsEnAttente.push(e);
+                            else if (e.statut_invitation === 'accepte' || e.statut_invitation === 'actif') evalsAcceptes.push(e);
+                        });
+                    }
+
+                    const hasPendingEvaluator = evalsEnAttente.length > 0;
                     
                     let stringEvaluateursHtml = '';
                     if (hasPendingEvaluator && !s.est_invite) {
-                        stringEvaluateursHtml = `<span class="italic text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded border border-amber-700/50">Évaluateur en cours d'acceptation</span>`;
+                        const attenteHtml = evalsEnAttente.map(e => {
+                            const prenom = e.nom.split(' ')[0];
+                            const dateInv = e.created_at ? new Date(e.created_at).toLocaleDateString('fr-FR') : 'récemment';
+                            return `<div class="italic text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded border border-amber-700/50 mt-1.5 text-[10px] w-fit">⏳ ${prenom} n'a pas encore accepté (invitation envoyée le ${dateInv})</div>`;
+                        }).join('');
+                        
+                        const names = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun actif';
+                        stringEvaluateursHtml = `<div class="flex flex-col"><span class="truncate max-w-[160px]">👩‍🏫 ${names}</span>${attenteHtml}</div>`;
                     } else {
-                        const evalsAcceptes = s.evaluateurs ? s.evaluateurs.filter(e => e.statut_invitation !== 'refuse') : [];
                         const names = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
                         stringEvaluateursHtml = `<span class="truncate max-w-[160px]" title="${evalsAcceptes.map(e => e.nom).join(', ')}">👩‍🏫 ${names}</span>`;
                     }
 
                     const tagsStatsInfos = `
-                        <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center flex-wrap gap-x-2 gap-y-1.5">
+                        <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex flex-wrap gap-x-2 gap-y-1.5 items-start">
                             ${tagDate}
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">👥 ${countApprenants} apprenant(s)</span>
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">📋 ${countCriteres} critère(s)</span>
@@ -1791,7 +1859,7 @@
                         session_id: session.id, 
                         nom: ev.nom,
                         utilisateur_id: ev.id,
-                        statut_invitation: ev.id ? 'en_attente' : 'accepte'
+                        statut_invitation: ev.id ? (ev.id === activeUserId ? 'actif' : 'en_attente') : 'actif'
                     }));
                     await db.from('evaluateurs').insert(payloadEvals);
                 }
@@ -1801,16 +1869,20 @@
                     const nomDuGroupe = `${prefixe}${i}`; listeNomsGroupes.push(nomDuGroupe);
                     payloadGroupes.push({ session_id: session.id, nom: nomDuGroupe });
                 }
-                const { data: groupesInseres } = await db.from('groupes').insert(payloadGroupes).select();
+                const { data: groupesInseres, error: eGrp } = await db.from('groupes').insert(payloadGroupes).select();
+                if(eGrp) throw eGrp;
+                
                 const mapNomVersIdGroupe = {}; groupesInseres.forEach(g => { mapNomVersIdGroupe[g.nom] = g.id; });
 
                 for (let i = listApprenantsPresents.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1)); [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [listApprenantsPresents[i], listApprenantsPresents[j]] = [listApprenantsPresents[j], listApprenantsPresents[i]];
                 }
 
-                await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
+                const { error: eApp } = await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
                     session_id: session.id, prenom: appObj.nomComplet, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
                 })));
+                if(eApp) throw eApp;
 
                 await UIModal.alert("La session a été générée avec succès ! Les invitations ont été envoyées aux co-évaluateurs.", "success", "Session Créée");
                 
@@ -1818,7 +1890,10 @@
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
                 document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
                 document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-                evaluateursSelectionnes = []; renderTagsEvaluateurs(); document.getElementById('input-recherche-eval').value = "";
+                
+                evaluateursSelectionnes = [];
+                renderTagsEvaluateurs();
+                document.getElementById('input-recherche-eval').value = "";
                 
                 document.getElementById('zone-configurateur').classList.add('hidden');
                 await chargerSessions();
@@ -1889,7 +1964,10 @@
             document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
 
             document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; 
-            evaluateursSelectionnes = []; renderTagsEvaluateurs();
+            
+            evaluateursSelectionnes = [];
+            renderTagsEvaluateurs();
+
             document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
             document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
@@ -1942,7 +2020,7 @@
                         session_id: idSessionEnCoursModification, 
                         nom: ev.nom,
                         utilisateur_id: ev.id,
-                        statut_invitation: ev.id ? 'en_attente' : 'accepte'
+                        statut_invitation: ev.id ? (ev.id === activeUserId ? 'actif' : 'en_attente') : 'actif'
                     }));
                     await db.from('evaluateurs').insert(payloadEvals);
                 }
