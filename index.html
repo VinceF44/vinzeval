@@ -6,7 +6,6 @@
     <title>Dashboard Master — Logique Multi-Jury Collaborative</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Ajout de Chart.js pour le graphique Radar -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
@@ -50,7 +49,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-amber-800/50 font-sans">👑 Console Master — Vue Analytique</span>
@@ -62,7 +60,6 @@
             </button>
         </div>
 
-        <!-- BLOC SÉLECTION ÉQUIPE & PROJECTION -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -80,15 +77,13 @@
                             <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
                         </div>
                     </div>
-                    <!-- NOUVEAU BOUTON PROJECTION -->
-                    <button onclick="ouvrirProjection()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-5 rounded-xl border border-indigo-500 shadow-lg transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans">
+                    <button onclick="ouvrirProjection()" class="bg-purple-950/40 hover:bg-purple-900/40 text-purple-400 font-bold p-3 text-sm rounded-xl border border-purple-900/50 shadow-md transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans shrink-0 active:scale-95">
                         📺 Projeter Bilan
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white font-sans">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -100,7 +95,6 @@
             </div>
         </div>
 
-        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -133,10 +127,12 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
-            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans"></div>
+            
+            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans">
+                </div>
+            
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide font-sans">
                 <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
@@ -146,7 +142,6 @@
         </div>
     </div>
 
-    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
@@ -165,9 +160,7 @@
         </div>
     </div>
 
-    <!-- NOUVELLE MODALE PLEIN ÉCRAN : PROJECTION DÉBRIEFING -->
     <div id="modal-projection" class="hidden fixed inset-0 z-[300] bg-gray-950 flex flex-col">
-        <!-- En-tête -->
         <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
             <div>
                 <span class="bg-indigo-950/50 text-indigo-400 text-sm font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-indigo-800/50 font-sans">📺 Bilan de Présentation</span>
@@ -176,11 +169,9 @@
             <button onclick="fermerProjection()" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-xl border border-gray-700 font-bold text-sm transition-all cursor-pointer">Fermer la projection ✕</button>
         </div>
         
-        <!-- Corps de la projection -->
         <div class="flex-1 overflow-y-auto p-6 md:p-8">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 h-full">
                 
-                <!-- Graphique Radar -->
                 <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
                     <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider text-center">Radar des Compétences</h3>
                     <div class="flex-1 relative w-full h-full flex items-center justify-center">
@@ -188,19 +179,16 @@
                     </div>
                 </div>
 
-                <!-- Feedbacks Anonymisés -->
                 <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
                     <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider">Ce qui a été retenu (Anonymisé)</h3>
                     <div id="projection-feedbacks-corps" class="flex-1 overflow-y-auto space-y-4 pr-2">
-                        <!-- Injecté en JS -->
-                    </div>
+                        </div>
                 </div>
 
             </div>
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
@@ -315,7 +303,7 @@
             if(!hiddenInput) return;
             const valeurChangee = hiddenInput.value !== String(value);
             hiddenInput.value = value;
-            if(labelSpan) labelSpan.innerText = label;
+            if(labelSpan) labelSpan.innerHTML = label;
             toggleDropdown(dropdownId);
             
             if (valeurChangee && dropdownId === 'select-groupe-formateur') {
@@ -380,8 +368,8 @@
                 nomsEvaluateursInscrits = evs ? evs.map(e => e.nom) : [];
                 if(nomsEvaluateursInscrits.length === 0) nomsEvaluateursInscrits = ["Formateur Principal", "Formateur"];
 
-                const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
-                const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
+                const { data: g = [] } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
+                const { data: apps = [] } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
 
                 apprenantsSession = apps || [];
                 groupesSession = g || [];
@@ -409,18 +397,10 @@
                         const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
-                        const htmlTooltip = listeMembresFull.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
-                        
                         optionsHtml += `
-                            <div class="group relative w-full">
-                                <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
-                                    ${labelComplet}
-                                </button>
-                                <div class="absolute left-full top-0 ml-2 hidden group-hover:block z-[60] w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
-                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
-                                    ${htmlTooltip || '<div class="italic text-slate-500">Aucun membre</div>'}
-                                </div>
-                            </div>
+                            <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
+                                ${labelComplet}
+                            </button>
                         `;
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
@@ -703,12 +683,6 @@
             } catch (err) { UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
         }
 
-        function changerTri(colonne) { 
-            if (colonneTriActuelle === colonne) ordreTriActuel = ordreTriActuel === 'asc' ? 'desc' : 'asc'; 
-            else { colonneTriActuelle = colonne; ordreTriActuel = 'asc'; } 
-            filtrerEtAfficherTableau(); 
-        }
-
         function filtrerEtAfficherTableau() {
             const corpsTable = document.getElementById('table-corps-resultats');
             if (!corpsTable) return; corpsTable.innerHTML = '';
@@ -903,7 +877,7 @@
         function fermerModalFeedback() { document.getElementById('modal-feedback').classList.add('hidden'); }
         function fermerModalRapport() { document.getElementById('modal-rapport').classList.add('hidden'); }
 
-        // --- NOUVEAU : GESTION DE LA PROJECTION ---
+        // --- GESTION DE LA PROJECTION ---
         function ouvrirProjection() {
             const cible = document.getElementById('select-groupe-formateur').value;
             if (!cible) return UIModal.alert("Veuillez sélectionner une équipe à projeter.", "warning");
