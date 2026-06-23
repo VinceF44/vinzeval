@@ -56,7 +56,7 @@
                     📜 Journal
                 </button>
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
-                    📈 Stats Globales
+                    📈 Mes Statistiques
                 </button>
                 <div class="hidden sm:block w-px h-6 bg-slate-800 mx-1"></div>
                 <button onclick="executerDeconnexion()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-xl border border-red-500/20 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
@@ -768,6 +768,7 @@
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await verifierNotifications();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
             } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
         }
@@ -790,6 +791,7 @@
                 if (error) throw error;
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
             } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
         }
@@ -817,6 +819,7 @@
                 document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
         }
@@ -1249,8 +1252,7 @@
                     return;
                 }
                 
-                let req = db.from('apprenants_master').select('*').eq('formation_id', formationId);
-                req = req.eq('proprietaire_id', activeUserId);
+                let req = db.from('apprenants_master').select('*').eq('formation_id', formationId).eq('proprietaire_id', activeUserId);
                 
                 const { data, error } = await req.order('nom', { ascending: true });
                 if (error) throw error;
@@ -1310,8 +1312,7 @@
                 const conteneur = document.getElementById('annuaire-liste-apprenants');
                 if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une formation pour voir ses apprenants.</p>`; return; }
                 
-                let req = db.from('apprenants_master').select('*').eq('formation_id', formId);
-                req = req.eq('proprietaire_id', activeUserId);
+                let req = db.from('apprenants_master').select('*').eq('formation_id', formId).eq('proprietaire_id', activeUserId);
                 
                 const { data, error } = await req.order('nom');
                 if (error) throw error;
@@ -1397,7 +1398,7 @@
                 const { data: forms } = await reqForms;
                 globalFormations = forms || [];
                 
-                renderDropdownsOrganismes(); // Actualiser le menu déroulant
+                renderDropdownsOrganismes(); 
                 afficherListeFormations(orgId);
                 await UIModal.alert("Formation mise à jour.", "success");
             } catch(e) { await UIModal.alert("Erreur formation : " + e.message, "error"); }
@@ -1415,7 +1416,7 @@
                 
                 const { data: forms } = await reqForms;
                 globalFormations = forms || [];
-                renderDropdownsOrganismes(); // Actualiser le menu déroulant
+                renderDropdownsOrganismes(); 
                 afficherListeFormations(orgId);
                 await UIModal.alert("Classe supprimée.", "success");
             } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
@@ -1530,7 +1531,6 @@
                     }
                 });
 
-                // Rendu de la notification d'acceptation (Créateur)
                 const bannerAcc = document.getElementById('banner-acceptations');
                 if (alertesAcceptation.length > 0) {
                     bannerAcc.innerHTML = alertesAcceptation.map(a => `
@@ -1662,7 +1662,7 @@
                 
                 conteneurStats.innerHTML = `
                     <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                        <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Mes Sessions</p>
                         <p class="text-2xl font-black text-indigo-400">${cacheSessionsGlobal.length}</p>
                     </div>
                     <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
@@ -1670,11 +1670,11 @@
                         <p class="text-2xl font-black text-blue-400">${totalApprenantsEvalues}</p>
                     </div>
                     <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                        <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Mes Favoris</p>
                         <p class="text-2xl font-black text-[#fe9a00]">${listFavorisIds.length}</p>
                     </div>
                     <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                        <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Mes Classes</p>
                         <p class="text-2xl font-black text-emerald-400">${classesUniques.size}</p>
                     </div>
                 `;
