@@ -153,7 +153,6 @@
                 btnSubmit.innerText = "🔐 Créer mon compte";
                 btnToggle.innerText = "Déjà inscrit ? Retourner à la connexion";
                 
-                // Rendre requis en mode inscription
                 inputPrenom.required = true;
                 inputNom.required = true;
 
@@ -169,7 +168,6 @@
                 btnSubmit.innerText = "🔐 Se connecter";
                 btnToggle.innerText = "Pas encore de compte ? Créer un profil d'accès";
                 
-                // Désactiver requis pour éviter les blocages fantômes du navigateur
                 inputPrenom.required = false;
                 inputNom.required = false;
 
@@ -286,7 +284,6 @@
                 }
 
                 if (authData && authData.user) {
-                    // Insertion complète incluant prenom et nom + forçage en_attente
                     const { error: profError } = await db.from('profils').insert([
                         { 
                             id: authData.user.id, 
