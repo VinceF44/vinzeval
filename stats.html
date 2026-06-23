@@ -8,6 +8,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES SANS BARRES BLANCHES */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
         @media print {
             .print-hide { display: none !important; }
             body { background: white !important; color: black !important; }
@@ -16,109 +32,109 @@
         }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-4 md:p-8 select-none">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-3 sm:p-6 md:p-8 select-none relative">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div class="space-y-2">
-                <span class="bg-indigo-950/50 text-indigo-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-indigo-800/50">📈 Centre de Pilotage Global</span>
-                <h1 class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight">Statistiques & Évolution</h1>
-                <p class="text-xs text-gray-400 font-medium pt-0.5">Analyse transversale de toutes les sessions, organismes et apprenants.</p>
+        <div class="bg-gray-900 p-5 sm:p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+            <div class="space-y-1">
+                <span class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border border-indigo-800/50">📈 Centre de Pilotage Global</span>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-white mt-1 tracking-tight">Statistiques & Évolution</h1>
+                <p class="text-xs text-gray-400 font-medium">Analyse transversale de toutes les sessions, organismes et apprenants.</p>
             </div>
-            <div class="flex gap-3 shrink-0 print-hide">
-                <button onclick="window.location.href='admin.html'" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold py-2.5 px-5 rounded-xl border border-gray-700 transition cursor-pointer">
+            <div class="flex items-center gap-3 shrink-0 print-hide">
+                <button onclick="window.location.href='admin.html'" class="h-10 px-4 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm flex items-center justify-center tracking-wide font-sans shrink-0 active:scale-95">
                     ⚙️ Retour Admin
                 </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl flex flex-col items-center justify-center text-center">
-                <div class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Sessions Réalisées</div>
-                <div id="kpi-sessions" class="text-4xl font-black text-white font-mono">--</div>
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-col items-center justify-center text-center shadow-inner">
+                <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Sessions Réalisées</div>
+                <div id="kpi-sessions" class="text-3xl font-black text-white font-mono tracking-tighter">--</div>
             </div>
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl flex flex-col items-center justify-center text-center">
-                <div class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-2">Apprenants Évalués</div>
-                <div id="kpi-apprenants" class="text-4xl font-black text-white font-mono">--</div>
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-col items-center justify-center text-center shadow-inner">
+                <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Apprenants Évalués</div>
+                <div id="kpi-apprenants" class="text-3xl font-black text-white font-mono tracking-tighter">--</div>
             </div>
-            <div class="bg-indigo-950/30 p-6 rounded-2xl border border-indigo-900/50 shadow-xl flex flex-col items-center justify-center text-center">
-                <div class="text-indigo-400 text-xs font-bold uppercase tracking-widest mb-2">Moyenne Générale Globale</div>
-                <div class="text-4xl font-black text-indigo-400 font-mono"><span id="kpi-moyenne">--</span><span class="text-lg text-indigo-800/80">/20</span></div>
+            <div class="bg-indigo-950/20 p-4 rounded-xl border border-indigo-900/40 shadow-xl flex flex-col items-center justify-center text-center shadow-inner">
+                <div class="text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-1">Moyenne Générale Globale</div>
+                <div class="text-3xl font-black text-indigo-400 font-mono tracking-tighter"><span id="kpi-moyenne">--</span><span class="text-xs text-indigo-900 font-sans font-bold ml-0.5">/20</span></div>
             </div>
         </div>
 
-        <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-xl flex flex-wrap gap-4 items-end print-hide">
+        <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-wrap gap-4 items-end print-hide shadow-inner">
             <div class="flex-1 min-w-[200px]">
-                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1.5">Année</label>
-                <select id="filtre-annee" onchange="appliquerFiltres()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Année</label>
+                <select id="filtre-annee" onchange="appliquerFiltres()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 cursor-pointer font-medium">
                     <option value="Toutes">Toutes les années</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[200px]">
-                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1.5">Organisme</label>
-                <select id="filtre-organisme" onchange="appliquerFiltres()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Organisme</label>
+                <select id="filtre-organisme" onchange="appliquerFiltres()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 cursor-pointer font-medium">
                     <option value="Tous">Tous les organismes</option>
                 </select>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl">
-                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">📈 Évolution Chronologique des Moyennes</h3>
-                <div class="w-full h-64 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-800 pb-2">📈 Évolution Chronologique des Moyennes</h3>
+                <div class="w-full h-56 relative">
                     <canvas id="chart-evolution"></canvas>
                 </div>
             </div>
 
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl">
-                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">⚖️ Comparatif : Formateur vs Pairs vs Auto</h3>
-                <div class="w-full h-64 relative">
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-800 pb-2">⚖️ Comparatif : Formateur vs Pairs vs Auto</h3>
+                <div class="w-full h-56 relative">
                     <canvas id="chart-repartition"></canvas>
                 </div>
             </div>
             
-            <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl lg:col-span-2">
-                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">🏢 Moyenne par Organisme</h3>
-                <div class="w-full h-64 relative">
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl lg:col-span-2">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-800 pb-2">🏢 Moyenne par Organisme</h3>
+                <div class="w-full h-56 relative">
                     <canvas id="chart-organismes"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-6">
-            <div class="border-b border-gray-800 pb-3">
-                <h2 class="text-base font-black text-emerald-400 font-sans uppercase tracking-widest">🔎 Dossier Apprenant Individuel</h2>
-                <p class="text-xs text-gray-400 mt-0.5 font-sans">Retrouvez l'historique et les feedbacks d'un apprenant sur l'ensemble de ses sessions.</p>
+        <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+            <div class="border-b border-gray-800 pb-2">
+                <h2 class="text-sm font-black text-emerald-400 uppercase tracking-wider">🔎 Dossier Apprenant Individuel</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Retrouvez l'historique et les feedbacks d'un apprenant sur l'ensemble de ses sessions.</p>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="recherche-dossier" placeholder="Entrez le prénom ou le nom exact..." class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500">
-                <button onclick="rechercherDossier()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl transition cursor-pointer shadow-md shrink-0">Rechercher</button>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="recherche-dossier" placeholder="Entrez le prénom ou le nom exact..." class="flex-1 bg-gray-950 border border-gray-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 placeholder:text-gray-700">
+                <button onclick="rechercherDossier()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition cursor-pointer shadow-md shrink-0 active:scale-95">Rechercher</button>
             </div>
 
-            <div id="resultat-dossier" class="hidden bg-gray-950 border border-gray-800 rounded-xl p-5 space-y-5">
-                <div class="flex justify-between items-start border-b border-gray-800 pb-4">
+            <div id="resultat-dossier" class="hidden bg-gray-950 border border-gray-800 rounded-xl p-4 space-y-4 shadow-inner">
+                <div class="flex justify-between items-start border-b border-gray-800 pb-3">
                     <div>
-                        <h3 id="dossier-nom" class="text-xl font-black text-white">Prénom Nom</h3>
-                        <p id="dossier-meta" class="text-xs text-gray-500 mt-1">Trouvé dans X session(s)</p>
+                        <h3 id="dossier-nom" class="text-base font-black text-white">Prénom Nom</h3>
+                        <p id="dossier-meta" class="text-[11px] text-gray-500 mt-0.5">Présent dans X session(s)</p>
                     </div>
                     <div class="text-right">
-                        <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Moyenne Globale</div>
-                        <div id="dossier-moyenne" class="text-3xl font-mono font-black text-emerald-400">--</div>
+                        <div class="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Moyenne Globale</div>
+                        <div id="dossier-moyenne" class="text-2xl font-mono font-black text-emerald-400 tracking-tighter">--</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">📈 Courbe de progression</h4>
-                        <div class="w-full h-48 relative bg-gray-900 rounded-lg p-2 border border-gray-800">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">📈 Courbe de progression</h4>
+                        <div class="w-full h-44 relative bg-gray-900 rounded-xl p-2 border border-gray-800/60 shadow-inner">
                             <canvas id="chart-dossier-evolution"></canvas>
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">💬 Synthèse des Feedbacks</h4>
-                        <div id="dossier-feedbacks" class="h-48 overflow-y-auto space-y-3 pr-2 text-sm text-gray-300 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">💬 Synthèse des Feedbacks</h4>
+                        <div id="dossier-feedbacks" class="h-44 overflow-y-auto space-y-2 pr-1 text-xs text-gray-300 leading-relaxed [&_ul]:list-disc [&_ul]:pl-4">
                             </div>
                     </div>
                 </div>
@@ -132,19 +148,16 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
 
-        // Variables globales de données
         let dbSessions = [];
         let dbEvals = [];
         let dbApprenants = [];
         let dbEvaluateurs = [];
 
-        // Instances Chart.js
         let chartEvol = null;
         let chartRepart = null;
         let chartOrga = null;
         let chartDossier = null;
 
-        // Extraction correcte d'une note
         function decoderNotePleine(notePleine) {
             if (!notePleine && notePleine !== 0) return 0;
             const chaineNote = Number(notePleine).toFixed(14);
@@ -157,7 +170,6 @@
             try {
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                // Extraction massive des données
                 const [resSessions, resEvals, resApps, resEvls] = await Promise.all([
                     db.from('sessions').select('id, nom, date_session, formations(nom, organismes(nom))'),
                     db.from('evaluations').select('session_id, groupe_votant, sujet, note, feedback'),
@@ -172,7 +184,6 @@
                 dbApprenants = resApps.data || [];
                 dbEvaluateurs = resEvls.data || [];
 
-                // Formatage et enrichissement des sessions
                 dbSessions = dbSessions.map(s => {
                     const orgaNom = s.formations && s.formations.organismes ? s.formations.organismes.nom : "Inconnu";
                     const annee = s.date_session ? s.date_session.split('-')[0] : "Inconnue";
@@ -180,7 +191,7 @@
                 }).sort((a, b) => new Date(a.date_session) - new Date(b.date_session));
 
                 peuplerFiltres();
-                appliquerFiltres(); // Calcule et dessine
+                appliquerFiltres();
 
             } catch (err) {
                 console.error(err);
@@ -202,8 +213,8 @@
         function getEvalsEnrichies(sessionsFiltrees) {
             const idsPermis = sessionsFiltrees.map(s => s.id);
             return dbEvals.filter(e => idsPermis.includes(e.session_id)).map(e => {
-                const listeEvlsSession = dbEvaluateurs.filter(ev => ev.session_id === e.session_id).map(ev => ev.nom);
-                const estProf = listeEvlsSession.includes(e.groupe_votant) || e.groupe_votant === 'Formateur' || e.groupe_votant === 'Formateur Principal';
+                const listIds = dbEvaluateurs.filter(ev => ev.session_id === e.session_id).map(ev => ev.nom);
+                const estProf = listIds.includes(e.groupe_votant) || e.groupe_votant === 'Formateur' || e.groupe_votant === 'Formateur Principal';
                 const estAuto = e.groupe_votant === e.sujet;
                 
                 let typeEval = "Pairs";
@@ -224,17 +235,13 @@
 
             const evalsFiltrees = getEvalsEnrichies(sessionsFiltrees);
             
-            // Calcul KPI
             document.getElementById('kpi-sessions').innerText = sessionsFiltrees.length;
             
-            // Apprenants uniques dans ces sessions
             const idsSessions = sessionsFiltrees.map(s => s.id);
             const appsFiltres = dbApprenants.filter(a => idsSessions.includes(a.session_id));
-            // Comptage approximatif par prénom (dans la vraie vie on aurait un ID User)
             const nbApprenants = [...new Set(appsFiltres.map(a => a.prenom.trim().toLowerCase()))].length;
             document.getElementById('kpi-apprenants').innerText = nbApprenants;
 
-            // Moyenne (Seulement Formateur par défaut pour la moyenne "officielle")
             const evalsJury = evalsFiltrees.filter(e => e.typeEval === "Formateur");
             let moyGen = 0;
             if (evalsJury.length > 0) {
@@ -248,6 +255,7 @@
         function dessinerGraphiques(sessions, evals) {
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.font.size = 11;
 
             // 1. Évolution
             const labelsSessions = sessions.map(s => s.nom.length > 15 ? s.nom.substring(0, 15) + "..." : s.nom);
@@ -262,9 +270,9 @@
                 type: 'line',
                 data: {
                     labels: labelsSessions,
-                    datasets: [{ label: 'Moyenne Jury', data: dataEvol, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.1)', fill: true, tension: 0.3 }]
+                    datasets: [{ label: 'Moyenne Jury', data: dataEvol, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.05)', fill: true, tension: 0.2, borderWidth: 2, pointRadius: 3 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20 } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20, grid: { color: '#1e293b' } }, x: { grid: { display: false } } } }
             });
 
             // 2. Comparatif Types
@@ -280,15 +288,15 @@
             chartRepart = new Chart(document.getElementById('chart-repartition'), {
                 type: 'bar',
                 data: {
-                    labels: ['Jury', 'Pairs', 'Auto-Évaluation'],
+                    labels: ['Jury', 'Pairs', 'Auto'],
                     datasets: [{
-                        label: 'Moyenne Globale / 20',
                         data: [nF > 0 ? moyF/nF : 0, nP > 0 ? moyP/nP : 0, nA > 0 ? moyA/nA : 0],
                         backgroundColor: ['#a855f7', '#3b82f6', '#10b981'],
-                        borderRadius: 6
+                        borderRadius: 4,
+                        barThickness: 35
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20 } }, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20, grid: { color: '#1e293b' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
             });
 
             // 3. Par Organisme
@@ -310,18 +318,16 @@
                 type: 'bar',
                 data: {
                     labels: labelsOrgas,
-                    datasets: [{ label: 'Moyenne Jury', data: dataOrgas, backgroundColor: '#6366f1', borderRadius: 6 }]
+                    datasets: [{ data: dataOrgas, backgroundColor: '#6366f1', borderRadius: 4, barThickness: 15 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { min: 0, max: 20 } }, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { min: 0, max: 20, grid: { color: '#1e293b' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
             });
         }
 
-        // MOTEUR RECHERCHE APPRENANT
         function rechercherDossier() {
             const query = document.getElementById('recherche-dossier').value.trim().toLowerCase();
             if (!query) return;
 
-            // Trouver les occurrences de cet apprenant (par correspondance de nom)
             const occurrences = dbApprenants.filter(a => a.prenom.trim().toLowerCase().includes(query));
             if (occurrences.length === 0) {
                 alert("Aucun apprenant trouvé pour cette recherche.");
@@ -329,17 +335,12 @@
                 return;
             }
 
-            // On prend le nom du premier match pour affichage
             const nomAffichage = occurrences[0].prenom;
-
-            // Récupérer les sessions auxquelles il a participé
-            const sessionsApp = [];
             const allEvalsEnrichies = getEvalsEnrichies(dbSessions);
             const notesJuryHistorique = [];
             const labelsChronologiques = [];
             let feedbacksCollectes = "";
 
-            // Trier par date
             const occurrencesTriees = occurrences.map(occ => {
                 const sObj = dbSessions.find(s => s.id === occ.session_id);
                 return { ...occ, date: sObj ? new Date(sObj.date_session) : new Date(0), sessionObj: sObj };
@@ -347,17 +348,6 @@
 
             occurrencesTriees.forEach(occ => {
                 if (!occ.sessionObj) return;
-                
-                // Retrouver son groupe
-                // Trouver les évaluations Formateur pour ce sujet
-                // Rappel: occ.groupe_id est un ID, mais dans evaluations 'sujet' est un nom de groupe.
-                // Donc on doit faire le pont.
-                const nomDuGroupe = (dbApprenants.find(a => a.session_id === occ.session_id && a.groupe_id === occ.groupe_id && a.prenom === occ.prenom))?.groupe_id; 
-                // C'est un raccourci, idéalement il faut fetch la table groupes pour relier ID -> Nom,
-                // Faisons une approximation pour le JS local en cherchant dans dbEvals via le texte brut du feedback ou autre méthode ?
-                // Pour simplifier et assurer le fonctionnement : on prend toutes les évaluations Jury de sa session
-                // où le feedback n'est pas vide (comme approximation si on n'a pas chargé la table `groupes` globalement).
-                // Solution propre : on liste les evals où il a pu être évalué.
                 
                 const evsSess = allEvalsEnrichies.filter(e => e.session_id === occ.session_id && e.typeEval === "Formateur");
                 if (evsSess.length > 0) {
@@ -371,25 +361,24 @@
                 }
             });
 
-            // MAJ UI
             document.getElementById('resultat-dossier').classList.remove('hidden');
             document.getElementById('dossier-nom').innerText = nomAffichage;
             document.getElementById('dossier-meta').innerText = `Présent dans ${occurrencesTriees.length} session(s)`;
             
             const moyGeneraleApprenant = notesJuryHistorique.length > 0 ? (notesJuryHistorique.reduce((a,b)=>a+b,0)/notesJuryHistorique.length).toFixed(2) : '--';
-            document.getElementById('dossier-moyenne').innerText = moyGeneraleApprenant;
+            document.getElementById('dossier-moyenne').innerText = moyGeneraleApprenant + "/20";
             
             const boxFb = document.getElementById('dossier-feedbacks');
-            boxFb.innerHTML = feedbacksCollectes ? `<ul>${feedbacksCollectes}</ul>` : "<p class='italic text-gray-500'>Aucun feedback jury enregistré pour cet apprenant.</p>";
+            boxFb.innerHTML = feedbacksCollectes ? `<ul class="space-y-2">${feedbacksCollectes}</ul>` : "<p class='italic text-gray-600 py-2'>Aucun feedback jury enregistré pour cet apprenant.</p>";
 
             if (chartDossier) chartDossier.destroy();
             chartDossier = new Chart(document.getElementById('chart-dossier-evolution'), {
                 type: 'line',
                 data: {
                     labels: labelsChronologiques,
-                    datasets: [{ label: 'Note Moyenne (Jury)', data: notesJuryHistorique, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3, pointRadius: 5 }]
+                    datasets: [{ data: notesJuryHistorique, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)', fill: true, tension: 0.2, borderWidth: 2, pointRadius: 4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20 } }, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 20, grid: { color: '#1e293b' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
             });
         }
 
