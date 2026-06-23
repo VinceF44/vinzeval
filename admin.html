@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Admin — Espace Zen Pro</title>
+    <title>Console Admin — Spireo</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -31,14 +31,34 @@
 
     <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
+        <!-- HEADER SPIREO -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
-            <div>
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
-                    <span id="badge-role" class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Chargement...</span>
+            
+            <div class="flex items-center gap-5">
+                <!-- LOGO SPIREO SVG -->
+                <div class="flex items-center gap-2.5 select-none pr-5 border-r border-slate-800/80">
+                    <svg class="w-8 h-8 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo)" stroke-width="3.5" stroke-linecap="round"/>
+                        <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
+                        <circle cx="20" cy="14" r="3" fill="#fe9a00"/>
+                        <defs>
+                            <linearGradient id="grad-spireo" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8"/>
+                                <stop offset="1" stop-color="#3b82f6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="text-2xl font-black text-white tracking-tighter">Spireo<span class="text-indigo-500">.</span></span>
                 </div>
-                <h1 id="titre-bienvenue" class="text-xl sm:text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
-                <p id="user-email" class="text-xs text-slate-400 font-mono mt-1"></p>
+                
+                <!-- INFOS UTILISATEUR -->
+                <div class="hidden sm:block space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span id="badge-role" class="bg-indigo-950/50 text-indigo-400 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Chargement...</span>
+                        <span class="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md border bg-[#030712]/50 text-slate-400 border-slate-800">Espace Gestion</span>
+                    </div>
+                    <p id="user-email" class="text-xs text-slate-400 font-mono"></p>
+                </div>
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
@@ -52,7 +72,7 @@
                 <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
-                <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📜 Journal
                 </button>
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
@@ -768,7 +788,6 @@
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await verifierNotifications();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
             } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
         }
@@ -791,7 +810,6 @@
                 if (error) throw error;
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
             } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
         }
@@ -819,7 +837,6 @@
                 document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
         }
