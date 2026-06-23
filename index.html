@@ -6,12 +6,14 @@
     <title>Dashboard Master — Logique Multi-Jury Collaborative</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ajout de Chart.js pour le graphique Radar -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
-            .max-w-7xl, #ui-modal, #modal-feedback, .print-hide { display: none !important; }
+            .max-w-7xl, #ui-modal, #modal-feedback, #modal-projection, .print-hide { display: none !important; }
             
             #modal-rapport {
                 display: block !important;
@@ -48,6 +50,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-amber-800/50 font-sans">👑 Console Master — Vue Analytique</span>
@@ -59,25 +62,33 @@
             </button>
         </div>
 
+        <!-- BLOC SÉLECTION ÉQUIPE & PROJECTION -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
                     <h2 class="text-sm font-bold text-amber-400 uppercase tracking-wider font-sans">👑 Équipe à analyser & Feedbacks</h2>
                     <p class="text-xs text-gray-400 leading-relaxed font-sans">Consultez les notes et feedbacks reçus par cette équipe. Vous pouvez supprimer un feedback non-objectif avant l'édition des rapports.</p>
                 </div>
-                <div class="w-full md:w-96 shrink-0">
-                    <div class="custom-dropdown-container relative w-full text-left">
-                        <input type="hidden" id="select-groupe-formateur" value="">
-                        <button type="button" onclick="toggleDropdown('select-groupe-formateur')" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white font-semibold flex justify-between items-center focus:outline-none focus:border-amber-500 transition-all cursor-pointer shadow-sm font-sans">
-                            <span id="select-groupe-formateur-label" class="truncate pr-2">-- Sélectionner une équipe --</span>
-                            <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
-                        </button>
-                        <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
+                <div class="w-full md:w-auto flex flex-col sm:flex-row gap-3 shrink-0">
+                    <div class="w-full sm:w-80">
+                        <div class="custom-dropdown-container relative w-full text-left">
+                            <input type="hidden" id="select-groupe-formateur" value="">
+                            <button type="button" onclick="toggleDropdown('select-groupe-formateur')" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white font-semibold flex justify-between items-center focus:outline-none focus:border-amber-500 transition-all cursor-pointer shadow-sm font-sans">
+                                <span id="select-groupe-formateur-label" class="truncate pr-2">-- Sélectionner une équipe --</span>
+                                <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
+                            </button>
+                            <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
+                        </div>
                     </div>
+                    <!-- NOUVEAU BOUTON PROJECTION -->
+                    <button onclick="ouvrirProjection()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-5 rounded-xl border border-indigo-500 shadow-lg transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans">
+                        📺 Projeter Bilan
+                    </button>
                 </div>
             </div>
         </div>
 
+        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white font-sans">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -89,6 +100,7 @@
             </div>
         </div>
 
+        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -121,12 +133,10 @@
         </div>
     </div>
 
+    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
-            
-            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans">
-                </div>
-            
+            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans"></div>
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide font-sans">
                 <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
@@ -136,6 +146,7 @@
         </div>
     </div>
 
+    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
@@ -154,7 +165,43 @@
         </div>
     </div>
 
-    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+    <!-- NOUVELLE MODALE PLEIN ÉCRAN : PROJECTION DÉBRIEFING -->
+    <div id="modal-projection" class="hidden fixed inset-0 z-[300] bg-gray-950 flex flex-col">
+        <!-- En-tête -->
+        <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
+            <div>
+                <span class="bg-indigo-950/50 text-indigo-400 text-sm font-bold uppercase tracking-widest px-3 py-1.5 rounded-md border border-indigo-800/50 font-sans">📺 Bilan de Présentation</span>
+                <h2 id="projection-titre" class="text-4xl font-black text-white mt-2 tracking-tight">Groupe X</h2>
+            </div>
+            <button onclick="fermerProjection()" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-xl border border-gray-700 font-bold text-sm transition-all cursor-pointer">Fermer la projection ✕</button>
+        </div>
+        
+        <!-- Corps de la projection -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-8">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 h-full">
+                
+                <!-- Graphique Radar -->
+                <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
+                    <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider text-center">Radar des Compétences</h3>
+                    <div class="flex-1 relative w-full h-full flex items-center justify-center">
+                        <canvas id="projection-radar-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Feedbacks Anonymisés -->
+                <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-2xl flex flex-col h-[500px] lg:h-full">
+                    <h3 class="text-lg font-bold text-gray-300 mb-6 uppercase tracking-wider">Ce qui a été retenu (Anonymisé)</h3>
+                    <div id="projection-feedbacks-corps" class="flex-1 overflow-y-auto space-y-4 pr-2">
+                        <!-- Injecté en JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- UI MODALS DYNAMIQUES -->
+    <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
@@ -248,6 +295,9 @@
         let colonneTriActuelle = 'nomSeul';
         let ordreTriActuel = 'asc';
 
+        // Objet graphique
+        let radarChartInstance = null;
+
         function toggleDropdown(id) {
             const menu = document.getElementById(id + '-menu');
             const arrow = document.getElementById(id + '-arrow');
@@ -265,7 +315,7 @@
             if(!hiddenInput) return;
             const valeurChangee = hiddenInput.value !== String(value);
             hiddenInput.value = value;
-            if(labelSpan) labelSpan.innerHTML = label;
+            if(labelSpan) labelSpan.innerText = label;
             toggleDropdown(dropdownId);
             
             if (valeurChangee && dropdownId === 'select-groupe-formateur') {
@@ -357,7 +407,6 @@
                     groupesSession.forEach((grp) => {
                         const listeMembresFull = membresParNomGroupe[grp.nom] || [];
                         const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
-                        
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
                         const htmlTooltip = listeMembresFull.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
@@ -853,6 +902,97 @@
 
         function fermerModalFeedback() { document.getElementById('modal-feedback').classList.add('hidden'); }
         function fermerModalRapport() { document.getElementById('modal-rapport').classList.add('hidden'); }
+
+        // --- NOUVEAU : GESTION DE LA PROJECTION ---
+        function ouvrirProjection() {
+            const cible = document.getElementById('select-groupe-formateur').value;
+            if (!cible) return UIModal.alert("Veuillez sélectionner une équipe à projeter.", "warning");
+
+            document.getElementById('projection-titre').innerText = cible;
+
+            const evalsCible = evaluationsSession.filter(e => e.sujet === cible);
+            if (evalsCible.length === 0) {
+                return UIModal.alert("Aucune donnée d'évaluation pour cette équipe pour générer le radar.", "warning");
+            }
+
+            const dataFormateur = Array(listeCriteresProf.length).fill(null);
+            const dataPairsMoy = Array(listeCriteresProf.length).fill(0);
+            const countsPairs = Array(listeCriteresProf.length).fill(0);
+            const dataAuto = Array(listeCriteresProf.length).fill(null);
+
+            let hasFormateur = false, hasAuto = false;
+
+            evalsCible.forEach(e => {
+                const s = e.sliders || [];
+                if (s.length !== listeCriteresProf.length) return;
+
+                if (e.estProf) {
+                    hasFormateur = true;
+                    s.forEach((val, i) => { dataFormateur[i] = val; });
+                } else if (e.groupe_votant === cible) {
+                    hasAuto = true;
+                    s.forEach((val, i) => { dataAuto[i] = val; });
+                } else {
+                    s.forEach((val, i) => { dataPairsMoy[i] += val; countsPairs[i]++; });
+                }
+            });
+
+            const dataPairs = dataPairsMoy.map((sum, i) => countsPairs[i] > 0 ? (sum / countsPairs[i]).toFixed(1) : null);
+            const labels = listeCriteresProf.map(c => c.nom.length > 20 ? c.nom.substring(0, 20) + "..." : c.nom);
+
+            // Création du graphique Radar
+            const ctx = document.getElementById('projection-radar-chart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            const datasets = [];
+            if (hasFormateur) datasets.push({ label: 'Formateur', data: dataFormateur, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.2)', borderWidth: 3, pointBackgroundColor: '#a855f7' });
+            datasets.push({ label: 'Moyenne Pairs', data: dataPairs, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointBackgroundColor: '#3b82f6' });
+            if (hasAuto) datasets.push({ label: 'Auto-évaluation', data: dataAuto, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', borderWidth: 2, borderDash: [5, 5], pointBackgroundColor: '#10b981' });
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0, max: 5,
+                            ticks: { display: false, stepSize: 1 },
+                            grid: { color: '#334155' },
+                            angleLines: { color: '#334155' },
+                            pointLabels: { color: '#cbd5e1', font: { size: 12, family: "'Inter', sans-serif", weight: 'bold' } }
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 20, font: { size: 13, weight: 'bold' } } } }
+                }
+            });
+
+            // Affichage des Feedbacks Anonymisés
+            const zoneFeedbacks = document.getElementById('projection-feedbacks-corps');
+            let fbHtml = "";
+            evalsCible.forEach(e => {
+                if (e.feedback && e.feedback.trim() !== "") {
+                    let titreFb = e.estProf ? "💬 Retour du Jury" : (e.groupe_votant === cible ? "💬 Auto-analyse" : "💬 Retour d'un pair");
+                    let couleurBordure = e.estProf ? "border-purple-500" : (e.groupe_votant === cible ? "border-emerald-500" : "border-blue-500");
+                    
+                    fbHtml += `
+                        <div class="bg-gray-800/50 p-4 rounded-xl border-l-4 ${couleurBordure}">
+                            <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">${titreFb}</div>
+                            <div class="text-sm text-gray-200 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">${e.feedback}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            zoneFeedbacks.innerHTML = fbHtml || `<p class="text-gray-500 italic">Aucun retour détaillé n'a été rédigé pour cette présentation.</p>`;
+            document.getElementById('modal-projection').classList.remove('hidden');
+        }
+
+        function fermerProjection() {
+            document.getElementById('modal-projection').classList.add('hidden');
+            if (radarChartInstance) radarChartInstance.destroy();
+        }
 
         window.onload = initDashboard;
     </script>
