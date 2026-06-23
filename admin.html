@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE CONSOLE SÉCURISÉ -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -39,7 +38,6 @@
             </div>
         </div>
 
-        <!-- ZONE DE GESTION DES COMPTES (RP & ADMIN) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -86,7 +84,6 @@
             </div>
         </div>
 
-        <!-- BLOC ANNUAIRE RESTRUCTURÉ -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -96,36 +93,36 @@
                 <button onclick="basculerZoneAnnuaire()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- ORGANISMES -->
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
+                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Organismes</div>
                         <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI, WebForce3..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                            <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all min-w-0">
+                            <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Ajouter</button>
                         </div>
                     </div>
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <!-- FORMATIONS -->
-                <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
+                <div class="lg:col-span-2 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         
-                        <div class="custom-dropdown-container relative w-full text-left">
-                            <input type="hidden" id="annuaire-select-org-pour-formation" value="">
-                            <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                <span id="annuaire-select-org-pour-formation-label" class="truncate pr-2">-- Sélectionner l'organisme --</span>
-                                <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-org-pour-formation-arrow">▼</span>
-                            </button>
-                            <div id="annuaire-select-org-pour-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
-                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="custom-dropdown-container relative w-full text-left">
+                                <input type="hidden" id="annuaire-select-org-pour-formation" value="">
+                                <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
+                                    <span id="annuaire-select-org-pour-formation-label" class="truncate pr-2">-- Organisme --</span>
+                                    <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-org-pour-formation-arrow">▼</span>
+                                </button>
+                                <div id="annuaire-select-org-pour-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
+                            </div>
 
-                        <div class="flex gap-2">
-                            <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                            <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                            <div class="flex gap-2">
+                                <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all min-w-0">
+                                <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
+                            </div>
                         </div>
                     </div>
                     <div id="annuaire-liste-formations" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3">
@@ -724,14 +721,11 @@
 
                 if(data && data.length > 0) {
                     conteneur.innerHTML = data.map(a => `
-                        <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-xl border border-slate-900 hover:border-slate-800 transition-all shadow-sm">
-                            <div class="truncate pr-2">
-                                <span class="text-xs font-medium text-slate-300 block truncate">${a.prenom} ${a.nom}</span>
-                                <span class="text-[9px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
-                            </div>
+                        <div class="flex items-center gap-2 bg-[#030712] px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-sans hover:border-slate-700 transition-colors shadow-sm w-fit">
+                            <span class="font-medium text-slate-300 truncate max-w-[120px]" title="${a.prenom} ${a.nom} - ${a.email || 'Pas d\'email'}">${a.prenom} ${a.nom}</span>
                             <div class="flex gap-1 shrink-0 ml-1 border-l border-slate-800/80 pl-1.5">
-                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-[11px] cursor-pointer">✏️</button>
-                                <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-[11px] cursor-pointer">🗑️</button>
+                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white cursor-pointer text-[11px]">✏️</button>
+                                <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white cursor-pointer text-[11px]">🗑️</button>
                             </div>
                         </div>
                     `).join('');
@@ -873,7 +867,7 @@
             try {
                 let requete = db.from('sessions').select(`
                     *,
-                    apprenants ( id, prenom ),
+                    apprenants ( id, prenom, email ),
                     criteres ( id ),
                     evaluateurs ( nom )
                 `);
@@ -980,6 +974,46 @@
             regrouperEtAfficherSessionsParGroupe(arrTerminees, 'liste-sessions-terminees', true, estChargementInitial ? true : null);
         }
 
+        // ==========================================
+        // FONCTIONS D'ENVOI D'EMAILS SÉPARÉS
+        // ==========================================
+        function envoyerLienApprenants(idSession) {
+            const session = cacheSessionsGlobal.find(s => s.id === idSession);
+            if (!session) return;
+            
+            const emails = (session.apprenants || [])
+                .map(a => a.email)
+                .filter(e => e && e.trim() !== "")
+                .join(',');
+                
+            const baseURL = window.location.origin;
+            const lienApprenant = `${baseURL}/vote.html?session_id=${idSession}`;
+            
+            const subject = encodeURIComponent(`Évaluation - Session : ${session.nom}`);
+            let bodyText = `Bonjour,\n\nVous trouverez ci-dessous votre lien d'accès pour la session d'évaluation : ${session.nom}\n\n`;
+            bodyText += `📌 LIEN APPRENANTS (Auto-évaluation et évaluation entre pairs) :\n${lienApprenant}\n\n`;
+            bodyText += `Merci de vous connecter au moment indiqué par votre formateur.\n\nCordialement.`;
+            
+            const body = encodeURIComponent(bodyText);
+            window.location.href = `mailto:?bcc=${emails}&subject=${subject}&body=${body}`;
+        }
+
+        function envoyerLienFormateurs(idSession) {
+            const session = cacheSessionsGlobal.find(s => s.id === idSession);
+            if (!session) return;
+            
+            const baseURL = window.location.origin;
+            const lienFormateur = `${baseURL}/vote_formateur.html?session_id=${idSession}`;
+            
+            const subject = encodeURIComponent(`Lien Jury - Session : ${session.nom}`);
+            let bodyText = `Bonjour,\n\nVous trouverez ci-dessous le lien sécurisé pour accéder à la grille d'évaluation du jury concernant la session : ${session.nom}\n\n`;
+            bodyText += `👩‍🏫 LIEN FORMATEURS / JURY :\n${lienFormateur}\n\n`;
+            bodyText += `Cordialement.`;
+            
+            const body = encodeURIComponent(bodyText);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
         function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive, forcerEtatCollapse = null) {
             const conteneur = document.getElementById(conteneurId);
             if (!conteneur) return; conteneur.innerHTML = "";
@@ -1054,7 +1088,6 @@
 
                     const tagsStatsInfos = `
                         <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center flex-wrap gap-x-2 gap-y-1.5">
-                            ${badgeType}
                             ${tagDate}
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">👥 ${countApprenants} apprenant(s)</span>
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">📋 ${countCriteres} critère(s)</span>
@@ -1063,6 +1096,8 @@
                     `;
 
                     let liensVotesHtml = "";
+                    let btnEmailHtml = "";
+
                     if (s.statut === 'active') {
                         liensVotesHtml = `
                             <div class="group relative inline-block">
@@ -1072,6 +1107,19 @@
                             <div class="group relative inline-block">
                                 <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluation formateur</div>
+                            </div>
+                        `;
+                    }
+
+                    if (s.statut === 'active' || s.statut === 'a_venir') {
+                        btnEmailHtml = `
+                            <div class="group relative inline-block">
+                                <button onclick="envoyerLienApprenants('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-900/40 hover:bg-blue-800 border border-blue-700/50 text-blue-300 transition-all text-sm cursor-pointer">📩</button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Mail avec lien Apprenants</div>
+                            </div>
+                            <div class="group relative inline-block">
+                                <button onclick="envoyerLienFormateurs('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-900/40 hover:bg-purple-800 border border-purple-700/50 text-purple-300 transition-all text-sm cursor-pointer">📩</button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Mail avec lien Formateurs</div>
                             </div>
                         `;
                     }
@@ -1110,11 +1158,12 @@
                         htmlBlocClasse += `
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate font-sans">${nomValide}</div>
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-2 font-sans">${nomValide} ${badgeType}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
+                                    ${btnEmailHtml}
                                     <div class="group relative inline-block">
                                         <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
@@ -1137,7 +1186,7 @@
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate font-sans">🗃️ ${nomValide}</div>
+                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-2 font-sans">🗃️ ${nomValide} ${badgeType}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
