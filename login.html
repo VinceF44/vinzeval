@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* SCROLLBARS PERSONNALISÉES */
+        /* SCROLLBARS PERSONNALISÉES SANS BARRES BLANCHES */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -74,19 +74,26 @@
 
             <div>
                 <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Rôle demandé</label>
-                <select id="reg-role" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-inner">
-                    <option value="formateur">👩‍🏫 Formateur / Évaluateur</option>
-                    <option value="rp">👔 Responsable Pédagogique</option>
-                </select>
+                <div class="custom-dropdown-container relative w-full text-left">
+                    <input type="hidden" id="reg-role" value="formateur">
+                    <button type="button" onclick="toggleDropdown('reg-role')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                        <span id="reg-role-label" class="truncate pr-2">👩‍🏫 Formateur / Évaluateur</span>
+                        <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="reg-role-arrow">▼</span>
+                    </button>
+                    <div id="reg-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
+                        <button type="button" onclick="selectOption('reg-role', 'formateur', '👩‍🏫 Formateur / Évaluateur')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">👩‍🏫 Formateur / Évaluateur</button>
+                        <button type="button" onclick="selectOption('reg-role', 'rp', '👔 Responsable Pédagogique')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">👔 Responsable Pédagogique</button>
+                    </div>
+                </div>
             </div>
             
-            <button type="submit" id="btn-register" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer mt-4">
+            <button type="submit" id="btn-register" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer mt-2">
                 Envoyer la demande
             </button>
 
             <div class="text-center pt-4 border-t border-slate-800/60 mt-4">
-                <button type="button" onclick="basculerMode('login')" class="text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer">
-                    ← Retour à la connexion
+                <button type="button" onclick="basculerMode('login')" class="h-10 w-full bg-[#030712] hover:bg-slate-800 text-slate-400 text-xs font-bold rounded-xl border border-slate-700 transition-all cursor-pointer flex items-center justify-center tracking-wide font-sans shrink-0 active:scale-95 shadow-sm">
+                    ← Revenir à la page d'identification
                 </button>
             </div>
         </form>
@@ -94,7 +101,7 @@
     </div>
 
     <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
                 <div class="flex-1 pt-1">
@@ -109,7 +116,6 @@
     </div>
 
     <script>
-        // Logique de Modal Standardisée
         window.UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -151,13 +157,36 @@
 
         window.onload = async () => {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            // Si déjà connecté, on vérifie le statut et on redirige
             const { data: { session } } = await db.auth.getSession();
-            if (session) {
-                verifierEtRediriger(session.user.id);
-            }
+            if (session) { verifierEtRediriger(session.user.id); }
         };
+
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id + '-menu');
+            const arrow = document.getElementById(id + '-arrow');
+            document.querySelectorAll('.custom-dropdown-menu').forEach(m => { if (m.id !== id + '-menu') m.classList.add('hidden'); });
+            document.querySelectorAll('.dropdown-arrow').forEach(a => { if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)'; });
+            if(menu) {
+                const isHidden = menu.classList.toggle('hidden');
+                if(arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        }
+
+        function selectOption(dropdownId, value, label) {
+            const hiddenInput = document.getElementById(dropdownId);
+            const labelSpan = document.getElementById(dropdownId + '-label');
+            if(!hiddenInput) return;
+            hiddenInput.value = value;
+            if(labelSpan) labelSpan.innerHTML = label;
+            toggleDropdown(dropdownId);
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown-container')) {
+                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
+                document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
+            }
+        });
 
         function basculerMode(mode) {
             const fLogin = document.getElementById('form-login');
@@ -181,25 +210,19 @@
         async function verifierEtRediriger(userId) {
             try {
                 const { data: profil, error } = await db.from('profils').select('statut, role').eq('id', userId).single();
-                
                 if (error || !profil) {
                     await db.auth.signOut();
-                    return UIModal.alert("Impossible de récupérer vos informations de profil. Veuillez contacter l'administrateur.", "error");
+                    return UIModal.alert("Impossible de récupérer vos informations de profil. Contactez l'administrateur.", "error");
                 }
-
                 if (profil.statut === 'en_attente') {
                     await db.auth.signOut();
-                    return UIModal.alert("Votre compte est actuellement en cours de validation par un administrateur. Vous recevrez un accès prochainement.", "warning", "Compte en attente");
+                    return UIModal.alert("Votre compte est en cours de validation par un administrateur. Vous recevrez un accès prochainement.", "warning", "Compte en attente");
                 }
-                
                 if (profil.statut === 'refuse') {
                     await db.auth.signOut();
                     return UIModal.alert("Votre demande d'accès a été refusée. Veuillez contacter votre responsable.", "error", "Accès refusé");
                 }
-
-                // Si valide, redirection
                 window.location.href = "admin.html";
-
             } catch (err) {
                 console.error(err);
                 await db.auth.signOut();
@@ -210,24 +233,16 @@
             e.preventDefault();
             const btn = document.getElementById('btn-login');
             btn.innerHTML = "Connexion en cours..."; btn.disabled = true;
-
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
 
             try {
                 const { data, error } = await db.auth.signInWithPassword({ email, password });
                 if (error) throw error;
-                
-                // Si la connexion réussit, on vérifie si le compte est validé avant d'ouvrir les portes
                 await verifierEtRediriger(data.user.id);
-
             } catch (err) {
-                let msg = "Email ou mot de passe incorrect.";
-                if (err.message.includes("Invalid login credentials")) msg = "Email ou mot de passe incorrect.";
-                else msg = err.message;
-                
-                UIModal.alert(msg, "error");
-            } finally {
+                UIModal.alert("Email ou mot de passe incorrect.", "error");
+            } finaly {
                 btn.innerHTML = "Se connecter"; btn.disabled = false;
             }
         }
@@ -249,42 +264,26 @@
             }
 
             try {
-                // 1. Création du compte
                 const { data: authData, error: authError } = await db.auth.signUp({ email, password });
                 if (authError) throw authError;
 
-                // 2. Création de la fiche profil
                 if (authData.user) {
                     const { error: profError } = await db.from('profils').insert([{
-                        id: authData.user.id,
-                        email: email,
-                        prenom: prenom,
-                        nom: nom,
-                        role: role,
-                        statut: 'en_attente'
+                        id: authData.user.id, email: email, prenom: prenom, nom: nom, role: role, statut: 'en_attente'
                     }]);
-                    
-                    // Capture spécifique de l'erreur du "Faux ID" (Code Postgres 23503 = Violation de clé étrangère)
                     if (profError) {
-                        if (profError.code === '23503') {
-                            throw new Error("Cette adresse email possède déjà un compte dans le système. Veuillez vous connecter.");
-                        }
+                        if (profError.code === '23503') throw new Error("Cette adresse email possède déjà un compte dans le système. Veuillez vous connecter.");
                         throw profError;
                     }
                 }
 
-                // Succès : on déconnecte le fantôme et on prévient l'utilisateur
                 await db.auth.signOut();
                 await UIModal.alert("Votre demande d'accès a été envoyée avec succès ! Un administrateur doit maintenant valider votre compte.", "success", "Demande envoyée");
-                
                 document.getElementById('form-register').reset();
                 basculerMode('login');
-
             } catch (err) {
-                // Traduction des messages d'erreur courants
                 let messageFinal = err.message;
                 if (messageFinal.includes("already registered")) messageFinal = "Cette adresse email possède déjà un compte.";
-                
                 UIModal.alert(messageFinal, "error");
             } finally {
                 btn.innerHTML = "Envoyer la demande"; btn.disabled = false;
