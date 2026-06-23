@@ -29,6 +29,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
+            <!-- DROPDOWN CUSTOM : NOM DU FORMATEUR -->
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
@@ -38,10 +39,12 @@
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-evaluateur-arrow">▼</span>
                     </button>
                     <div id="select-evaluateur-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        </div>
+                        <!-- Injecté via JS -->
+                    </div>
                 </div>
             </div>
             
+            <!-- DROPDOWN CUSTOM : GROUPE ÉVALUÉ -->
             <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                 <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
@@ -51,7 +54,8 @@
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                     </button>
                     <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-purple-900/50 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        </div>
+                        <!-- Injecté via JS -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -80,6 +84,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -151,13 +156,6 @@
             }
         });
         // -----------------------------------
-
-        function formaterPrenomInitiale(nomComplet) {
-            if (!nomComplet) return "";
-            const parties = nomComplet.trim().split(/\s+/);
-            if (parties.length <= 1) return nomComplet;
-            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
-        }
 
         const UIModal = {
             show: function(options) {
@@ -236,6 +234,13 @@
         }
 
         function appliquerFormatTextProf(commande) { document.execCommand(commande, false, null); }
+        
+        function formaterPrenomInitiale(nomComplet) {
+            if (!nomComplet) return "";
+            const parties = nomComplet.trim().split(/\s+/);
+            if (parties.length <= 1) return nomComplet;
+            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
+        }
 
         async function initFormulaire() {
             if (!idSessionDashboard) { document.getElementById('formulaire-container').innerHTML = "<p class='text-red-400 p-4 text-center'>❌ ID de session manquant.</p>"; return; }
@@ -260,14 +265,13 @@
             selectEvalMenu.innerHTML = evalOptions;
             evaluateurPrecedent = ""; 
 
-            // RECUPERATION DES GROUPES ET DES APPRENANTS DE LA SESSION
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
             const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
 
             if(g && g.length > 0) {
                 groupesSession = g;
-
                 const membresParIdGroupe = {};
+                
                 if (apps) {
                     apps.forEach(a => {
                         if(!membresParIdGroupe[a.groupe_id]) membresParIdGroupe[a.groupe_id] = [];
@@ -286,12 +290,11 @@
                 });
                 document.getElementById('select-sujet-evalue-menu').innerHTML = sujetOptions;
                 
-                // Set default initial selection text matching custom style
                 const firstGroupMembres = (membresParIdGroupe[g[0].id] || []).map(formaterPrenomInitiale).join(', ');
                 const firstGroupLabel = firstGroupMembres ? `${g[0].nom} (${firstGroupMembres})` : g[0].nom;
 
                 document.getElementById('select-sujet-evalue').value = g[0].nom;
-                document.getElementById('select-sujet-evalue-label').innerHTML = firstGroupLabel;
+                document.getElementById('select-sujet-evalue-label').innerText = firstGroupLabel;
                 ciblePrecedente = g[0].nom;
             }
 
@@ -381,7 +384,7 @@
                 data.forEach(e => {
                     const extraction = decoderNoteEtCurseurs(e.note);
                     if (extraction.sliders.length === listeCriteresProf.length) {
-                        notesFormateurLocales[e.sujet] = { sliders: extraction.sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: "" };
+                        notesFormateurLocales[e.sujet] = { sliders: extraction.sliders, questions: Array(listeCriteresProf.length).fill(""), journal: Array(listeCriteresProf.length).fill(""), feedback: e.feedback || "" };
                     }
                 });
             }
