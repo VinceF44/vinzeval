@@ -6,10 +6,22 @@
     <title>Console Admin — Espace Zen Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Custom Scrollbar for elegant UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div id="banner-impersonation" class="hidden fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
+        <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
+        <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
@@ -17,13 +29,13 @@
                     <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
                     <span id="badge-role" class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Chargement...</span>
                 </div>
-                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
+                <h1 id="titre-bienvenue" class="text-xl sm:text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
                 <p id="user-email" class="text-xs text-slate-400 font-mono mt-1"></p>
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
                 <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
-                    👥 Comptes
+                    👥 Comptes & Droits
                 </button>
                 
                 <button onclick="basculerZoneAnnuaire()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
@@ -46,18 +58,44 @@
             </div>
         </div>
 
+        <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40">
+            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
+                <p id="stat-sessions" class="text-2xl font-black text-indigo-400">0</p>
+            </div>
+            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Apprenants Évalués</p>
+                <p id="stat-apprenants" class="text-2xl font-black text-blue-400">0</p>
+            </div>
+            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
+                <p id="stat-favoris" class="text-2xl font-black text-[#fe9a00]">0</p>
+            </div>
+            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
+                <p id="stat-classes" class="text-2xl font-black text-emerald-400">0</p>
+            </div>
+        </div>
+
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">👥 Gestion des Comptes</h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Créez et gérez les accès de votre équipe pédagogique.</p>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">👥 Gestion des Comptes & Droits</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Validez les inscriptions ou créez de nouveaux accès.</p>
                 </div>
                 <button onclick="basculerZoneComptes()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
 
+            <div id="bloc-validations-attente" class="hidden bg-[#030712]/50 p-4 rounded-xl border border-amber-500/30">
+                <div class="text-[11px] font-bold uppercase text-amber-400 mb-3 flex items-center gap-2">⚠️ Demandes d'accès en attente de validation</div>
+                <div class="flex-1 overflow-y-auto max-h-48 space-y-2 pr-1" id="liste-comptes-attente">
+                    <p class="text-slate-600 italic text-xs py-2">Aucune demande en attente.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
-                    <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Créer un nouvel accès</div>
+                    <div class="text-[11px] font-bold uppercase text-slate-400 mb-4">Créer un nouvel accès manuel</div>
                     <form onsubmit="creerCompteCollaborateur(event)" class="space-y-4">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-bold uppercase text-slate-500">Adresse Email</label>
@@ -75,8 +113,7 @@
                                     <span id="compte-role-label" class="truncate pr-2">Formateur / Évaluateur</span>
                                     <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="compte-role-arrow">▼</span>
                                 </button>
-                                <div id="compte-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                                </div>
+                                <div id="compte-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-2.5 rounded-xl transition cursor-pointer">Générer l'accès</button>
@@ -84,8 +121,8 @@
                 </div>
                 
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col">
-                    <div class="text-[11px] font-bold uppercase text-slate-400 mb-2">Comptes sous votre responsabilité</div>
-                    <div class="flex-1 overflow-y-auto max-h-64 space-y-1.5 pr-1" id="liste-comptes-geres">
+                    <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Simulation</div>
+                    <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres">
                         <p class="text-slate-600 italic text-xs py-2">Chargement...</p>
                     </div>
                 </div>
@@ -116,7 +153,6 @@
                 <div class="lg:col-span-2 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="custom-dropdown-container relative w-full text-left">
                                 <input type="hidden" id="annuaire-select-org-pour-formation" value="">
@@ -126,7 +162,6 @@
                                 </button>
                                 <div id="annuaire-select-org-pour-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                             </div>
-
                             <div class="flex gap-2">
                                 <input type="text" id="annuaire-nom-formation" placeholder="Ex: Développeur Web 2026" class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all min-w-0">
                                 <button id="btn-annuaire-form" onclick="creerOuModifierFormationMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Enregistrer</button>
@@ -142,7 +177,6 @@
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
-                    
                     <div class="grid grid-cols-2 gap-2 w-full sm:w-[550px] shrink-0">
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-org-pour-app" value="">
@@ -152,7 +186,6 @@
                             </button>
                             <div id="annuaire-select-org-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
                         </div>
-
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-form-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
@@ -261,21 +294,29 @@
 
                         <div>
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">📢 Faire l'appel (Cocher les présents) :</label>
-                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-sm font-sans min-h-[110px] max-h-[200px] overflow-y-auto flex flex-wrap gap-2">
+                            <div id="liste-appel-checkbox" class="w-full bg-[#030712] rounded-xl p-3 border border-slate-800 text-sm font-sans min-h-[80px] max-h-[140px] overflow-y-auto flex flex-wrap gap-2">
                                 <p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Liste des évaluateurs / formateurs (Un nom par ligne) :</label>
-                            <textarea id="liste-evaluateurs-brute" rows="2" placeholder="Formateur Principal&#10;Co-évaluateur" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none min-h-[50px] overflow-y-auto focus:border-[#3b82f6] transition-all"></textarea>
+                        <div class="relative">
+                            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Ajouter des évaluateurs / co-formateurs :</label>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1 custom-dropdown-container">
+                                    <input type="text" id="input-recherche-eval" autocomplete="off" placeholder="Taper un nom ou ajouter manuellement..." class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#3b82f6] transition-all">
+                                    <div id="menu-recherche-eval" class="custom-dropdown-menu hidden absolute left-0 right-0 mt-2 rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-56 overflow-y-auto z-50 transition-all"></div>
+                                </div>
+                                <button type="button" onclick="ajouterEvaluateurManuel()" class="bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30 hover:bg-[#3b82f6]/20 font-bold px-4 py-3 rounded-xl transition cursor-pointer text-sm shrink-0">Ajouter</button>
+                            </div>
+                            <div id="tags-evaluateurs" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <div id="conteneur-boutons-action">
-                <button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
+                <button type="button" onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl transition-all uppercase tracking-wider cursor-pointer shadow-md text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] active:scale-[0.99]">
                     🚀 Générer la session complète
                 </button>
             </div>
@@ -321,7 +362,7 @@
         </div>
     </div>
 
-    <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+    <div id="ui-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
@@ -339,16 +380,21 @@
     </div>
 
     <script>
-        window.onerror = function(msg, url, line) { alert("🚨 Erreur Système : \n" + msg + "\nLigne: " + line); };
-        window.onunhandledrejection = function(event) { alert("🚨 Erreur Base de données : \n" + (event.reason.message || event.reason)); };
+        window.onerror = function(msg, url, line) { console.error("🚨 Erreur Système : \n" + msg + "\nLigne: " + line); };
+        window.onunhandledrejection = function(event) { console.error("🚨 Erreur Base de données : \n" + (event.reason.message || event.reason)); };
 
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
+        
         let idSessionEnCoursModification = null;
 
-        let userConnecte = null;
+        // Variables de session (Impersonation prise en charge)
+        let realUserId = null;
+        let realUserRole = null;
+        let activeUserId = null;
         let roleConnecte = null;
+        let isImpersonating = false;
 
         let idOrgEnCoursModif = null;
         let idFormEnCoursModif = null;
@@ -358,12 +404,20 @@
         let globalOrganismes = [];
         let globalFormations = [];
 
+        // Système des évaluateurs
+        let annuaireEvaluateurs = []; 
+        let listFavorisIds = [];
+        let evaluateursSelectionnes = []; // [{id: null, nom: "Texte"}] id null = manuel
+
+        // ==========================================
+        // UI CORE
+        // ==========================================
         function toggleDropdown(id) {
             const menu = document.getElementById(id + '-menu');
             const arrow = document.getElementById(id + '-arrow');
             
             document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                if (m.id !== id + '-menu') m.classList.add('hidden');
+                if (m.id !== id + '-menu' && m.id !== 'menu-recherche-eval') m.classList.add('hidden');
             });
             document.querySelectorAll('.dropdown-arrow').forEach(a => {
                 if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)';
@@ -402,39 +456,6 @@
                 document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
             }
         });
-
-        function basculerZoneAnnuaire() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            const cpt = document.getElementById('zone-comptes-master');
-            ann.classList.toggle('hidden'); 
-            if (!ann.classList.contains('hidden')) { conf.classList.add('hidden'); cpt.classList.add('hidden'); }
-        }
-
-        function basculerZoneConfigurateur() { 
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            const cpt = document.getElementById('zone-comptes-master');
-            conf.classList.toggle('hidden'); 
-            if (!conf.classList.contains('hidden')) { ann.classList.add('hidden'); cpt.classList.add('hidden'); }
-        }
-
-        function basculerZoneComptes() {
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            const cpt = document.getElementById('zone-comptes-master');
-            cpt.classList.toggle('hidden'); 
-            if (!cpt.classList.contains('hidden')) { ann.classList.add('hidden'); conf.classList.add('hidden'); chargerListeComptes(); }
-        }
-
-        function toggleGroupCollapse(targetId, iconId) {
-            const target = document.getElementById(targetId);
-            const icon = document.getElementById(iconId);
-            if (target && icon) {
-                const isHidden = target.classList.toggle('hidden');
-                icon.innerText = isHidden ? '▶' : '▼';
-            }
-        }
 
         const UIModal = {
             show: function(options) {
@@ -487,21 +508,44 @@
             prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
+        // ==========================================
+        // INIT SYSTEM & IMPERSONATION
+        // ==========================================
         async function initAdmin() {
             try {
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                // CONTROLE SECURITE AUTHENTIFICATION
                 const { data: { session } } = await db.auth.getSession();
                 if (!session) { window.location.href = "login.html"; return; }
                 
-                userConnecte = session.user;
-                document.getElementById('user-email').innerText = userConnecte.email;
+                realUserId = session.user.id;
 
-                const { data: profil } = await db.from('profils').select('*').eq('id', userConnecte.id).single();
-                if(!profil) { window.location.href = "login.html"; return; }
+                const { data: realProfil } = await db.from('profils').select('*').eq('id', realUserId).single();
+                if(!realProfil) { window.location.href = "login.html"; return; }
                 
-                roleConnecte = profil.role;
+                realUserRole = realProfil.role;
+
+                // Logique Impersonation
+                const targetImpersonation = sessionStorage.getItem('impersonation_id');
+                const targetImpersonationName = sessionStorage.getItem('impersonation_name');
+                
+                if (realUserRole === 'super_admin' && targetImpersonation) {
+                    isImpersonating = true;
+                    activeUserId = targetImpersonation;
+                    
+                    // Fetch impersonated role
+                    const { data: impProfil } = await db.from('profils').select('role').eq('id', activeUserId).single();
+                    roleConnecte = impProfil ? impProfil.role : 'formateur';
+
+                    document.getElementById('banner-impersonation').classList.remove('hidden');
+                    document.getElementById('impersonation-name').innerText = targetImpersonationName || "un utilisateur";
+                    document.getElementById('user-email').innerText = `Simulation (Admin) ➔ Cible ID: ${activeUserId.substring(0,8)}...`;
+                } else {
+                    activeUserId = realUserId;
+                    roleConnecte = realUserRole;
+                    document.getElementById('user-email').innerText = session.user.email;
+                }
+
                 document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'SUPER ADMIN' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
                 if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
@@ -511,21 +555,23 @@
 
                 document.getElementById('date-session').valueAsDate = new Date();
                 
-                const { data: orgs, error: errO } = await db.from('organismes').select('*').order('nom');
-                if (errO) throw errO;
+                // Load global data
+                const [{ data: orgs }, { data: forms }] = await Promise.all([
+                    db.from('organismes').select('*').order('nom'),
+                    db.from('formations').select('*').order('nom')
+                ]);
                 globalOrganismes = orgs || [];
-                
-                const { data: forms, error: errF } = await db.from('formations').select('*').order('nom');
-                if (errF) throw errF;
                 globalFormations = forms || [];
                 
                 renderDropdownsOrganismes();
                 afficherListeOrganismes(globalOrganismes);
-                
-                // Mettre à jour la liste des formations en affichant TOUT par défaut au démarrage
                 afficherListeFormations("");
                 
+                // Load specific data
+                await chargerAnnuaireEvaluateursEtFavoris();
                 await chargerSessions();
+                await calculerStatistiquesDashboard();
+
             } catch(e) {
                 console.error(e);
                 await UIModal.alert("Connexion à la base de données échouée : " + e.message, "error");
@@ -533,12 +579,25 @@
         }
 
         async function executerDeconnexion() {
+            if (isImpersonating) { sessionStorage.removeItem('impersonation_id'); sessionStorage.removeItem('impersonation_name'); }
             await db.auth.signOut();
             window.location.href = "login.html";
         }
 
+        function simulerCompte(id, prenom, nom) {
+            sessionStorage.setItem('impersonation_id', id);
+            sessionStorage.setItem('impersonation_name', `${prenom} ${nom}`);
+            window.location.reload();
+        }
+
+        function quitterSimulation() {
+            sessionStorage.removeItem('impersonation_id');
+            sessionStorage.removeItem('impersonation_name');
+            window.location.reload();
+        }
+
         // ==========================================
-        // GESTION COMPTES UTILISATEURS (ADMIN/RP)
+        // GESTION COMPTES & VALIDATION 
         // ==========================================
         function configurerFormulaireComptes() {
             const menu = document.getElementById('compte-role-menu');
@@ -552,25 +611,82 @@
 
         async function chargerListeComptes() {
             try {
-                let requete = db.from('profils').select('*');
-                if (roleConnecte === 'rp') { requete = requete.eq('createur_id', userConnecte.id); }
-                const { data: users, error } = await requete.order('date_creation', { ascending: false });
-                if (error) throw error;
+                // 1. Charger les en_attente (Uniquement Super Admin)
+                if (roleConnecte === 'super_admin') {
+                    const blocAttente = document.getElementById('bloc-validations-attente');
+                    blocAttente.classList.remove('hidden');
+                    const conteneurAttente = document.getElementById('liste-comptes-attente');
+                    
+                    const { data: usersAttente } = await db.from('profils').select('*').eq('statut', 'en_attente').order('date_creation', { ascending: false });
+                    
+                    if (usersAttente && usersAttente.length > 0) {
+                        conteneurAttente.innerHTML = usersAttente.map(u => `
+                            <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-amber-500/30 text-sm font-sans">
+                                <div>
+                                    <span class="font-bold text-amber-100 text-xs">${u.prenom || ''} ${u.nom || ''}</span>
+                                    <span class="block text-[10px] text-slate-400">${u.email}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    <span class="uppercase font-mono text-[9px] text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/50 mr-2">${u.role}</span>
+                                    <button onclick="validerCompte('${u.id}', '${(u.prenom||'')}')" class="h-7 w-7 rounded bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Valider l'accès">✅</button>
+                                    <button onclick="refuserCompte('${u.id}', '${(u.prenom||'')}')" class="h-7 w-7 rounded bg-red-600 hover:bg-red-500 text-white flex items-center justify-center cursor-pointer shadow-md transition-colors text-xs" title="Refuser">❌</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        conteneurAttente.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucune demande en attente.</p>`;
+                    }
+                }
 
-                const corps = document.getElementById('liste-comptes-geres');
-                corps.innerHTML = '';
+                // 2. Charger les actifs
+                let requete = db.from('profils').select('*').eq('statut', 'valide');
+                if (roleConnecte === 'rp') { requete = requete.eq('createur_id', activeUserId); }
+                const { data: usersActifs } = await requete.order('date_creation', { ascending: false });
+
+                const corpsActifs = document.getElementById('liste-comptes-geres');
                 
-                if (users && users.length > 0) {
-                    corps.innerHTML = users.map(u => `
+                if (usersActifs && usersActifs.length > 0) {
+                    corpsActifs.innerHTML = usersActifs.map(u => {
+                        const isSimulable = (roleConnecte === 'super_admin' && u.id !== realUserId);
+                        const btnSimul = isSimulable ? `<button onclick="simulerCompte('${u.id}', '${u.prenom||''}', '${u.nom||''}')" class="ml-2 h-6 w-6 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Simuler cet utilisateur">👁️</button>` : '';
+                        
+                        return `
                         <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-lg border border-slate-900 text-sm font-sans hover:border-slate-800">
-                            <span class="truncate font-medium text-slate-300 text-xs">${u.email}</span>
-                            <span class="uppercase font-mono text-[9px] text-indigo-400 font-bold bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">${u.role}</span>
+                            <div>
+                                <span class="font-bold text-slate-200 text-xs">${u.prenom || ''} ${u.nom || ''}</span>
+                                <span class="block text-[10px] text-slate-500">${u.email}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="uppercase font-mono text-[9px] text-emerald-400 font-bold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">${u.role}</span>
+                                ${btnSimul}
+                            </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 } else {
-                    corps.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucun compte sous votre gestion.</p>`;
+                    corpsActifs.innerHTML = `<p class="text-slate-600 italic text-xs py-2">Aucun compte sous votre gestion.</p>`;
                 }
             } catch(err) { console.error(err); }
+        }
+
+        async function validerCompte(id, prenom) {
+            try {
+                const { error } = await db.from('profils').update({ statut: 'valide' }).eq('id', id);
+                if (error) throw error;
+                await chargerListeComptes();
+                await chargerAnnuaireEvaluateursEtFavoris();
+                await UIModal.alert(`L'accès de ${prenom} a été validé.`, "success");
+            } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
+        }
+
+        async function refuserCompte(id, prenom) {
+            try {
+                if (!(await UIModal.confirm(`Refuser définitivement la demande de ${prenom} ?`, "Refus d'accès", "error"))) return;
+                // La suppression dans profils empêchera la connexion car pas de profil applicatif
+                const { error } = await db.from('profils').delete().eq('id', id);
+                if (error) throw error;
+                await chargerListeComptes();
+                await UIModal.alert(`Demande refusée et effacée.`, "success");
+            } catch (err) { await UIModal.alert("Erreur suppression : " + err.message, "error"); }
         }
 
         async function creerCompteCollaborateur(e) {
@@ -588,20 +704,198 @@
 
                 if (authData.user) {
                     const { error: profError } = await db.from('profils').insert([{
-                        id: authData.user.id, email: email, role: role, createur_id: userConnecte.id
+                        id: authData.user.id, email: email, role: role, createur_id: activeUserId, statut: 'valide'
                     }]);
                     if (profError) throw profError;
                 }
 
                 document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
                 await chargerListeComptes();
-                await UIModal.alert(`Accès ${role.toUpperCase()} généré avec succès !`, "success");
+                await chargerAnnuaireEvaluateursEtFavoris();
+                await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
+        }
+
+        // ==========================================
+        // GESTION ÉVALUATEURS (RECHERCHE & FAVORIS)
+        // ==========================================
+        async function chargerAnnuaireEvaluateursEtFavoris() {
+            try {
+                const [{ data: profils }, { data: favs }] = await Promise.all([
+                    db.from('profils').select('id, prenom, nom, role').in('role', ['rp', 'formateur']).eq('statut', 'valide').neq('id', activeUserId),
+                    db.from('favoris').select('favori_id').eq('user_id', activeUserId)
+                ]);
+                
+                annuaireEvaluateurs = profils || [];
+                listFavorisIds = (favs || []).map(f => f.favori_id);
+                
+                configurerMoteurRechercheEvaluateurs();
+            } catch (err) { console.error("Erreur chargement évaluateurs", err); }
+        }
+
+        function configurerMoteurRechercheEvaluateurs() {
+            const input = document.getElementById('input-recherche-eval');
+            const menu = document.getElementById('menu-recherche-eval');
+
+            input.addEventListener('focus', renderRechercheEvaluateurs);
+            input.addEventListener('input', renderRechercheEvaluateurs);
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ajouterEvaluateurManuel();
+                }
+            });
+        }
+
+        function renderRechercheEvaluateurs() {
+            const menu = document.getElementById('menu-recherche-eval');
+            const searchStr = document.getElementById('input-recherche-eval').value.toLowerCase().trim();
+            
+            menu.classList.remove('hidden');
+
+            let filtered = annuaireEvaluateurs.filter(u => {
+                const fullName = `${u.prenom || ''} ${u.nom || ''}`.toLowerCase();
+                return fullName.includes(searchStr);
+            });
+
+            // Retirer ceux qui sont déjà sélectionnés
+            filtered = filtered.filter(u => !evaluateursSelectionnes.some(sel => sel.id === u.id));
+
+            let favs = filtered.filter(u => listFavorisIds.includes(u.id));
+            let formateurs = filtered.filter(u => !listFavorisIds.includes(u.id) && u.role === 'formateur');
+            let rps = filtered.filter(u => !listFavorisIds.includes(u.id) && u.role === 'rp');
+
+            let html = "";
+
+            const buildUserRow = (u, isFav) => {
+                const favIcon = isFav ? '⭐' : '☆';
+                const favColor = isFav ? 'text-amber-400' : 'text-slate-600 hover:text-amber-400';
+                const roleBadge = u.role === 'rp' ? `<span class="bg-indigo-950/50 text-indigo-400 text-[9px] px-1.5 py-0.5 rounded ml-2">RP</span>` : `<span class="bg-blue-950/50 text-blue-400 text-[9px] px-1.5 py-0.5 rounded ml-2">Formateur</span>`;
+                const safeNom = `${u.prenom || ''} ${u.nom || ''}`.replace(/'/g, "\\'");
+                
+                return `
+                    <div class="flex items-center justify-between p-2 hover:bg-slate-800 rounded-lg group transition-colors">
+                        <button type="button" onclick="ajouterEvaluateurUI('${u.id}', '${safeNom}')" class="flex-1 text-left text-sm text-slate-300 group-hover:text-white cursor-pointer font-sans truncate">
+                            ${safeNom} ${roleBadge}
+                        </button>
+                        <button type="button" onclick="toggleFavori('${u.id}')" class="${favColor} text-sm px-2 cursor-pointer" title="Ajouter/Retirer des favoris">${favIcon}</button>
+                    </div>
+                `;
+            };
+
+            if (favs.length > 0) {
+                html += `<div class="text-[10px] font-bold uppercase text-amber-500 mb-1 mt-2 px-2 border-b border-slate-700/50 pb-1">Mes Favoris</div>`;
+                html += favs.map(u => buildUserRow(u, true)).join('');
+            }
+
+            if (formateurs.length > 0) {
+                html += `<div class="text-[10px] font-bold uppercase text-slate-500 mb-1 mt-3 px-2 border-b border-slate-700/50 pb-1">Formateurs Inscrits</div>`;
+                html += formateurs.map(u => buildUserRow(u, false)).join('');
+            }
+
+            if (rps.length > 0) {
+                html += `<div class="text-[10px] font-bold uppercase text-slate-500 mb-1 mt-3 px-2 border-b border-slate-700/50 pb-1">Responsables Pédagogiques</div>`;
+                html += rps.map(u => buildUserRow(u, false)).join('');
+            }
+
+            if (filtered.length === 0) {
+                html += `<div class="px-2 py-3 text-xs text-slate-500 italic text-center">Aucun utilisateur trouvé sur la plateforme.</div>`;
+            }
+
+            menu.innerHTML = html;
+        }
+
+        async function toggleFavori(targetId) {
+            try {
+                const isFav = listFavorisIds.includes(targetId);
+                if (isFav) {
+                    await db.from('favoris').delete().match({ user_id: activeUserId, favori_id: targetId });
+                    listFavorisIds = listFavorisIds.filter(id => id !== targetId);
+                } else {
+                    await db.from('favoris').insert([{ user_id: activeUserId, favori_id: targetId }]);
+                    listFavorisIds.push(targetId);
+                }
+                renderRechercheEvaluateurs();
+                await calculerStatistiquesDashboard(); // Met à jour le compteur du dashboard
+            } catch (err) { console.error("Erreur favori", err); }
+        }
+
+        function ajouterEvaluateurUI(id, nomComplet) {
+            evaluateursSelectionnes.push({ id: id, nom: nomComplet });
+            document.getElementById('input-recherche-eval').value = '';
+            document.getElementById('menu-recherche-eval').classList.add('hidden');
+            renderTagsEvaluateurs();
+        }
+
+        function ajouterEvaluateurManuel() {
+            const input = document.getElementById('input-recherche-eval');
+            const nom = input.value.trim();
+            if (nom) {
+                evaluateursSelectionnes.push({ id: null, nom: nom });
+                input.value = '';
+                document.getElementById('menu-recherche-eval').classList.add('hidden');
+                renderTagsEvaluateurs();
+            }
+        }
+
+        function retirerEvaluateurUI(index) {
+            evaluateursSelectionnes.splice(index, 1);
+            renderTagsEvaluateurs();
+        }
+
+        function renderTagsEvaluateurs() {
+            const container = document.getElementById('tags-evaluateurs');
+            container.innerHTML = evaluateursSelectionnes.map((ev, index) => {
+                const isPlateforme = ev.id !== null;
+                const badgeColor = isPlateforme ? "bg-blue-900/40 text-blue-300 border-blue-700/50" : "bg-slate-800 text-slate-300 border-slate-600";
+                const icon = isPlateforme ? "👤" : "📝";
+                return `
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-sans shadow-sm ${badgeColor}">
+                        <span>${icon} ${ev.nom}</span>
+                        <button type="button" onclick="retirerEvaluateurUI(${index})" class="text-red-400 hover:text-red-300 ml-1 font-bold">×</button>
+                    </div>
+                `;
+            }).join('');
         }
 
         // ==========================================
         // GESTION STRUCTURES (CLASSES / FORMATIONS / ORGANISMES)
         // ==========================================
+        // [Les fonctions de l'annuaire existantes restent identiques et opérationnelles]
+        function basculerZoneAnnuaire() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            const cpt = document.getElementById('zone-comptes-master');
+            ann.classList.toggle('hidden'); 
+            if (!ann.classList.contains('hidden')) { conf.classList.add('hidden'); cpt.classList.add('hidden'); }
+        }
+
+        function basculerZoneConfigurateur() { 
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            const cpt = document.getElementById('zone-comptes-master');
+            conf.classList.toggle('hidden'); 
+            if (!conf.classList.contains('hidden')) { ann.classList.add('hidden'); cpt.classList.add('hidden'); }
+        }
+
+        function basculerZoneComptes() {
+            const ann = document.getElementById('zone-annuaire-master');
+            const conf = document.getElementById('zone-configurateur');
+            const cpt = document.getElementById('zone-comptes-master');
+            cpt.classList.toggle('hidden'); 
+            if (!cpt.classList.contains('hidden')) { ann.classList.add('hidden'); conf.classList.add('hidden'); chargerListeComptes(); }
+        }
+
+        function toggleGroupCollapse(targetId, iconId) {
+            const target = document.getElementById(targetId);
+            const icon = document.getElementById(iconId);
+            if (target && icon) {
+                const isHidden = target.classList.toggle('hidden');
+                icon.innerText = isHidden ? '▶' : '▼';
+            }
+        }
+
         function renderDropdownsOrganismes() {
             let htmlOpts = `<button type="button" onclick="selectOption('select-organisme', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
             let htmlOptsAnnForm = `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '', '-- Sélectionner l\\'organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Sélectionner l'organisme --</button>`;
@@ -705,7 +999,6 @@
 
         function afficherListeFormations(orgId) {
             const conteneur = document.getElementById('annuaire-liste-formations');
-            // MODIFICATION : On affiche TOUTES les formations si orgId est vide.
             const filtered = orgId ? globalFormations.filter(f => f.organisme_id == orgId) : globalFormations;
             
             if(filtered.length > 0) {
@@ -755,7 +1048,7 @@
                     const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
                     if (error) throw error;
                     idOrgEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
+                    document.getElementById('btn-annuaire-org').innerText = "Ajouter";
                 } else { 
                     const { error } = await db.from('organismes').insert([{ nom: nom }]);
                     if (error) throw error;
@@ -884,11 +1177,12 @@
                     evaluateurs ( nom )
                 `);
                 
+                // Utilisation de activeUserId pour l'impersonation
                 if (roleConnecte === 'formateur') {
-                    requete = requete.eq('proprietaire_id', userConnecte.id);
+                    requete = requete.eq('proprietaire_id', activeUserId);
                 } else if (roleConnecte === 'rp') {
-                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', userConnecte.id);
-                    const listIds = [userConnecte.id, ...(formateurs ? formateurs.map(f => f.id) : [])];
+                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', activeUserId);
+                    const listIds = [activeUserId, ...(formateurs ? formateurs.map(f => f.id) : [])];
                     requete = requete.in('proprietaire_id', listIds);
                 }
 
@@ -936,6 +1230,24 @@
                 }
                 filtrerEtAfficherSessions(true);
             } catch(e) { await UIModal.alert("Erreur lors du chargement des sessions : " + e.message, "error"); }
+        }
+
+        async function calculerStatistiquesDashboard() {
+            try {
+                document.getElementById('stat-sessions').innerText = cacheSessionsGlobal.length;
+                
+                let totalApprenantsEvalues = 0;
+                let classesUniques = new Set();
+                
+                cacheSessionsGlobal.forEach(s => {
+                    if(s.apprenants) totalApprenantsEvalues += s.apprenants.length;
+                    if(s.formation_id) classesUniques.add(s.formation_id);
+                });
+                
+                document.getElementById('stat-apprenants').innerText = totalApprenantsEvalues;
+                document.getElementById('stat-classes').innerText = classesUniques.size;
+                document.getElementById('stat-favoris').innerText = listFavorisIds.length;
+            } catch(e) { console.error("Stats Error", e); }
         }
 
         function filtrerEtAfficherSessions(estChargementInitial = false) {
@@ -1183,7 +1495,6 @@
                 const criteresRaw = document.getElementById('criteres-session').value.trim();
                 const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
                 const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
                 const listApprenantsPresents = extraireApprenantsPresents();
 
                 if (!nomSession) return await UIModal.alert("Le nom de la session est obligatoire.", "warning");
@@ -1197,7 +1508,7 @@
                 else if (dateSession > todayStr) statutSession = 'a_venir';
 
                 const { data: session, error: errSess } = await db.from('sessions').insert([{ 
-                    nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null, proprietaire_id: userConnecte.id
+                    nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null, proprietaire_id: activeUserId
                 }]).select().single();
                 if (errSess) throw errSess;
 
@@ -1213,12 +1524,10 @@
                     }
                 }
 
-                if (evaluateursRaw) {
-                    const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                    if (arrEvaluateurs.length > 0) {
-                        const { error: eEval } = await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: session.id, nom: nom })));
-                        if(eEval) throw eEval;
-                    }
+                if (evaluateursSelectionnes.length > 0) {
+                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ session_id: session.id, nom: ev.nom }));
+                    const { error: eEval } = await db.from('evaluateurs').insert(payloadEvals);
+                    if(eEval) throw eEval;
                 }
 
                 const listeNomsGroupes = []; const payloadGroupes = [];
@@ -1247,10 +1556,14 @@
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
                 document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
                 document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
-                document.getElementById('liste-evaluateurs-brute').value = "";
+                
+                evaluateursSelectionnes = [];
+                renderTagsEvaluateurs();
+                document.getElementById('input-recherche-eval').value = "";
                 
                 document.getElementById('zone-configurateur').classList.add('hidden');
                 await chargerSessions();
+                await calculerStatistiquesDashboard();
             } catch (e) { await UIModal.alert("Erreur lors de la génération : " + e.message, "error"); }
         }
 
@@ -1277,7 +1590,9 @@
                     document.getElementById('date-session').value = session.date_session || '';
                 }
                 if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
-                if(evals) document.getElementById('liste-evaluateurs-brute').value = evals.map(e => e.nom).join('\n');
+                
+                evaluateursSelectionnes = evals ? evals.map(e => ({id: null, nom: e.nom})) : [];
+                renderTagsEvaluateurs();
                 
                 if(grps && grps.length > 0) {
                     document.getElementById('nb-groupes').value = grps.length;
@@ -1301,8 +1616,8 @@
 
                 document.getElementById('conteneur-boutons-action').innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                        <button onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Mettre à jour l'appel et les groupes</button>
-                        <button onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
+                        <button type="button" onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Mettre à jour l'appel et les groupes</button>
+                        <button type="button" onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
                     </div>
                 `;
                 window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
@@ -1314,13 +1629,17 @@
             zoneConfigurateur.className = "hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30";
             document.getElementById('titre-formulaire').innerHTML = `<span>✨</span> Configurer et Générer une Session`;
 
-            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; document.getElementById('liste-evaluateurs-brute').value = "";
+            document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = ""; 
+            
+            evaluateursSelectionnes = [];
+            renderTagsEvaluateurs();
+
             document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
             document.getElementById('select-formation').value = ""; document.getElementById('select-formation-label').innerText = "-- Choisir --";
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
 
-            document.getElementById('conteneur-boutons-action').innerHTML = `<button onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
+            document.getElementById('conteneur-boutons-action').innerHTML = `<button type="button" onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
         }
 
         async function sauvegarderModificationsSession() {
@@ -1332,7 +1651,6 @@
                 const criteresRaw = document.getElementById('criteres-session').value.trim();
                 const nbGroupes = Math.max(1, parseInt(document.getElementById('nb-groupes').value) || 1); 
                 const prefixe = document.getElementById('prefixe-groupes').value || "Groupe ";
-                const evaluateursRaw = document.getElementById('liste-evaluateurs-brute').value.trim();
                 const listApprenantsPresents = extraireApprenantsPresents();
 
                 if (!nomSession || listApprenantsPresents.length === 0) return await UIModal.alert("Erreur dans les champs obligatoires.", "error");
@@ -1362,11 +1680,9 @@
                     }
                 }
 
-                if (evaluateursRaw) {
-                    const arrEvaluateurs = evaluateursRaw.split('\n').map(e => e.trim()).filter(e => e !== "");
-                    if (arrEvaluateurs.length > 0) {
-                        await db.from('evaluateurs').insert(arrEvaluateurs.map(nom => ({ session_id: idSessionEnCoursModification, nom: nom })));
-                    }
+                if (evaluateursSelectionnes.length > 0) {
+                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ session_id: idSessionEnCoursModification, nom: ev.nom }));
+                    await db.from('evaluateurs').insert(payloadEvals);
                 }
 
                 const listeNomsGroupes = []; const payloadGroupes = [];
@@ -1386,7 +1702,9 @@
                 })));
 
                 await UIModal.alert("Appel et groupes mis à jour avec succès !", "success");
-                annulerModeModification(); await chargerSessions();
+                annulerModeModification(); 
+                await chargerSessions();
+                await calculerStatistiquesDashboard();
             } catch(e) { await UIModal.alert("Erreur de sauvegarde : " + e.message, "error"); }
         }
 
@@ -1425,7 +1743,7 @@
                     type: src.type, 
                     date_session: todayStr, 
                     formation_id: src.formation_id, 
-                    proprietaire_id: userConnecte.id 
+                    proprietaire_id: activeUserId 
                 }]).select().single();
                 if(e2) throw e2;
 
@@ -1437,7 +1755,7 @@
                 }
                 
                 await chargerSessions();
-                
+                await calculerStatistiquesDashboard();
                 entrerEnModeModification(nv.id);
                 
             } catch(e) { await UIModal.alert("Erreur de duplication : " + e.message, "error"); }
@@ -1449,6 +1767,7 @@
                 const { error } = await db.from('sessions').delete().eq('id', idSession); 
                 if (error) throw error;
                 await chargerSessions();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert("Session supprimée avec succès.", "success");
             } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
         }
