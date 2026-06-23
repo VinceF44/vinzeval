@@ -48,7 +48,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-amber-800/50 font-sans">👑 Console Master — Vue Analytique</span>
@@ -60,7 +59,6 @@
             </button>
         </div>
 
-        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -80,7 +78,6 @@
             </div>
         </div>
 
-        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white font-sans">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -92,7 +89,6 @@
             </div>
         </div>
 
-        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -125,15 +121,12 @@
         </div>
     </div>
 
-    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans">
-                <!-- Contenu injecté dynamiquement -->
-            </div>
+                </div>
             
-            <!-- FOOTER D'ACTIONS EXCLUSIVEMENT PDF -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide font-sans">
                 <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
@@ -143,7 +136,6 @@
         </div>
     </div>
 
-    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
@@ -162,7 +154,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
@@ -274,7 +265,7 @@
             if(!hiddenInput) return;
             const valeurChangee = hiddenInput.value !== String(value);
             hiddenInput.value = value;
-            if(labelSpan) labelSpan.innerText = label;
+            if(labelSpan) labelSpan.innerHTML = label;
             toggleDropdown(dropdownId);
             
             if (valeurChangee && dropdownId === 'select-groupe-formateur') {
@@ -366,12 +357,21 @@
                     groupesSession.forEach((grp) => {
                         const listeMembresFull = membresParNomGroupe[grp.nom] || [];
                         const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
+                        
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
+                        const htmlTooltip = listeMembresFull.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        
                         optionsHtml += `
-                            <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
-                                ${labelComplet}
-                            </button>
+                            <div class="group relative w-full">
+                                <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
+                                    ${labelComplet}
+                                </button>
+                                <div class="absolute left-full top-0 ml-2 hidden group-hover:block z-[60] w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
+                                    ${htmlTooltip || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                </div>
+                            </div>
                         `;
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
@@ -586,6 +586,72 @@
                     `;
                 });
             } catch(err) { UIModal.alert("Erreur lors de l'affichage des détails : " + err.message, "error"); }
+        }
+
+        function calculerEtAfficherTout() {
+            try {
+                const structureParGroupe = {};
+                groupesSession.forEach(g => structureParGroupe[g.nom] = { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 });
+
+                evaluationsSession.forEach(e => {
+                    if (structureParGroupe[e.groupe_votant] && !e.estProf) {
+                        if (e.groupe_votant === e.sujet) structureParGroupe[e.groupe_votant].autoEval = e.note;
+                        else {
+                            structureParGroupe[e.groupe_votant].notesDonneesAuxAutres.push(e.note);
+                            const evalsProfSujet = evaluationsSession.filter(ev => ev.estProf && ev.sujet === e.sujet);
+                            if (evalsProfSujet.length > 0) {
+                                const moyProfSur20 = evalsProfSujet.reduce((a, b) => a + b, 0) / evalsProfSujet.length;
+                                if (Math.abs(e.note - moyProfSur20) >= (moyProfSur20 * 0.20)) structureParGroupe[e.groupe_votant].accumulateurPointsCamarades -= 1;
+                                else structureParGroupe[e.groupe_votant].accumulateurPointsCamarades += 1;
+                            }
+                        }
+                    }
+                });
+
+                const mapIdVersNomGroupe = {}; groupesSession.forEach(g => mapIdVersNomGroupe[g.id] = g.nom);
+
+                listeCalculeePourTri = [];
+                apprenantsSession.forEach(app => {
+                    const nomGroupe = mapIdVersNomGroupe[app.groupe_id] || "Sans Équipe";
+                    const donnees = structureParGroupe[nomGroupe] || { autoEval: null, notesDonneesAuxAutres: [], accumulateurPointsCamarades: 0 };
+                    
+                    const evalsProfCeGroupe = evaluationsSession.filter(ev => ev.estProf && ev.sujet === nomGroupe);
+                    const noteProfSur20 = evalsProfCeGroupe.length > 0 ? (evalsProfCeGroupe.reduce((a,b)=>a+b.note,0) / evalsProfCeGroupe.length) : null;
+
+                    let ptAuto = 0;
+                    if (donnees.autoEval !== null && noteProfSur20 !== null) {
+                        ptAuto = Math.abs(donnees.autoEval - noteProfSur20) >= (noteProfSur20 * 0.20) ? -1 : 1;
+                    }
+
+                    let ptPairsCumule = donnees.accumulateurPointsCamarades;
+                    const impactTotalEntier = Math.min(2, Math.max(-2, ptAuto + ptPairsCumule));
+
+                    const aUnBonusIndiv = cacheBonusIndividuels[app.prenom] === true;
+                    const aUnMalusIndiv = cacheMalusIndividuels[app.prenom] === true;
+
+                    let noteFinale = noteProfSur20 !== null ? Math.min(20, Math.max(0, noteProfSur20 + impactTotalEntier)) : -1;
+                    if (noteFinale !== -1) {
+                        if (aUnBonusIndiv) noteFinale = Math.min(20, noteFinale + 1);
+                        if (aUnMalusIndiv) noteFinale = Math.max(0, noteFinale - 1);
+                    }
+
+                    const prenomSafe = app.prenom || "Inconnu";
+                    const parts = prenomSafe.trim().split(/\s+/);
+                    
+                    listeCalculeePourTri.push({
+                        appObj: app,
+                        prenom: prenomSafe, 
+                        prenomSeul: parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase(),
+                        nomSeul: parts.length > 1 ? parts.slice(1).join(" ").toUpperCase() : "",
+                        nomGroupe: nomGroupe,
+                        ptAuto: ptAuto, ptPairsCumule: ptPairsCumule, impactTotalEntier: impactTotalEntier,
+                        noteProfSur20: noteProfSur20 !== null ? noteProfSur20 : -1, noteFinaleNum: noteFinale,
+                        hasBonus: aUnBonusIndiv, hasMalus: aUnMalusIndiv
+                    });
+                });
+
+                filtrerEtAfficherTableau();
+            } catch (err) { UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
         }
 
         function changerTri(colonne) { 
