@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES */
+        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES SANS BARRES BLANCHES */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -78,8 +78,8 @@
     <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
-            <div class="flex items-start gap-4">
-                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80 mt-1">
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80">
                     <svg class="w-8 h-8 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo-idx)" stroke-width="3.5" stroke-linecap="round"/>
                         <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
@@ -91,6 +91,7 @@
                             </linearGradient>
                         </defs>
                     </svg>
+                    <span class="text-2xl font-black text-white tracking-tighter">Spireo<span class="text-indigo-500">.</span></span>
                 </div>
                 <div class="space-y-1">
                     <span class="bg-amber-950/50 text-amber-400 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border border-amber-800/50 font-sans">👑 Console Analytique</span>
@@ -788,7 +789,7 @@
                 const starStyle = item.hasBonus ? 'text-amber-400 bg-amber-500/20 border-amber-500/40' : 'text-slate-600 bg-[#030712] border-slate-800/80 hover:text-slate-400 hover:border-slate-700';
                 const malusStyle = item.hasMalus ? 'text-red-400 bg-red-500/20 border-red-500/40' : 'text-slate-600 bg-[#030712] border-slate-800/80 hover:text-slate-400 hover:border-slate-700';
 
-                const stringPrenomEchappe = item.prenom.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+                const stringPrenomEchappe = item.prenom.replace(/\\/g, "\\\\\\\\").replace(/'/g, "\\\\'");
                 const fullMembresList = membresParNomGroupe[item.nomGroupe] || [];
                 const htmlTooltipMembres = fullMembresList.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
 
@@ -940,7 +941,7 @@
             } catch(e) { await window.UIModal.alert("Erreur de suppression : " + e.message, "error"); }
         }
 
-        function ouvrirModalFeedback(index) {
+        function abrirModalFeedback(index) {
             const dataFeedback = listeFeedbacksCartesCourantes[index];
             if(!dataFeedback) return;
             document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
@@ -1020,7 +1021,7 @@
                     let couleurBordure = e.estProf ? "border-purple-500" : (e.groupe_votant === cible ? "border-emerald-500" : "border-blue-500");
                     fbHtml += `
                         <div class="bg-[#030712]/50 p-4 rounded-xl border-l-4 ${couleurBordure}">
-                            <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">${titreFb}</div>
+                            <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">${titleFb}</div>
                             <div class="text-sm text-slate-200 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">${e.feedback}</div>
                         </div>
                     `;
@@ -1029,11 +1030,6 @@
 
             zoneFeedbacks.innerHTML = fbHtml || `<p class="text-slate-500 italic">Aucun retour détaillé n'a été rédigé pour cette présentation.</p>`;
             document.getElementById('modal-projection').classList.remove('hidden');
-        }
-
-        function fermerProjection() {
-            document.getElementById('modal-projection').classList.add('hidden');
-            if (radarChartInstance) radarChartInstance.destroy();
         }
 
         window.onload = initDashboard;
