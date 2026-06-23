@@ -249,14 +249,11 @@
             }
 
             try {
-                // 1. Création du compte dans Supabase Auth
+                // 1. Création du compte
                 const { data: authData, error: authError } = await db.auth.signUp({ email, password });
-                if (authError) {
-                    if (authError.message.includes("already registered")) throw new Error("Cette adresse email est déjà utilisée.");
-                    throw authError;
-                }
+                if (authError) throw authError;
 
-                // 2. Création de la fiche profil en statut "en_attente"
+                // 2. Création de la fiche profil
                 if (authData.user) {
                     const { error: profError } = await db.from('profils').insert([{
                         id: authData.user.id,
@@ -266,20 +263,29 @@
                         role: role,
                         statut: 'en_attente'
                     }]);
-                    if (profError) throw profError;
+                    
+                    // Capture spécifique de l'erreur du "Faux ID" (Code Postgres 23503 = Violation de clé étrangère)
+                    if (profError) {
+                        if (profError.code === '23503') {
+                            throw new Error("Cette adresse email possède déjà un compte dans le système. Veuillez vous connecter.");
+                        }
+                        throw profError;
+                    }
                 }
 
-                // Succès : on force la déconnexion (car signUp connecte automatiquement l'utilisateur par défaut)
+                // Succès : on déconnecte le fantôme et on prévient l'utilisateur
                 await db.auth.signOut();
+                await UIModal.alert("Votre demande d'accès a été envoyée avec succès ! Un administrateur doit maintenant valider votre compte.", "success", "Demande envoyée");
                 
-                await UIModal.alert("Votre demande d'accès a été envoyée avec succès ! Un administrateur doit maintenant valider votre compte avant que vous ne puissiez vous connecter.", "success", "Demande envoyée");
-                
-                // Nettoyage et retour
                 document.getElementById('form-register').reset();
                 basculerMode('login');
 
             } catch (err) {
-                UIModal.alert(err.message, "error");
+                // Traduction des messages d'erreur courants
+                let messageFinal = err.message;
+                if (messageFinal.includes("already registered")) messageFinal = "Cette adresse email possède déjà un compte.";
+                
+                UIModal.alert(messageFinal, "error");
             } finally {
                 btn.innerHTML = "Envoyer la demande"; btn.disabled = false;
             }
