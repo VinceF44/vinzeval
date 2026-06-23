@@ -24,7 +24,6 @@
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
 
-    <!-- BANNIÈRE D'IMPERSONATION -->
     <div id="banner-impersonation" class="hidden fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
         <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
         <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
@@ -32,7 +31,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
-        <!-- HEADER GLOBAL -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -54,11 +52,9 @@
                 <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
-                
-                <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📜 Journal
                 </button>
-
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📈 Stats Globales
                 </button>
@@ -69,7 +65,6 @@
             </div>
         </div>
 
-        <!-- BANNIÈRE MESSAGERIE / INVITATIONS (Pour Formateurs et RP) -->
         <div id="banner-invitations" class="hidden bg-indigo-900/40 border border-indigo-500/50 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-40 shadow-lg animate-pulse-soft">
             <div>
                 <h3 class="text-indigo-400 font-bold text-sm flex items-center gap-2">🔔 Nouvelles Invitations</h3>
@@ -78,27 +73,26 @@
             <button onclick="ouvrirModalInvitations()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-md cursor-pointer">Voir les invitations</button>
         </div>
 
-        <!-- BANNIÈRE DES ACCEPTATIONS (Pour les créateurs de sessions) -->
         <div id="banner-acceptations" class="hidden flex flex-col gap-3 relative z-40"></div>
 
-        <!-- DASHBOARD STATISTIQUES DYNAMIQUE -->
         <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
 
-        <!-- ESPACE JOURNAL D'ACTIVITE (SUPER ADMIN SEUL) -->
         <div id="zone-journal-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-blue-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
                     <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📜 Journal d'Activité</h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Historique et traçabilité des événements de la plateforme.</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Historique et traçabilité de vos événements sur la plateforme.</p>
                 </div>
                 <button onclick="basculerZoneJournal()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
+            
+            <div id="admin-global-stats" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 pb-6 border-b border-slate-800"></div>
+
             <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2" id="contenu-journal">
                 <p class="text-slate-500 italic text-sm text-center py-4">Chargement du journal...</p>
             </div>
         </div>
 
-        <!-- ESPACE GESTION COMPTES ET DROITS (Multi-Vues) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -171,7 +165,6 @@
             </div>
         </div>
 
-        <!-- ESPACE ANNUAIRE CLOISONNÉ -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -217,7 +210,6 @@
                 </div>
             </div>
 
-            <!-- Apprenants -->
             <div class="bg-[#030712]/50 p-5 rounded-xl border border-slate-800/80 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
                     <div class="text-[11px] font-bold uppercase text-slate-400 flex items-center gap-2">👤 3. Registre Nominatif des Apprenants</div>
@@ -233,11 +225,11 @@
                         <div class="custom-dropdown-container relative w-full text-left">
                             <input type="hidden" id="annuaire-select-form-pour-app" value="">
                             <button type="button" onclick="toggleDropdown('annuaire-select-form-pour-app')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                <span id="annuaire-select-form-pour-app-label" class="truncate pr-2">-- Classe --</span>
+                                <span id="annuaire-select-form-pour-app-label" class="truncate pr-2">-- Formation --</span>
                                 <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-form-pour-app-arrow">▼</span>
                             </button>
                             <div id="annuaire-select-form-pour-app-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                                <button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>
+                                <button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Formation --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Formation --</button>
                             </div>
                         </div>
                     </div>
@@ -253,7 +245,6 @@
             </div>
         </div>
 
-        <!-- ESPACE CONFIGURATEUR (CRÉATION SESSION) -->
         <div id="zone-configurateur" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-800 space-y-6 shadow-md backdrop-blur-md transition-all relative z-30">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <h2 id="titre-formulaire" class="text-sm font-bold uppercase tracking-wider text-[#2563eb] flex items-center gap-2">
@@ -263,7 +254,6 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Colonne Gauche -->
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="sm:col-span-1">
@@ -296,7 +286,6 @@
                     </div>
                 </div>
 
-                <!-- Colonne Droite -->
                 <div class="flex flex-col justify-between space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -367,7 +356,6 @@
             </div>
         </div>
 
-        <!-- LISTE GLOBALE DES SESSIONS -->
         <div class="bg-[#101828] p-5 rounded-2xl border border-slate-800 space-y-4 shadow-md relative z-20">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2">
@@ -408,7 +396,7 @@
         </div>
     </div>
 
-    <!-- UI MODAL PRINCIPAL (Alertes) -->
+    <!-- UI MODAL PRINCIPAL -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -426,7 +414,7 @@
         </div>
     </div>
 
-    <!-- UI MODAL INVITATIONS (Pour le bandeau clignotant) -->
+    <!-- UI MODAL INVITATIONS -->
     <div id="modal-invitations" class="hidden fixed inset-0 z-[350] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
         <div class="bg-[#101828] border border-indigo-500/40 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="modal-invitations-box">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-indigo-950/20">
@@ -604,11 +592,11 @@
                 document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'ADMINISTRATEUR' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
                 document.getElementById('btn-tab-comptes').classList.remove('hidden'); 
+                document.getElementById('btn-tab-journal').classList.remove('hidden');
 
                 if (roleConnecte === 'super_admin') {
                     document.getElementById('admin-comptes-view').classList.remove('hidden');
                     document.getElementById('user-comptes-view').classList.add('hidden');
-                    document.getElementById('btn-tab-journal').classList.remove('hidden'); // Journal Actif
                 } else {
                     document.getElementById('admin-comptes-view').classList.add('hidden');
                     document.getElementById('user-comptes-view').classList.remove('hidden');
@@ -633,7 +621,7 @@
                 
                 const [{ data: orgs }, { data: forms }] = await Promise.all([
                     db.from('organismes').select('*').order('nom'),
-                    roleConnecte === 'super_admin' ? db.from('formations').select('*').order('nom') : db.from('formations').select('*').eq('proprietaire_id', activeUserId).order('nom')
+                    db.from('formations').select('*').eq('proprietaire_id', activeUserId).order('nom')
                 ]);
                 globalOrganismes = orgs || [];
                 globalFormations = forms || [];
@@ -780,7 +768,6 @@
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await verifierNotifications();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
             } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
         }
@@ -803,7 +790,6 @@
                 if (error) throw error;
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
             } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
         }
@@ -831,7 +817,6 @@
                 document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
-                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
         }
@@ -990,7 +975,7 @@
         }
 
         // ==========================================
-        // JOURNAL D'ACTIVITE (SUPER ADMIN)
+        // JOURNAL D'ACTIVITE
         // ==========================================
         function basculerZoneJournal() { 
             const journal = document.getElementById('zone-journal-master');
@@ -1006,14 +991,64 @@
         }
 
         async function chargerJournalActivite() {
-            if (roleConnecte !== 'super_admin') return;
             const conteneur = document.getElementById('contenu-journal');
             try {
-                const [{ data: profils }, { data: sessions }, { data: evals }] = await Promise.all([
-                    db.from('profils').select('*'),
-                    db.from('sessions').select('*, profils(prenom, nom)'),
-                    db.from('evaluateurs').select('*, sessions(nom)')
-                ]);
+                if (roleConnecte === 'super_admin') {
+                    const adminStatsDiv = document.getElementById('admin-global-stats');
+                    adminStatsDiv.classList.remove('hidden');
+                    
+                    const [ { count: cFormateurs }, { count: cRP }, { count: cOrgs }, { count: cSess } ] = await Promise.all([
+                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'formateur').eq('statut', 'valide'),
+                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'rp').eq('statut', 'valide'),
+                        db.from('organismes').select('*', { count: 'exact', head: true }),
+                        db.from('sessions').select('*', { count: 'exact', head: true })
+                    ]);
+
+                    adminStatsDiv.innerHTML = `
+                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-blue-500/30">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Formateurs Globaux</p>
+                            <p class="text-xl font-black text-indigo-400">${cFormateurs || 0}</p>
+                        </div>
+                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-blue-500/30">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">RP Globaux</p>
+                            <p class="text-xl font-black text-blue-400">${cRP || 0}</p>
+                        </div>
+                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-blue-500/30">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Organismes Globaux</p>
+                            <p class="text-xl font-black text-[#fe9a00]">${cOrgs || 0}</p>
+                        </div>
+                        <div class="bg-[#030712]/50 p-4 rounded-xl border border-blue-500/30">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Sessions Globales</p>
+                            <p class="text-xl font-black text-emerald-400">${cSess || 0}</p>
+                        </div>
+                    `;
+                }
+
+                let reqProfils = db.from('profils').select('*');
+                if (roleConnecte !== 'super_admin') reqProfils = reqProfils.eq('id', activeUserId);
+                
+                let reqSessions = db.from('sessions').select('*, profils(prenom, nom)');
+                if (roleConnecte !== 'super_admin') reqSessions = reqSessions.eq('proprietaire_id', activeUserId);
+                
+                let evalsData = [];
+                if (roleConnecte === 'super_admin') {
+                    const { data } = await db.from('evaluateurs').select('*, sessions(nom)');
+                    evalsData = data || [];
+                } else {
+                    const { data: myEvals } = await db.from('evaluateurs').select('*, sessions(nom)').eq('utilisateur_id', activeUserId);
+                    const mySessionIds = cacheSessionsGlobal.filter(s => !s.est_invite).map(s => s.id);
+                    let myOwnedEvals = [];
+                    if(mySessionIds.length > 0) {
+                        const { data } = await db.from('evaluateurs').select('*, sessions(nom)').in('session_id', mySessionIds);
+                        myOwnedEvals = data || [];
+                    }
+                    const mapEvals = new Map();
+                    (myEvals || []).forEach(e => mapEvals.set(e.id, e));
+                    (myOwnedEvals || []).forEach(e => mapEvals.set(e.id, e));
+                    evalsData = Array.from(mapEvals.values());
+                }
+
+                const [{ data: profils }, { data: sessions }] = await Promise.all([reqProfils, reqSessions]);
 
                 let events = [];
 
@@ -1021,8 +1056,8 @@
                     if(p.date_creation) {
                         events.push({
                             date: new Date(p.date_creation),
-                            titre: 'Nouveau Compte',
-                            desc: `Le compte <b>${p.email}</b> (${p.role}) a été créé.`,
+                            titre: roleConnecte === 'super_admin' ? 'Nouveau Compte' : 'Mon Inscription',
+                            desc: roleConnecte === 'super_admin' ? `Le compte <b>${p.email}</b> (${p.role}) a été créé.` : `Votre compte a été initialisé sur la plateforme.`,
                             icon: '👤', color: 'text-indigo-400', border: 'border-indigo-500/30'
                         });
                     }
@@ -1030,28 +1065,40 @@
 
                 (sessions || []).forEach(s => {
                     if(s.created_at) {
-                        const createur = s.profils ? `${s.profils.prenom||''} ${s.profils.nom||''}` : 'Inconnu';
+                        const createur = s.proprietaire_id === activeUserId ? 'Vous' : (s.profils ? `${s.profils.prenom||''} ${s.profils.nom||''}` : 'Inconnu');
+                        const a_cree = s.proprietaire_id === activeUserId ? 'avez créé' : 'a créé';
                         events.push({
                             date: new Date(s.created_at),
                             titre: 'Création de Session',
-                            desc: `<b>${createur}</b> a créé la session "${s.nom}".`,
+                            desc: `<b>${createur}</b> ${a_cree} la session "${s.nom}".`,
                             icon: '📅', color: 'text-emerald-400', border: 'border-emerald-500/30'
                         });
                     }
                 });
 
-                (evals || []).forEach(e => {
+                (evalsData || []).forEach(e => {
                     if(e.created_at && e.utilisateur_id) {
                         const sessionNom = e.sessions ? e.sessions.nom : 'Inconnue';
-                        let statutMsg = e.statut_invitation === 'accepte' ? 'a accepté l\'invitation pour' : (e.statut_invitation === 'refuse' ? 'a refusé l\'invitation pour' : 'a été invité(e) à co-évaluer');
-                        let ic = e.statut_invitation === 'accepte' ? '✅' : (e.statut_invitation === 'refuse' ? '❌' : '✉️');
-                        let col = e.statut_invitation === 'accepte' ? 'text-emerald-400' : (e.statut_invitation === 'refuse' ? 'text-red-400' : 'text-amber-400');
-                        let bor = e.statut_invitation === 'accepte' ? 'border-emerald-500/30' : (e.statut_invitation === 'refuse' ? 'border-red-500/30' : 'border-amber-500/30');
+                        const estPourMoi = e.utilisateur_id === activeUserId;
+                        const nomSujet = estPourMoi ? 'Vous' : e.nom;
+                        
+                        let statutMsg = "";
+                        let ic = '✉️', col = 'text-amber-400', bor = 'border-amber-500/30';
+
+                        if (e.statut_invitation === 'accepte' || e.statut_invitation === 'actif') {
+                            statutMsg = estPourMoi ? "avez accepté l'invitation pour" : "a accepté l'invitation pour";
+                            ic = '✅'; col = 'text-emerald-400'; bor = 'border-emerald-500/30';
+                        } else if (e.statut_invitation === 'refuse') {
+                            statutMsg = estPourMoi ? "avez refusé l'invitation pour" : "a refusé l'invitation pour";
+                            ic = '❌'; col = 'text-red-400'; bor = 'border-red-500/30';
+                        } else {
+                            statutMsg = estPourMoi ? "avez été invité(e) à co-évaluer" : "a été invité(e) à co-évaluer";
+                        }
                         
                         events.push({
                             date: new Date(e.created_at),
                             titre: 'Invitation & Réponse',
-                            desc: `<b>${e.nom}</b> ${statutMsg} la session "${sessionNom}".`,
+                            desc: `<b>${nomSujet}</b> ${statutMsg} la session "${sessionNom}".`,
                             icon: ic, color: col, border: bor
                         });
                     }
@@ -1131,11 +1178,16 @@
             let htmlOptsAnnForm = `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '', '-- Sélectionner l\\'organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Sélectionner l'organisme --</button>`;
             let htmlOptsAnnApp = `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
             
+            const orgIdsWithForms = new Set(globalFormations.map(f => f.organisme_id));
+
             globalOrganismes.forEach(o => {
                 const safeNom = o.nom.replace(/'/g, "\\'");
                 htmlOpts += `<button type="button" onclick="selectOption('select-organisme', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
                 htmlOptsAnnForm += `<button type="button" onclick="selectOption('annuaire-select-org-pour-formation', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
-                htmlOptsAnnApp += `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
+                
+                if (orgIdsWithForms.has(o.id)) {
+                    htmlOptsAnnApp += `<button type="button" onclick="selectOption('annuaire-select-org-pour-app', '${o.id}', '${safeNom}')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${o.nom}</button>`;
+                }
             });
             
             document.getElementById('select-organisme-menu').innerHTML = htmlOpts;
@@ -1173,9 +1225,9 @@
             const conteneurApp = document.getElementById('annuaire-liste-apprenants');
             
             hiddenInput.value = "";
-            labelSpan.innerText = "-- Classe --";
-            let html = `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Classe --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Classe --</button>`;
-            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`;
+            labelSpan.innerText = "-- Formation --";
+            let html = `<button type="button" onclick="selectOption('annuaire-select-form-pour-app', '', '-- Formation --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Formation --</button>`;
+            conteneurApp.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une formation pour voir ses apprenants.</p>`;
             
             if (!organismeId) { menuContainer.innerHTML = html; return; }
             
@@ -1198,7 +1250,7 @@
                 }
                 
                 let req = db.from('apprenants_master').select('*').eq('formation_id', formationId);
-                if(roleConnecte !== 'super_admin') req = req.eq('proprietaire_id', activeUserId);
+                req = req.eq('proprietaire_id', activeUserId);
                 
                 const { data, error } = await req.order('nom', { ascending: true });
                 if (error) throw error;
@@ -1256,10 +1308,10 @@
         async function afficherListeApprenantsMaster(formId) {
             try {
                 const conteneur = document.getElementById('annuaire-liste-apprenants');
-                if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
+                if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une formation pour voir ses apprenants.</p>`; return; }
                 
                 let req = db.from('apprenants_master').select('*').eq('formation_id', formId);
-                if(roleConnecte !== 'super_admin') req = req.eq('proprietaire_id', activeUserId);
+                req = req.eq('proprietaire_id', activeUserId);
                 
                 const { data, error } = await req.order('nom');
                 if (error) throw error;
@@ -1340,10 +1392,12 @@
                 }
                 
                 let reqForms = db.from('formations').select('*').order('nom');
-                if(roleConnecte !== 'super_admin') reqForms = reqForms.eq('proprietaire_id', activeUserId);
+                reqForms = reqForms.eq('proprietaire_id', activeUserId);
                 
                 const { data: forms } = await reqForms;
                 globalFormations = forms || [];
+                
+                renderDropdownsOrganismes(); // Actualiser le menu déroulant
                 afficherListeFormations(orgId);
                 await UIModal.alert("Formation mise à jour.", "success");
             } catch(e) { await UIModal.alert("Erreur formation : " + e.message, "error"); }
@@ -1357,10 +1411,11 @@
                 if (error) throw error;
                 
                 let reqForms = db.from('formations').select('*').order('nom');
-                if(roleConnecte !== 'super_admin') reqForms = reqForms.eq('proprietaire_id', activeUserId);
+                reqForms = reqForms.eq('proprietaire_id', activeUserId);
                 
                 const { data: forms } = await reqForms;
                 globalFormations = forms || [];
+                renderDropdownsOrganismes(); // Actualiser le menu déroulant
                 afficherListeFormations(orgId);
                 await UIModal.alert("Classe supprimée.", "success");
             } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
@@ -1375,7 +1430,7 @@
             try {
                 const formId = document.getElementById('annuaire-select-form-pour-app').value;
                 const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app');
-                if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
+                if (!formId) return await UIModal.alert("Sélectionnez la formation.", "warning");
                 if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
                 
                 if (idAppEnCoursModif) {
@@ -1432,13 +1487,7 @@
                     formations ( id, nom, organismes ( id, nom ) )
                 `);
                 
-                if (roleConnecte === 'formateur') {
-                    reqMySessions = reqMySessions.eq('proprietaire_id', activeUserId);
-                } else if (roleConnecte === 'rp') {
-                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', activeUserId);
-                    const listIds = [activeUserId, ...(formateurs ? formateurs.map(f => f.id) : [])];
-                    reqMySessions = reqMySessions.in('proprietaire_id', listIds);
-                }
+                reqMySessions = reqMySessions.eq('proprietaire_id', activeUserId);
 
                 const { data: myEvals } = await db.from('evaluateurs').select('session_id, statut_invitation').eq('utilisateur_id', activeUserId);
                 const invitedSessionIds = myEvals ? myEvals.map(e => e.session_id) : [];
@@ -1481,6 +1530,7 @@
                     }
                 });
 
+                // Rendu de la notification d'acceptation (Créateur)
                 const bannerAcc = document.getElementById('banner-acceptations');
                 if (alertesAcceptation.length > 0) {
                     bannerAcc.innerHTML = alertesAcceptation.map(a => `
@@ -1532,13 +1582,11 @@
                 if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
                 const bannerInvit = document.getElementById('banner-invitations');
-                if (roleConnecte !== 'super_admin') {
-                    if (invitationsEnAttenteGlobal.length > 0) {
-                        document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
-                        bannerInvit.classList.remove('hidden');
-                    } else {
-                        bannerInvit.classList.add('hidden');
-                    }
+                if (invitationsEnAttenteGlobal.length > 0) {
+                    document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
+                    bannerInvit.classList.remove('hidden');
+                } else {
+                    bannerInvit.classList.add('hidden');
                 }
 
                 cacheSessionsGlobal = rawList.filter(s => !(s.est_invite && s.mon_statut_invitation === 'en_attente'));
@@ -1604,60 +1652,32 @@
             try {
                 const conteneurStats = document.getElementById('zone-stats-rapides');
 
-                if (roleConnecte === 'super_admin') {
-                    const [ { count: cFormateurs }, { count: cRP }, { count: cOrgs }, { count: cSess } ] = await Promise.all([
-                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'formateur').eq('statut', 'valide'),
-                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'rp').eq('statut', 'valide'),
-                        db.from('organismes').select('*', { count: 'exact', head: true }),
-                        db.from('sessions').select('*', { count: 'exact', head: true })
-                    ]);
-
-                    conteneurStats.innerHTML = `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Total Formateurs</p>
-                            <p class="text-2xl font-black text-indigo-400">${cFormateurs || 0}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Total RP</p>
-                            <p class="text-2xl font-black text-blue-400">${cRP || 0}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Organismes Inscrits</p>
-                            <p class="text-2xl font-black text-[#fe9a00]">${cOrgs || 0}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Sessions Globales</p>
-                            <p class="text-2xl font-black text-emerald-400">${cSess || 0}</p>
-                        </div>
-                    `;
-                } else {
-                    let totalApprenantsEvalues = 0;
-                    let classesUniques = new Set();
-                    
-                    cacheSessionsGlobal.forEach(s => {
-                        if(s.apprenants) totalApprenantsEvalues += s.apprenants.length;
-                        if(s.formation_id) classesUniques.add(s.formation_id);
-                    });
-                    
-                    conteneurStats.innerHTML = `
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
-                            <p class="text-2xl font-black text-indigo-400">${cacheSessionsGlobal.length}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Apprenants Évalués</p>
-                            <p class="text-2xl font-black text-blue-400">${totalApprenantsEvalues}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
-                            <p class="text-2xl font-black text-[#fe9a00]">${listFavorisIds.length}</p>
-                        </div>
-                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                            <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
-                            <p class="text-2xl font-black text-emerald-400">${classesUniques.size}</p>
-                        </div>
-                    `;
-                }
+                let totalApprenantsEvalues = 0;
+                let classesUniques = new Set();
+                
+                cacheSessionsGlobal.forEach(s => {
+                    if(s.apprenants) totalApprenantsEvalues += s.apprenants.length;
+                    if(s.formation_id) classesUniques.add(s.formation_id);
+                });
+                
+                conteneurStats.innerHTML = `
+                    <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
+                        <p class="text-2xl font-black text-indigo-400">${cacheSessionsGlobal.length}</p>
+                    </div>
+                    <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Apprenants Évalués</p>
+                        <p class="text-2xl font-black text-blue-400">${totalApprenantsEvalues}</p>
+                    </div>
+                    <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
+                        <p class="text-2xl font-black text-[#fe9a00]">${listFavorisIds.length}</p>
+                    </div>
+                    <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                        <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
+                        <p class="text-2xl font-black text-emerald-400">${classesUniques.size}</p>
+                    </div>
+                `;
             } catch(e) { console.error("Stats Error", e); }
         }
 
@@ -1803,7 +1823,6 @@
                         stringEvaluateursHtml = `<span class="truncate max-w-[160px] whitespace-nowrap shrink-0" title="${evalsAcceptes.map(e => e.nom).join(', ')}">👩‍🏫 ${names}</span>`;
                     }
 
-                    // ALIGNEMENT HORIZONTAL STRICT (sans passage à la ligne)
                     const tagsStatsInfos = `
                         <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center gap-2 overflow-x-auto whitespace-nowrap hide-scrollbar pb-1">
                             ${tagDate}
