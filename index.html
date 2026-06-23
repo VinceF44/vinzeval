@@ -26,7 +26,7 @@
 
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
-            @media print { margin: 1.5cm; }
+            @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
             .max-w-7xl, #ui-modal, #modal-feedback, #modal-projection, .print-hide { display: none !important; }
             
@@ -217,6 +217,56 @@
     </div>
 
     <script>
+        // Définition globale de UIModal pour éviter l'erreur "ReferenceError"
+        window.UIModal = {
+            show: function(options) {
+                return new Promise((resolve) => {
+                    try {
+                        const modal = document.getElementById('ui-modal');
+                        const box = document.getElementById('ui-modal-box');
+                        const title = document.getElementById('ui-modal-title');
+                        const msg = document.getElementById('ui-modal-message');
+                        const icon = document.getElementById('ui-modal-icon');
+                        const input = document.getElementById('ui-modal-input');
+                        const btnCancel = document.getElementById('ui-btn-cancel');
+                        const btnConfirm = document.getElementById('ui-btn-confirm');
+
+                        title.innerText = options.title || 'Information';
+                        msg.innerHTML = options.message || '';
+                        
+                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+
+                        if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
+                        else { input.classList.add('hidden'); }
+
+                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
+                        btnConfirm.innerText = options.confirmText || 'OK';
+
+                        const cleanup = () => {
+                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
+                            setTimeout(() => modal.classList.add('hidden'), 200);
+                            btnConfirm.onclick = null; btnCancel.onclick = null;
+                        };
+
+                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
+                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
+
+                        modal.classList.remove('hidden'); void modal.offsetWidth;
+                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
+                    } catch (err) {
+                        if(options.isConfirm) resolve(window.confirm(options.message));
+                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
+                        else { window.alert(options.message); resolve(true); }
+                    }
+                });
+            },
+            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
+        };
+
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
@@ -384,7 +434,58 @@
                 listeCriteresProf = critsProf || [];
 
                 await chargerDonneesDashboard();
-            } catch (err) { await UIModal.alert("Erreur lors de l'initialisation : \n" + err.message, "error"); }
+            } catch (err) {
+                console.error(err);
+                await window.UIModal.alert("Erreur lors de l'initialisation : \n" + err.message, "error");
+            }
+        }
+
+        function decoderNoteEtCurseurs(notePleine) {
+            if (!notePleine && notePleine !== 0) return { noteGlobale: 0, sliders: [] };
+            const chaineNote = Number(notePleine).toFixed(14);
+            const parties = chaineNote.split('.');
+            if (parties.length < 2) return { noteGlobale: parseFloat(notePleine), sliders: [] };
+            
+            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
+            let chaineDecimaleEmpreinte = parties[1].substring(4);
+            let curseursRestitues = [];
+            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
+                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
+                if (bloc.length === 2) {
+                    if (bloc === "00") break;
+                    curseursRestitues.push(parseInt(bloc, 10) / 10);
+                }
+            }
+            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
+        }
+
+        async function chargerDonneesDashboard() {
+            try {
+                const btn = document.getElementById('btn-refresh');
+                if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
+
+                const { data: evals, error: errEvals } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
+                if (errEvals) throw errEvals;
+
+                evaluationsSession = (evals || []).map(e => {
+                    const extraction = decoderNoteEtCurseurs(e.note);
+                    const estProf = nomsEvaluateursInscrits.includes(e.groupe_votant) || e.groupe_votant === 'Formateur';
+                    return { ...e, note: extraction.noteGlobale, note_brute: e.note, estProf: estProf, sliders: extraction.sliders };
+                });
+                
+                calculerEtAfficherTout();
+                
+                const grp = document.getElementById('select-groupe-formateur').value;
+                if(grp) mettreAjourDetailsEvaluations(grp);
+
+                if(btn) {
+                    btn.innerHTML = "✅ À jour !";
+                    setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
+                }
+            } catch (err) {
+                console.error(err);
+                await window.UIModal.alert("Erreur lors du chargement des évaluations : \n" + err.message, "error");
+            }
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -424,7 +525,7 @@
                             if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                             else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
-                            // RESTAURÉ : Les bulles d'info flottantes Tailwind au survol des critères (description longue)
+                            // BULLES INFO FLOTTANTES SUR LES CRITÈRES
                             contenuCriteres += `
                                 <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
                                     <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
@@ -450,7 +551,8 @@
                     } else if (e.groupe_votant === e.sujet) {
                         const membres = membresParNomGroupe[e.groupe_votant] || [];
                         const htmlTooltipMembres = membres.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
-                        // RESTAURÉ : Les bulles d'info flottantes de composition d'équipe sur l'en-tête de carte
+                        
+                        // BULLE INFO FLOTTANTE SUR LE NOM DE L'ÉQUIPE
                         nomAfficheHtml = `
                             <div class="group relative inline-block cursor-help select-none mt-1.5">
                                 <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
@@ -463,7 +565,8 @@
                     } else {
                         const membresSujet = membresParNomGroupe[e.sujet] || [];
                         const htmlTooltipSujet = membresSujet.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
-                        // RESTAURÉ : Les bulles d'info flottantes de composition d'équipe sur l'en-tête de carte (mode éval pairs)
+
+                        // BULLE INFO FLOTTANTE SUR L'ÉVAL PAIRS
                         nomAfficheHtml = `
                             <div class="group relative inline-block cursor-help select-none mt-1.5">
                                 <span class="text-xs text-gray-500 font-medium">Pour : </span>
@@ -529,7 +632,7 @@
                         </div>
                     `;
                 });
-            } catch(err) { UIModal.alert("Erreur lors de l'affichage des détails : " + err.message, "error"); }
+            } catch(err) { window.UIModal.alert("Erreur lors de l'affichage des détails : " + err.message, "error"); }
         }
 
         function calculerEtAfficherTout() {
@@ -595,7 +698,7 @@
                 });
 
                 filtrerEtAfficherTableau();
-            } catch (err) { UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
+            } catch (err) { window.UIModal.alert("Erreur lors des calculs de moyenne : " + err.message, "error"); }
         }
 
         function changerTri(colonne) { 
@@ -653,7 +756,7 @@
                 const fullMembresList = membresParNomGroupe[item.nomGroupe] || [];
                 const htmlTooltipMembres = fullMembresList.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
 
-                // RESTAURÉ : Les info-bulles flottantes complexes pour la composition de groupe ET pour les boutons Bonus/Malus
+                // BULLES INFO FLOTTANTES DANS LE TABLEAU
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition border-b border-gray-800/30 hover:relative hover:z-50">
                         <td class="py-3 px-3 font-black text-white text-sm">${item.prenomSeul}</td>
@@ -679,7 +782,7 @@
                                     <button onclick="basculerMalusIndividuel('${stringPrenomEchappe}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
                                     <div class="absolute right-full top-1/2 -translate-y-1/2 mr-3 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none font-normal leading-relaxed transition-all text-left font-sans">
                                         <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
-                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque de participation ou de travail au sein du groupe.</div>
+                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque total de participation ou de travail au sein du groupe.</div>
                                     </div>
                                 </div>
                                 
@@ -794,12 +897,12 @@
 
         async function modererFeedback(idEvaluation, depuisModal) {
             try {
-                if (depuisModal && !(await UIModal.confirm("Voulez-vous vraiment supprimer définitivement ce feedback ?", "Suppression", "error"))) return;
+                if (depuisModal && !(await window.UIModal.confirm("Voulez-vous vraiment supprimer définitivement ce feedback ?", "Suppression", "error"))) return;
                 const { error } = await db.from('evaluations').update({ feedback: "" }).eq('id', idEvaluation);
                 if (error) throw error;
                 fermerModalFeedback();
                 await chargerDonneesDashboard();
-            } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
+            } catch(e) { await window.UIModal.alert("Erreur de suppression : " + e.message, "error"); }
         }
 
         function ouvrirModalFeedback(index) {
@@ -817,13 +920,13 @@
 
         function ouvrirProjection() {
             const cible = document.getElementById('select-groupe-formateur').value;
-            if (!cible) return UIModal.alert("Veuillez sélectionner une équipe à projeter.", "warning");
+            if (!cible) return window.UIModal.alert("Veuillez sélectionner une équipe à projeter.", "warning");
 
             document.getElementById('projection-titre').innerText = cible;
 
             const evalsCible = evaluationsSession.filter(e => e.sujet === cible);
             if (evalsCible.length === 0) {
-                return UIModal.alert("Aucune donnée d'évaluation pour cette équipe pour générer le radar.", "warning");
+                return window.UIModal.alert("Aucune donnée d'évaluation pour cette équipe pour générer le radar.", "warning");
             }
 
             const dataFormateur = Array(listeCriteresProf.length).fill(null);
