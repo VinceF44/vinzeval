@@ -3,20 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Évaluation Formateur — Espace Zen Pro</title>
+    <title>Évaluation Formateur — Spireo</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
 </head>
 <body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center selection:bg-[#a855f7]/30 relative">
 
     <div class="w-full max-w-5xl bg-[#101828] p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all" id="formulaire-container">
         
         <div class="sticky top-0 bg-[#101828] z-30 border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
-            <div>
-                <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
-                    👩‍🏫 Espace Évaluation Formateur
-                </span>
-                <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+            
+            <div class="flex items-start gap-4">
+                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80 mt-1">
+                    <svg class="w-7 h-7 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo-vf)" stroke-width="3.5" stroke-linecap="round"/>
+                        <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
+                        <circle cx="20" cy="14" r="3" fill="#fe9a00"/>
+                        <defs>
+                            <linearGradient id="grad-spireo-vf" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#818cf8"/>
+                                <stop offset="1" stop-color="#3b82f6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div>
+                    <span class="bg-[#030712]/50 text-[#a855f7] text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-[#a855f7]/30">
+                        👩‍🏫 Espace Évaluation Formateur
+                    </span>
+                    <h1 id="nom-session" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+                </div>
             </div>
             
             <div class="flex items-center gap-4 bg-[#030712] px-4 py-2.5 rounded-2xl border border-slate-800 shadow-inner select-none shrink-0 self-end sm:self-auto ring-1 ring-[#030712]">
@@ -285,8 +307,6 @@
                     genererSlidersHtml();
                 }
 
-                // Pour un formateur, on ne charge les notes qu'après qu'il ait sélectionné son profil
-                // Mettre un indicateur visuel au cas où :
                 document.getElementById('select-sujet-evalue-menu').innerHTML = `<div class="p-3 text-sm text-gray-500 italic text-center">Sélectionnez d'abord votre profil Évaluateur</div>`;
 
             } catch (errorGlobal) { await UIModal.alert("Erreur fatale : " + errorGlobal.message, "error", "Erreur Système"); }
@@ -309,7 +329,6 @@
 
             document.getElementById('select-sujet-evalue-menu').innerHTML = optionsHtmlSujet;
             
-            // Mise à jour visuelle du label de la cible actuellement sélectionnée s'il a changé d'état
             const cibleActuelle = document.getElementById('select-sujet-evalue').value;
             if (cibleActuelle) {
                 const grpObj = groupesSessionGlobal.find(g => g.nom === cibleActuelle);
@@ -397,7 +416,6 @@
             const cacheSauvegarde = localStorage.getItem(`cache_formateur_${idSessionDashboard}_${nouveauEvaluateur}`);
             notesFormateurLocales = cacheSauvegarde ? JSON.parse(cacheSauvegarde) : {};
 
-            // Interroger la BDD pour voir ce qui est DEJA enregistré pour CET évaluateur
             const { data } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard).eq('groupe_votant', nouveauEvaluateur);
             
             groupesEnregistresDB = [];
@@ -502,7 +520,6 @@
                 feedback: dataTarget.feedback || ""
             };
 
-            // Suppression propre de la précédente note pour cette même équipe / formateur
             await db.from('evaluations')
                 .delete()
                 .eq('session_id', idSessionDashboard)
