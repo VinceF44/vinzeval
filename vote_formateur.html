@@ -29,7 +29,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
-            <!-- DROPDOWN CUSTOM : NOM DU FORMATEUR -->
             <div>
                 <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre profil Formateur / Évaluateur :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
@@ -39,12 +38,10 @@
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-evaluateur-arrow">▼</span>
                     </button>
                     <div id="select-evaluateur-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        <!-- Injecté via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
             
-            <!-- DROPDOWN CUSTOM : GROUPE ÉVALUÉ -->
             <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                 <label class="block text-xs font-bold uppercase text-purple-400 mb-1">Groupe à évaluer :</label>
                 <div class="custom-dropdown-container relative w-full text-left">
@@ -54,8 +51,7 @@
                         <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                     </button>
                     <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-purple-900/50 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                        <!-- Injecté via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -84,7 +80,6 @@
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -139,7 +134,7 @@
             const valeurChangee = hiddenInput.value !== value;
             
             hiddenInput.value = value;
-            labelSpan.innerText = label;
+            labelSpan.innerHTML = label;
             
             toggleDropdown(dropdownId);
             
@@ -157,44 +152,57 @@
         });
         // -----------------------------------
 
+        function formaterPrenomInitiale(nomComplet) {
+            if (!nomComplet) return "";
+            const parties = nomComplet.trim().split(/\s+/);
+            if (parties.length <= 1) return nomComplet;
+            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
+        }
+
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
-                    const modal = document.getElementById('ui-modal');
-                    const box = document.getElementById('ui-modal-box');
-                    const title = document.getElementById('ui-modal-title');
-                    const msg = document.getElementById('ui-modal-message');
-                    const icon = document.getElementById('ui-modal-icon');
-                    const input = document.getElementById('ui-modal-input');
-                    const btnCancel = document.getElementById('ui-btn-cancel');
-                    const btnConfirm = document.getElementById('ui-btn-confirm');
+                    try {
+                        const modal = document.getElementById('ui-modal');
+                        const box = document.getElementById('ui-modal-box');
+                        const title = document.getElementById('ui-modal-title');
+                        const msg = document.getElementById('ui-modal-message');
+                        const icon = document.getElementById('ui-modal-icon');
+                        const input = document.getElementById('ui-modal-input');
+                        const btnCancel = document.getElementById('ui-btn-cancel');
+                        const btnConfirm = document.getElementById('ui-btn-confirm');
 
-                    title.innerText = options.title || 'Information';
-                    msg.innerHTML = options.message || '';
-                    
-                    if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-[#a855f7] mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#a855f7] hover:bg-[#9333ea] shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        title.innerText = options.title || 'Information';
+                        msg.innerHTML = options.message || '';
+                        
+                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
+                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-[#a855f7] mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-[#a855f7] hover:bg-[#9333ea] shadow-md transition-all active:scale-95 cursor-pointer"; }
 
-                    if (options.isPrompt) {
-                        input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
-                    } else { input.classList.add('hidden'); }
+                        if (options.isPrompt) {
+                            input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100);
+                        } else { input.classList.add('hidden'); }
 
-                    if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
-                    btnConfirm.innerText = options.confirmText || 'OK';
+                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
+                        btnConfirm.innerText = options.confirmText || 'OK';
 
-                    const cleanup = () => {
-                        modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                        setTimeout(() => modal.classList.add('hidden'), 200);
-                        btnConfirm.onclick = null; btnCancel.onclick = null;
-                    };
+                        const cleanup = () => {
+                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
+                            setTimeout(() => modal.classList.add('hidden'), 200);
+                            btnConfirm.onclick = null; btnCancel.onclick = null;
+                        };
 
-                    btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
-                    btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
+                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
+                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
 
-                    modal.classList.remove('hidden'); void modal.offsetWidth;
-                    modal.classList.add('opacity-100'); box.classList.add('scale-100');
+                        modal.classList.remove('hidden'); void modal.offsetWidth;
+                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
+                    } catch (err) {
+                        if(options.isConfirm) resolve(window.confirm(options.message));
+                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
+                        else { window.alert(options.message); resolve(true); }
+                    }
                 });
             },
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
@@ -238,7 +246,6 @@
 
             const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSessionDashboard).order('nom');
             
-            // Construit dynamiquement les options personnalisées pour les Évaluateurs
             const selectEvalMenu = document.getElementById('select-evaluateur-menu');
             let evalOptions = `<button type="button" onclick="selectOption('select-evaluateur', '', '-- Choisissez votre nom --')" class="w-full text-left block px-4 py-3 text-sm text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre nom --</button>`;
             
@@ -253,19 +260,38 @@
             selectEvalMenu.innerHTML = evalOptions;
             evaluateurPrecedent = ""; 
 
+            // RECUPERATION DES GROUPES ET DES APPRENANTS DE LA SESSION
             const { data: g } = await db.from('groupes').select('*').eq('session_id', idSessionDashboard).order('nom');
+            const { data: apps } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionDashboard);
+
             if(g && g.length > 0) {
                 groupesSession = g;
+
+                const membresParIdGroupe = {};
+                if (apps) {
+                    apps.forEach(a => {
+                        if(!membresParIdGroupe[a.groupe_id]) membresParIdGroupe[a.groupe_id] = [];
+                        membresParIdGroupe[a.groupe_id].push(a.prenom);
+                    });
+                }
+
                 let sujetOptions = '';
                 g.forEach(grp => {
                     const safeNom = grp.nom.replace(/'/g, "\\'");
-                    sujetOptions += `<button type="button" onclick="selectOption('select-sujet-evalue', '${safeNom}', '${safeNom}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${grp.nom}</button>`;
+                    const listeMembres = (membresParIdGroupe[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                    const labelComplet = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
+                    const safeLabel = labelComplet.replace(/'/g, "\\'");
+
+                    sujetOptions += `<button type="button" onclick="selectOption('select-sujet-evalue', '${safeNom}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
                 });
                 document.getElementById('select-sujet-evalue-menu').innerHTML = sujetOptions;
                 
-                // Set default
+                // Set default initial selection text matching custom style
+                const firstGroupMembres = (membresParIdGroupe[g[0].id] || []).map(formaterPrenomInitiale).join(', ');
+                const firstGroupLabel = firstGroupMembres ? `${g[0].nom} (${firstGroupMembres})` : g[0].nom;
+
                 document.getElementById('select-sujet-evalue').value = g[0].nom;
-                document.getElementById('select-sujet-evalue-label').innerText = g[0].nom;
+                document.getElementById('select-sujet-evalue-label').innerHTML = firstGroupLabel;
                 ciblePrecedente = g[0].nom;
             }
 
@@ -435,12 +461,12 @@
             const groupeActuel = document.getElementById('select-sujet-evalue').value;
             if (groupeActuel) synchroniserNotesLocales(groupeActuel, evaluateurActuel);
 
-            const listeSujetsEvalues = Object.keys(notesFormateurLocales);
-            if (listeSujetsEvalues.length === 0) { await UIModal.alert("Aucune note n'a été saisie pour le moment.", "warning", "Formulaire vide"); return; }
+            const listSujetsEvalues = Object.keys(notesFormateurLocales);
+            if (listSujetsEvalues.length === 0) { await UIModal.alert("Aucune note n'a été saisie pour le moment.", "warning", "Formulaire vide"); return; }
 
             const paquetInsertions = [];
 
-            listeSujetsEvalues.forEach(nomSujet => {
+            listSujetsEvalues.forEach(nomSujet => {
                 const dataTarget = notesFormateurLocales[nomSujet];
                 const tableauNotes = dataTarget.sliders || (Array.isArray(dataTarget) ? dataTarget : null);
 
