@@ -231,18 +231,21 @@
                 const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
 
-                const { data: profil, error: profError } = await db.from('profils').select('role, status').eq('id', authData.user.id).single();
+                // CORRECTION ICI : "statut" au lieu de "status"
+                const { data: profil, error: profError } = await db.from('profils').select('role, statut').eq('id', authData.user.id).single();
                 
                 if (profError || !profil) {
                     if (email === "vincent.fallick@gmail.com") {
-                        await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin', status: 'valide' }]);
+                        // CORRECTION ICI : "statut: 'valide'"
+                        await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin', statut: 'valide' }]);
                         window.location.href = "admin.html";
                         return;
                     }
                     throw new Error("Aucun profil applicatif n'est configuré pour ce compte.");
                 }
 
-                if (profil.status === 'en_attente') {
+                // CORRECTION ICI : profil.statut
+                if (profil.statut === 'en_attente') {
                     await db.auth.signOut(); 
                     throw new Error("Votre compte a bien été créé, mais il est actuellement en attente de validation par un Super Admin.");
                 }
@@ -284,12 +287,13 @@
                 }
 
                 if (authData && authData.user) {
+                    // CORRECTION ICI : "statut: 'en_attente'" au lieu de "status"
                     const { error: profError } = await db.from('profils').insert([
                         { 
                             id: authData.user.id, 
                             email: email, 
                             role: roleDemande, 
-                            status: 'en_attente',
+                            statut: 'en_attente',
                             prenom: prenom,
                             nom: nom
                         }
@@ -297,7 +301,7 @@
 
                     if (profError) throw profError;
 
-                    afficherModal("Inscription réussie ! Votre compte est configuré sous le statut 'en_attente'. Un Super Admin doit valider votre accès avant votre première connexion.", false, "Succès");
+                    afficherModal("Inscription réussie ! Si un email de confirmation vous a été envoyé, merci de le valider. Ensuite, un Super Admin validera votre accès final.", false, "Succès");
                     
                     document.getElementById('form-auth').reset();
                     document.getElementById('dropdown-label').innerText = "Sélectionner un rôle...";
