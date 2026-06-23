@@ -8,15 +8,25 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES SANS BARRES BLANCHES */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
 
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
-            @page { margin: 1.5cm; }
+            @media print { margin: 1.5cm; }
             body { background: white !important; color: black !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
             .max-w-7xl, #ui-modal, #modal-feedback, #modal-projection, .print-hide { display: none !important; }
             
@@ -80,7 +90,7 @@
                                 <span id="select-groupe-formateur-label" class="truncate pr-2">-- Sélectionner une équipe --</span>
                                 <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
                             </button>
-                            <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
+                            <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto overflow-x-hidden z-50 transition-all font-sans"></div>
                         </div>
                     </div>
                     <button onclick="ouvrirProjection()" class="bg-purple-950/40 hover:bg-purple-900/40 text-purple-400 font-bold p-3 text-sm rounded-xl border border-purple-900/50 shadow-md transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans shrink-0 active:scale-95">
@@ -207,55 +217,6 @@
     </div>
 
     <script>
-        const UIModal = {
-            show: function(options) {
-                return new Promise((resolve) => {
-                    try {
-                        const modal = document.getElementById('ui-modal');
-                        const box = document.getElementById('ui-modal-box');
-                        const title = document.getElementById('ui-modal-title');
-                        const msg = document.getElementById('ui-modal-message');
-                        const icon = document.getElementById('ui-modal-icon');
-                        const input = document.getElementById('ui-modal-input');
-                        const btnCancel = document.getElementById('ui-btn-cancel');
-                        const btnConfirm = document.getElementById('ui-btn-confirm');
-
-                        title.innerText = options.title || 'Information';
-                        msg.innerHTML = options.message || '';
-                        
-                        if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                        else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-
-                        if (options.isPrompt) { input.classList.remove('hidden'); input.value = options.defaultValue || ''; setTimeout(() => input.focus(), 100); } 
-                        else { input.classList.add('hidden'); }
-
-                        if (options.isConfirm || options.isPrompt) btnCancel.classList.remove('hidden'); else btnCancel.classList.add('hidden');
-                        btnConfirm.innerText = options.confirmText || 'OK';
-
-                        const cleanup = () => {
-                            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                            setTimeout(() => modal.classList.add('hidden'), 200);
-                            btnConfirm.onclick = null; btnCancel.onclick = null;
-                        };
-
-                        btnConfirm.onclick = () => { cleanup(); if (options.isPrompt) resolve(input.value); else resolve(true); };
-                        btnCancel.onclick = () => { cleanup(); if (options.isPrompt) resolve(null); else resolve(false); };
-
-                        modal.classList.remove('hidden'); void modal.offsetWidth;
-                        modal.classList.add('opacity-100'); box.classList.add('scale-100');
-                    } catch (err) {
-                        if(options.isConfirm) resolve(window.confirm(options.message));
-                        else if(options.isPrompt) resolve(window.prompt(options.message, options.defaultValue));
-                        else { window.alert(options.message); resolve(true); }
-                    }
-                });
-            },
-            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
-        };
-
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
@@ -396,7 +357,6 @@
                         const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
-                        // ICI: Menu déroulant simple, épuré, SANS tooltip
                         optionsHtml += `
                             <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans truncate">
                                 ${labelComplet}
@@ -425,51 +385,6 @@
 
                 await chargerDonneesDashboard();
             } catch (err) { await UIModal.alert("Erreur lors de l'initialisation : \n" + err.message, "error"); }
-        }
-
-        function decoderNoteEtCurseurs(notePleine) {
-            if (!notePleine && notePleine !== 0) return { noteGlobale: 0, sliders: [] };
-            const chaineNote = Number(notePleine).toFixed(14);
-            const parties = chaineNote.split('.');
-            if (parties.length < 2) return { noteGlobale: parseFloat(notePleine), sliders: [] };
-            
-            const noteGlobaleInitiale = parseFloat(parties[0] + '.' + parties[1].substring(0, 4));
-            let chaineDecimaleEmpreinte = parties[1].substring(4);
-            let curseursRestitues = [];
-            for (let i = 0; i < chaineDecimaleEmpreinte.length; i += 2) {
-                let bloc = chaineDecimaleEmpreinte.substring(i, i + 2);
-                if (bloc.length === 2) {
-                    if (bloc === "00") break;
-                    curseursRestitues.push(parseInt(bloc, 10) / 10);
-                }
-            }
-            return { noteGlobale: noteGlobaleInitiale, sliders: curseursRestitues };
-        }
-
-        async function chargerDonneesDashboard() {
-            try {
-                const btn = document.getElementById('btn-refresh');
-                if(btn) { btn.innerHTML = "⏳ Mise à jour..."; btn.disabled = true; }
-
-                const { data: evals, error: errEvals } = await db.from('evaluations').select('*').eq('session_id', idSessionDashboard);
-                if (errEvals) throw errEvals;
-
-                evaluationsSession = (evals || []).map(e => {
-                    const extraction = decoderNoteEtCurseurs(e.note);
-                    const estProf = nomsEvaluateursInscrits.includes(e.groupe_votant) || e.groupe_votant === 'Formateur';
-                    return { ...e, note: extraction.noteGlobale, note_brute: e.note, estProf: estProf, sliders: extraction.sliders };
-                });
-                
-                calculerEtAfficherTout();
-                
-                const grp = document.getElementById('select-groupe-formateur').value;
-                if(grp) mettreAjourDetailsEvaluations(grp);
-
-                if(btn) {
-                    btn.innerHTML = "✅ À jour !";
-                    setTimeout(() => { btn.innerHTML = "🔄 Rafraîchir les données"; btn.disabled = false; }, 1500);
-                }
-            } catch (err) { await UIModal.alert("Erreur lors du chargement des évaluations : \n" + err.message, "error"); }
         }
 
         function mettreAjourDetailsEvaluations(groupeAffiche) {
@@ -509,10 +424,15 @@
                             if (noteSur5 < 2.5) colorClass = "text-red-400 bg-red-500/10 border-red-500/30";
                             else if (noteSur5 <= 3.5) colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30";
 
+                            // RESTAURÉ : Les bulles d'info flottantes Tailwind au survol des critères (description longue)
                             contenuCriteres += `
-                                <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none" title="${crit.description || ''}">
+                                <div class="group relative flex justify-between items-center text-[10px] py-1.5 border-b border-gray-800/50 last:border-0 cursor-help select-none">
                                     <span class="text-gray-400 truncate pr-2 font-medium">${crit.nom}</span>
                                     <span class="font-mono font-bold border px-1.5 py-0.5 rounded ${colorClass}">${noteSur5.toFixed(1)}</span>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-64 bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed transition-all">
+                                        <div class="font-bold text-white mb-1">🎯 ${crit.nom}</div>
+                                        <div class="text-slate-400 text-[10px]">${crit.description || "Aucune description."}</div>
+                                    </div>
                                 </div>
                             `;
                         });
@@ -529,19 +449,29 @@
                         nomAfficheHtml = `<div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>`;
                     } else if (e.groupe_votant === e.sujet) {
                         const membres = membresParNomGroupe[e.groupe_votant] || [];
-                        const tooltipStr = membres.join(' • ');
+                        const htmlTooltipMembres = membres.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        // RESTAURÉ : Les bulles d'info flottantes de composition d'équipe sur l'en-tête de carte
                         nomAfficheHtml = `
-                            <div class="inline-block select-none mt-1.5 cursor-help" title="${tooltipStr}">
+                            <div class="group relative inline-block cursor-help select-none mt-1.5">
                                 <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
+                                    ${htmlTooltipMembres || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                </div>
                             </div>
                         `;
                     } else {
                         const membresSujet = membresParNomGroupe[e.sujet] || [];
-                        const tooltipStr = membresSujet.join(' • ');
+                        const htmlTooltipSujet = membresSujet.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        // RESTAURÉ : Les bulles d'info flottantes de composition d'équipe sur l'en-tête de carte (mode éval pairs)
                         nomAfficheHtml = `
-                            <div class="inline-block select-none mt-1.5 cursor-help" title="${tooltipStr}">
+                            <div class="group relative inline-block cursor-help select-none mt-1.5">
                                 <span class="text-xs text-gray-500 font-medium">Pour : </span>
                                 <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.sujet}</span>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
+                                    ${htmlTooltipSujet || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                </div>
                             </div>
                         `;
                     }
@@ -721,14 +651,21 @@
 
                 const stringPrenomEchappe = item.prenom.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
                 const fullMembresList = membresParNomGroupe[item.nomGroupe] || [];
-                const tooltipStr = fullMembresList.join(' • ');
+                const htmlTooltipMembres = fullMembresList.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
 
+                // RESTAURÉ : Les info-bulles flottantes complexes pour la composition de groupe ET pour les boutons Bonus/Malus
                 corpsTable.innerHTML += `
                     <tr class="hover:bg-gray-900/40 transition border-b border-gray-800/30 hover:relative hover:z-50">
                         <td class="py-3 px-3 font-black text-white text-sm">${item.prenomSeul}</td>
                         <td class="py-3 px-3 font-bold text-slate-300 text-sm tracking-wide uppercase">${item.nomSeul}</td>
                         <td class="py-3 px-3 text-gray-400 font-medium text-xs">
-                            <span class="border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5 cursor-help" title="${tooltipStr}">${item.nomGroupe}</span>
+                            <div class="group relative inline-block cursor-help select-none">
+                                <span class="border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${item.nomGroupe}</span>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
+                                    ${htmlTooltipMembres || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                </div>
+                            </div>
                         </td>
                         <td class="py-3 px-3 text-center text-sm font-mono ${item.ptAuto < 0 ? 'text-red-400' : item.ptAuto > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptAuto > 0 ? '+'+item.ptAuto : item.ptAuto}</td>
                         <td class="py-3 px-3 text-center text-sm font-mono ${item.ptPairsCumule < 0 ? 'text-red-400' : item.ptPairsCumule > 0 ? 'text-green-400' : 'text-gray-500'} font-bold">${item.ptPairsCumule > 0 ? '+'+item.ptPairsCumule : item.ptPairsCumule}</td>
@@ -737,8 +674,22 @@
                         <td class="py-3 px-3 text-right">
                             <div class="flex items-center justify-end gap-2 relative">
                                 <div>${noteFinaleAffichage}</div>
-                                <button onclick="basculerMalusIndividuel('${stringPrenomEchappe}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}" title="Pénalité (-1 pt)">⚠️</button>
-                                <button onclick="basculerBonusIndividuel('${stringPrenomEchappe}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}" title="Bonus (+1 pt)">★</button>
+                                
+                                <div class="group relative inline-block">
+                                    <button onclick="basculerMalusIndividuel('${stringPrenomEchappe}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${malusStyle}">⚠️</button>
+                                    <div class="absolute right-full top-1/2 -translate-y-1/2 mr-3 hidden group-hover:block z-50 w-64 bg-red-950 border border-red-800/60 text-red-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none font-normal leading-relaxed transition-all text-left font-sans">
+                                        <div class="font-bold text-red-400 mb-1">⚠️ Pénalité Individuelle</div>
+                                        <div class="text-red-200/80 text-[10px]">Retirer -1.00 pt pour manque de participation ou de travail au sein du groupe.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="group relative inline-block">
+                                    <button onclick="basculerBonusIndividuel('${stringPrenomEchappe}')" class="flex shrink-0 items-center justify-center h-6 w-6 rounded-md border text-xs transition cursor-pointer active:scale-95 ${starStyle}">★</button>
+                                    <div class="absolute right-full top-1/2 -translate-y-1/2 mr-3 hidden group-hover:block z-50 w-64 bg-amber-950 border border-amber-800/60 text-amber-50 text-[11px] rounded-xl p-3 shadow-2xl pointer-events-none font-normal leading-relaxed transition-all text-left font-sans">
+                                        <div class="font-bold text-amber-400 mb-1">⭐ Investissement Personnel</div>
+                                        <div class="text-amber-200/80 text-[10px]">Attribuer un bonus individuel de +1.00 pt pour récompenser l'engagement exceptionnel.</div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                         <td class="py-3 px-3 text-center">
