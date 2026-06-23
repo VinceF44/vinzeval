@@ -40,20 +40,23 @@
                 <input type="email" id="auth-email" required placeholder="nom@exemple.com" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
 
-            <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mot de passe</label>
+            <div id="container-password" class="space-y-1.5 transition-all duration-300">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mot de passe</label>
+                    <button type="button" id="link-forgot" onclick="basculerMode('recuperation')" class="text-[11px] text-gray-500 hover:text-indigo-400 transition-colors cursor-pointer font-medium focus:outline-none">
+                        Mot de passe oublié ?
+                    </button>
+                </div>
                 <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
 
             <div id="container-role" class="space-y-1.5 hidden opacity-0 transition-opacity duration-300">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rôle demandé</label>
-                
                 <div class="relative">
                     <button type="button" id="dropdown-btn" onclick="toggleDropdown()" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white text-left flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
                         <span id="dropdown-label">Sélectionner un rôle...</span>
                         <span class="text-gray-500 text-xs transition-transform duration-200" id="dropdown-arrow">▼</span>
                     </button>
-                    
                     <div id="dropdown-menu" class="hidden absolute left-0 right-0 mt-2 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md">
                         <div onclick="selectionnerRole('formateur', '👨‍🏫 Formateur')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
                             <span>👨‍🏫 Formateur</span>
@@ -72,7 +75,7 @@
         </form>
 
         <div class="border-t border-gray-800/60 pt-4 text-center">
-            <button type="button" id="btn-toggle-mode" onclick="basculerMode()" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium">
+            <button type="button" id="btn-toggle-mode" onclick="declencherToggleBas()" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium">
                 Pas encore de compte ? Créer un profil d'accès
             </button>
         </div>
@@ -99,7 +102,7 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let modeActuel = "connexion"; 
+        let modeActuel = "connexion"; // États : "connexion" | "inscription" | "recuperation"
 
         function afficherModal(message, estErreur = true, titreAlternatif = "") {
             const modal = document.getElementById('ui-modal');
@@ -114,7 +117,7 @@
                 title.innerText = titreAlternatif || "Erreur d'accès";
                 title.className = "text-base font-black text-red-500 mb-1 uppercase tracking-wide";
             } else {
-                icon.innerText = "⏳";
+                icon.innerText = "📧";
                 title.innerText = titreAlternatif || "Demande Enregistrée";
                 title.className = "text-base font-black text-emerald-500 mb-1 uppercase tracking-wide";
             }
@@ -133,21 +136,26 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 200);
         }
 
-        function basculerMode() {
+        // Routeur intelligent de gestion de l'affichage
+        function basculerMode(cible) {
+            modeActuel = cible;
+            
             const title = document.getElementById('auth-title');
             const subtitle = document.getElementById('auth-subtitle');
             const btnSubmit = document.getElementById('btn-submit');
             const btnToggle = document.getElementById('btn-toggle-mode');
+            
             const containerRole = document.getElementById('container-role');
             const containerIdentite = document.getElementById('container-identite');
+            const containerPassword = document.getElementById('container-password');
             
             const inputPrenom = document.getElementById('auth-prenom');
             const inputNom = document.getElementById('auth-nom');
+            const inputPassword = document.getElementById('auth-password');
 
             fermerDropdown();
 
-            if (modeActuel === "connexion") {
-                modeActuel = "inscription";
+            if (modeActuel === "inscription") {
                 title.innerText = "Créer un espace";
                 subtitle.innerText = "Enregistrez vos coordonnées pour solliciter un accès à l'application.";
                 btnSubmit.innerText = "🔐 Créer mon compte";
@@ -155,14 +163,32 @@
                 
                 inputPrenom.required = true;
                 inputNom.required = true;
+                inputPassword.required = true;
 
+                containerPassword.classList.remove('hidden');
                 containerIdentite.classList.remove('hidden');
                 containerRole.classList.remove('hidden');
                 void containerRole.offsetWidth;
                 containerIdentite.classList.add('opacity-100');
                 containerRole.classList.add('opacity-100');
-            } else {
-                modeActuel = "connexion";
+
+            } else if (modeActuel === "recuperation") {
+                title.innerText = "Récupération de compte";
+                subtitle.innerText = "Saisissez votre adresse email pour recevoir un lien de réinitialisation sécurisé.";
+                btnSubmit.innerText = "✉️ Envoyer le lien de récupération";
+                btnToggle.innerText = "Retourner à la page de connexion";
+                
+                inputPrenom.required = false;
+                inputNom.required = false;
+                inputPassword.required = false;
+
+                containerPassword.classList.add('hidden');
+                containerIdentite.classList.add('hidden');
+                containerRole.classList.add('hidden');
+                containerIdentite.classList.remove('opacity-100');
+                containerRole.classList.remove('opacity-100');
+
+            } else { // Mode Connexion
                 title.innerText = "Authentification Collaborative";
                 subtitle.innerText = "Saisissez vos identifiants pour accéder à votre espace de travail.";
                 btnSubmit.innerText = "🔐 Se connecter";
@@ -170,11 +196,22 @@
                 
                 inputPrenom.required = false;
                 inputNom.required = false;
+                inputPassword.required = true;
 
-                containerIdentite.classList.remove('opacity-100');
-                containerRole.classList.remove('opacity-100');
+                containerPassword.classList.remove('hidden');
                 containerIdentite.classList.add('hidden');
                 containerRole.classList.add('hidden');
+                containerIdentite.classList.remove('opacity-100');
+                containerRole.classList.remove('opacity-100');
+            }
+        }
+
+        // Gère le comportement du bouton de bascule tout en bas de la carte
+        function declencherToggleBas() {
+            if (modeActuel === "connexion") {
+                basculerMode("inscription");
+            } else {
+                basculerMode("connexion");
             }
         }
 
@@ -218,8 +255,10 @@
 
             if (modeActuel === "connexion") {
                 await traiterConnexion(email, password, btn);
-            } else {
+            } else if (modeActuel === "inscription") {
                 await traiterInscription(email, password, btn);
+            } else {
+                await traiterRecuperation(email, btn);
             }
         }
 
@@ -231,12 +270,10 @@
                 const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
 
-                // CORRECTION ICI : "statut" au lieu de "status"
                 const { data: profil, error: profError } = await db.from('profils').select('role, statut').eq('id', authData.user.id).single();
                 
                 if (profError || !profil) {
                     if (email === "vincent.fallick@gmail.com") {
-                        // CORRECTION ICI : "statut: 'valide'"
                         await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin', statut: 'valide' }]);
                         window.location.href = "admin.html";
                         return;
@@ -244,7 +281,6 @@
                     throw new Error("Aucun profil applicatif n'est configuré pour ce compte.");
                 }
 
-                // CORRECTION ICI : profil.statut
                 if (profil.statut === 'en_attente') {
                     await db.auth.signOut(); 
                     throw new Error("Votre compte a bien été créé, mais il est actuellement en attente de validation par un Super Admin.");
@@ -287,7 +323,6 @@
                 }
 
                 if (authData && authData.user) {
-                    // CORRECTION ICI : "statut: 'en_attente'" au lieu de "status"
                     const { error: profError } = await db.from('profils').insert([
                         { 
                             id: authData.user.id, 
@@ -306,13 +341,38 @@
                     document.getElementById('form-auth').reset();
                     document.getElementById('dropdown-label').innerText = "Sélectionner un rôle...";
                     document.getElementById('auth-role').value = "";
-                    basculerMode();
+                    basculerMode('connexion');
                 }
 
             } catch (err) {
                 afficherModal(err.message || "Erreur lors de la tentative d'inscription.");
             } finally {
                 btn.innerHTML = "🔐 Créer mon compte";
+                btn.disabled = false;
+            }
+        }
+
+        // Pipeline 3 : Envoi du lien de réinitialisation
+        async function traiterRecuperation(email, btn) {
+            try {
+                btn.innerText = "⏳ Envoi de la demande...";
+                btn.disabled = true;
+
+                // Génère et envoie l'email via Supabase Auth
+                const { error } = await db.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/login.html', 
+                });
+
+                if (error) throw error;
+
+                afficherModal("Un lien sécurisé de réinitialisation vient de vous être envoyé par email. Veuillez vérifier votre boîte de réception.", false, "E-mail envoyé");
+                basculerMode('connexion');
+                document.getElementById('form-auth').reset();
+
+            } catch (err) {
+                afficherModal(err.message || "Impossible d'envoyer le lien de récupération.");
+            } finally {
+                btn.innerHTML = "✉️ Envoyer le lien de récupération";
                 btn.disabled = false;
             }
         }
