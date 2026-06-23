@@ -368,18 +368,10 @@
                         const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
                         const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
                         
-                        const htmlTooltip = listeMembresFull.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
-                        
                         optionsHtml += `
-                            <div class="group relative w-full">
-                                <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
-                                    ${labelComplet}
-                                </button>
-                                <div class="absolute left-full top-0 ml-2 hidden group-hover:block z-[60] w-56 bg-indigo-950/95 border border-indigo-800 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
-                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
-                                    ${htmlTooltip || '<div class="italic text-slate-500">Aucun membre</div>'}
-                                </div>
-                            </div>
+                            <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
+                                ${labelComplet}
+                            </button>
                         `;
                     });
                     document.getElementById('select-groupe-formateur-menu').innerHTML = optionsHtml;
@@ -722,7 +714,7 @@
                             <span class="px-2 py-0.5 rounded bg-gray-800 text-gray-200 border border-gray-700 text-[10px] print-hide">${globalTypeEvaluation}</span>
                         </div>
                         <div class="font-sans">🏢 <b>Organisme :</b> <span class="text-white">${globalOrganismeNom}</span></div>
-                        <div class="font-sans">📁 <b>Classe :</b> <span class="text-white">${globalFormationNom}</span></div>
+                        <div class="font-sans">📁 <b>Formation :</b> <span class="text-white">${globalFormationNom}</span></div>
                         <div class="font-sans">📅 <b>Date :</b> <span class="text-white">${globalDateFormatee}</span></div>
                     </div>
                 </div>
