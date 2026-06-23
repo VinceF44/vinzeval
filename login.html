@@ -3,109 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — Plateforme Multi-Jury</title>
+    <title>Sécurité & Authentification — Espace Zen Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex items-center justify-center p-4 select-none">
 
-    <div class="w-full max-w-md bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl space-y-6">
+    <a href="index.html" class="fixed top-6 left-6 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-white transition-colors bg-gray-900/50 border border-gray-800/80 px-4 py-2 rounded-xl backdrop-blur-sm">
+        <span>←</span> Retour au site
+    </a>
+
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl space-y-6 relative overflow-hidden">
         
-        <div class="text-center space-y-2">
-            <span class="bg-indigo-950/50 text-indigo-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded border border-indigo-800/50">Console d'accès sécurisée</span>
-            <h1 class="text-2xl font-black text-white tracking-tight mt-2">Authentification Collaborative</h1>
-            <p class="text-xs text-gray-400">Saisissez vos identifiants pour accéder à votre espace de travail.</p>
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="text-center space-y-2 relative z-10">
+            <span class="inline-flex items-center gap-1.5 bg-indigo-950/60 text-indigo-400 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-800/30">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                Console d'accès sécurisée 🔐
+            </span>
+            <h1 id="auth-title" class="text-2xl font-black text-white tracking-tight mt-2">Authentification Collaborative</h1>
+            <p id="auth-subtitle" class="text-xs text-gray-400 max-w-xs mx-auto">Saisissez vos identifiants pour accéder à votre espace de travail.</p>
         </div>
 
-        <form id="form-login" onsubmit="executerConnexion(event)" class="space-y-4">
+        <form id="form-auth" onsubmit="gererSoumission(event)" class="space-y-4 relative z-10">
+            
             <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase">Adresse Email</label>
-                <input type="email" id="login-email" required placeholder="nom@exemple.com" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Adresse Email</label>
+                <input type="email" id="auth-email" required placeholder="nom@exemple.com" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
 
             <div class="space-y-1.5">
-                <label class="text-xs font-bold text-slate-400 uppercase">Mot de passe</label>
-                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mot de passe</label>
+                <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
 
-            <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-bold py-3 rounded-xl transition cursor-pointer active:scale-98 shadow-lg font-sans tracking-wide">
-                🔓 Se connecter
+            <div id="container-role" class="space-y-1.5 hidden opacity-0 transition-opacity duration-300">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rôle demandé</label>
+                
+                <div class="relative">
+                    <button type="button" id="dropdown-btn" onclick="toggleDropdown()" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white text-left flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                        <span id="dropdown-label">Sélectionner un rôle...</span>
+                        <span class="text-gray-500 text-xs transition-transform duration-200" id="dropdown-arrow">▼</span>
+                    </button>
+                    
+                    <div id="dropdown-menu" class="hidden absolute left-0 right-0 mt-2 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md">
+                        <div onclick="selectionnerRole('formateur', '👨‍🏫 Formateur')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
+                            <span>👨‍🏫 Formateur</span>
+                        </div>
+                        <div onclick="selectionnerRole('rp', '💼 Responsable Pédagogique')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
+                            <span>💼 Responsable Pédagogique</span>
+                        </div>
+                        <div onclick="selectionnerRole('super_admin', '⚡ Super Admin')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
+                            <span>⚡ Super Admin</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="auth-role" value="">
+            </div>
+
+            <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-bold py-3 rounded-xl transition cursor-pointer active:scale-98 shadow-lg font-sans tracking-wide mt-2">
+                🔐 Se connecter
             </button>
         </form>
 
+        <div class="border-t border-gray-800/60 pt-4 text-center">
+            <button type="button" id="btn-toggle-mode" onclick="basculerMode()" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer font-medium">
+                Pas encore de compte ? Créer un profil d'accès
+            </button>
+        </div>
+
     </div>
 
-    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
-            <div class="p-5 flex items-start gap-4">
-                <div class="text-3xl shrink-0 mt-1">❌</div>
-                <div class="flex-1 pt-1">
-                    <h3 class="text-base font-black text-red-500 mb-1.5 uppercase tracking-wide">Erreur</h3>
+    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm transition-opacity opacity-0 duration-200">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200" id="ui-modal-box">
+            <div class="p-6 flex items-start gap-4">
+                <div id="modal-icon" class="text-3xl shrink-0 mt-0.5">❌</div>
+                <div class="flex-1">
+                    <h3 id="modal-title" class="text-base font-black text-red-500 mb-1 uppercase tracking-wide">Erreur</h3>
                     <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
                 </div>
             </div>
             <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end">
-                <button onclick="fermerModal()" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
+                <button onclick="fermerModal()" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md transition-all active:scale-95 cursor-pointer">Compris</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Configuration Supabase stable
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function afficherErreur(msg) {
-            document.getElementById('ui-modal-message').innerText = msg;
+        // Variables d'état
+        let modeActuel = "connexion"; // Valeurs possibles: "connexion" ou "inscription"
+
+        // Gestion de l'affichage de la modal personnalisée
+        function afficherModal(message, estErreur = true, titre alternatif = "") {
             const modal = document.getElementById('ui-modal');
             const box = document.getElementById('ui-modal-box');
-            modal.classList.remove('hidden'); void modal.offsetWidth;
-            modal.classList.add('opacity-100'); box.classList.add('scale-100');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            
+            document.getElementById('ui-modal-message').innerText = message;
+            
+            if (estErreur) {
+                icon.innerText = "❌";
+                title.innerText = alternatif || "Erreur d'accès";
+                title.className = "text-base font-black text-red-500 mb-1 uppercase tracking-wide";
+            } else {
+                icon.innerText = "⏳";
+                title.innerText = alternatif || "Demande Enregistrée";
+                title.className = "text-base font-black text-emerald-500 mb-1 uppercase tracking-wide";
+            }
+
+            modal.classList.remove('hidden');
+            void modal.offsetWidth; // Force le reflow pour l'animation CSS
+            modal.classList.add('opacity-100');
+            box.classList.add('scale-100');
         }
 
         function fermerModal() {
             const modal = document.getElementById('ui-modal');
-            modal.classList.add('hidden');
+            const box = document.getElementById('ui-modal-box');
+            modal.classList.remove('opacity-100');
+            box.classList.remove('scale-100');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
         }
 
-        async function executerConnexion(e) {
+        // Bascule dynamique d'interface entre Connexion et Inscription
+        function basculerMode() {
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnToggle = document.getElementById('btn-toggle-mode');
+            const containerRole = document.getElementById('container-role');
+
+            fermerDropdown();
+
+            if (modeActuel === "connexion") {
+                modeActuel = "inscription";
+                title.innerText = "Créer un espace";
+                subtitle.innerText = "Enregistrez vos coordonnées pour solliciter un accès à l'application.";
+                btnSubmit.innerText = "🔐 Créer mon compte";
+                btnToggle.innerText = "Déjà inscrit ? Retourner à la connexion";
+                
+                containerRole.classList.remove('hidden');
+                void containerRole.offsetWidth;
+                containerRole.classList.add('opacity-100');
+            } else {
+                modeActuel = "connexion";
+                title.innerText = "Authentification Collaborative";
+                subtitle.innerText = "Saisissez vos identifiants pour accéder à votre espace de travail.";
+                btnSubmit.innerText = "🔐 Se connecter";
+                btnToggle.innerText = "Pas encore de compte ? Créer un profil d'accès";
+                
+                containerRole.classList.remove('opacity-100');
+                containerRole.classList.add('hidden');
+            }
+        }
+
+        // Fonctions liées au Custom Dropdown des rôles
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdown-menu');
+            const arrow = document.getElementById('dropdown-arrow');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                fermerDropdown();
+            }
+        }
+
+        function fermerDropdown() {
+            document.getElementById('dropdown-menu').classList.add('hidden');
+            document.getElementById('dropdown-arrow').style.transform = 'rotate(0deg)';
+        }
+
+        function selectionnerRole(valeur, label) {
+            document.getElementById('auth-role').value = valeur;
+            document.getElementById('dropdown-label').innerText = label;
+            document.getElementById('dropdown-btn').classList.remove('border-gray-800');
+            document.getElementById('dropdown-btn').classList.add('border-indigo-500');
+            fermerDropdown();
+        }
+
+        // Fermer le dropdown si clic à l'extérieur
+        document.addEventListener('click', function(e) {
+            const btn = document.getElementById('dropdown-btn');
+            const menu = document.getElementById('dropdown-menu');
+            if (btn && !btn.contains(e.target) && menu && !menu.contains(e.target)) {
+                fermerDropdown();
+            }
+        });
+
+        // Routeur centralisé de traitement du formulaire
+        async function gererSoumission(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
             const btn = document.getElementById('btn-submit');
 
-            try {
-                btn.innerText = "⏳ Vérification..."; btn.disabled = true;
+            if (modeActuel === "connexion") {
+                await traiterConnexion(email, password, btn);
+            } else {
+                await traiterInscription(email, password, btn);
+            }
+        }
 
-                // 1. Connexion Auth Supabase
+        // Pipeline 1 : Connexion
+        async function traiterConnexion(email, password, btn) {
+            try {
+                btn.innerText = "⏳ Vérification sécurisée...";
+                btn.disabled = true;
+
+                // Identification auprès de l'Auth Supabase
                 const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
 
-                // 2. Récupération du rôle dans la table profils
-                const { data: profil, error: profError } = await db.from('profils').select('role').eq('id', authData.user.id).single();
+                // Récupération des métadonnées du profil utilisateur
+                const { data: profil, error: profError } = await db.from('profils').select('role, status').eq('id', authData.user.id).single();
+                
                 if (profError || !profil) {
-                    // Si le profil n'existe pas encore (ex: ton compte admin d'origine), on le crée par défaut en super_admin
+                    // Script d'auto-génération secours pour l'administrateur historique d'origine
                     if (email === "vincent.fallick@gmail.com") {
-                        await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin' }]);
+                        await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin', status: 'valide' }]);
                         window.location.href = "admin.html";
                         return;
                     }
-                    throw new Error("Aucun profil associé à ce compte utilisateur.");
+                    throw new Error("Aucun profil applicatif n'est configuré pour ce compte.");
                 }
 
-                // 3. Redirection intelligente selon le rôle
-                // Les RP et Super_Admin vont sur la console globale admin.html
+                // Vérification stricte du verrou de validation requis par le Responsable/Super Admin
+                if (profil.status === 'en_attente') {
+                    await db.auth.signOut(); // Déconnexion immédiate du state auth global pour des raisons de sécurité
+                    throw new Error("Votre compte a bien été créé, mais il est actuellement en attente de validation par un Super Admin.");
+                }
+
+                // Routage exclusif selon le niveau d'habilitation
                 if (profil.role === 'super_admin' || profil.role === 'rp') {
                     window.location.href = "admin.html";
                 } else {
-                    // Les formateurs simples vont directement sur l'index (Leur Dashboard)
                     window.location.href = "index.html";
                 }
 
             } catch (err) {
-                afficherErreur(err.message || "Identifiants incorrects.");
-                btn.innerText = "🔓 Se connecter"; btn.disabled = false;
+                afficherErreurModale(err.message || "Identifiants invalides.");
+                btn.innerHTML = "🔐 Se connecter";
+                btn.disabled = false;
             }
+        }
+
+        // Pipeline 2 : Inscription avec interception des doublons d'emails
+        async function traiterInscription(email, password, btn) {
+            const roleDemande = document.getElementById('auth-role').value;
+            
+            if (!roleDemande) {
+                afficherModal("Veuillez sélectionner un rôle fonctionnel via le menu déroulant.");
+                return;
+            }
+
+            try {
+                btn.innerText = "⏳ Cryptage et création...";
+                btn.disabled = true;
+
+                // Tentative de création du compte utilisateur Supabase Auth
+                const { data: authData, error: authError } = await db.auth.signUp({ email, password });
+                
+                // Interception ciblée et explicite de l'erreur de doublon d'email standardisée de Supabase
+                if (authError) {
+                    if (authError.message.includes("already registered") || authError.status === 422) {
+                        throw new Error("Cette adresse email est déjà associée à un compte existant. Veuillez vous connecter.");
+                    }
+                    throw authError;
+                }
+
+                // Injection du profil avec statut par défaut sécurisé 'en_attente'
+                if (authData && authData.user) {
+                    const { error: profError } = await db.from('profils').insert([
+                        { 
+                            id: authData.user.id, 
+                            email: email, 
+                            role: roleDemande, 
+                            status: 'en_attente' 
+                        }
+                    ]);
+
+                    if (profError) throw profError;
+
+                    afficherModal("Inscription réussie ! Votre compte est configuré sous le statut 'en_attente'. Un Super Admin doit valider votre accès avant votre première connexion.", false, "Succès");
+                    
+                    // Reset et bascule automatique
+                    document.getElementById('form-auth').reset();
+                    document.getElementById('dropdown-label').innerText = "Sélectionner un rôle...";
+                    document.getElementById('auth-role').value = "";
+                    basculerMode();
+                }
+
+            } catch (err) {
+                afficherModal(err.message || "Erreur lors de la tentative d'inscription.");
+            } finally {
+                btn.innerHTML = "🔐 Créer mon compte";
+                btn.disabled = false;
+            }
+        }
+
+        function afficherErreurModale(msg) {
+            let messageAjuste = msg;
+            if (msg.includes("Invalid login credentials")) {
+                messageAjuste = "Adresse email ou mot de passe incorrect.";
+            }
+            afficherModal(messageAjuste, true, "Échec d'Authentification");
         }
     </script>
 </body>
