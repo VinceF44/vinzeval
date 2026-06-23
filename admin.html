@@ -7,13 +7,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Custom Scrollbar for elegant UI */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
         
-        /* Animation subtile pour le badge de notification */
         @keyframes pulse-soft {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.05); }
@@ -41,50 +39,36 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
-                
                 <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👥 Comptes & Droits
                     <span id="badge-notif-comptes" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
                 </button>
-                
                 <button onclick="basculerZoneAnnuaire()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🗃️ Annuaire
                 </button>
-                
                 <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
-                
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📈 Stats Globales
                 </button>
-                
                 <div class="hidden sm:block w-px h-6 bg-slate-800 mx-1"></div>
-                
                 <button onclick="executerDeconnexion()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-xl border border-red-500/20 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🚪 Quitter
                 </button>
             </div>
         </div>
 
-        <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40">
-            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
-                <p id="stat-sessions" class="text-2xl font-black text-indigo-400">0</p>
+        <div id="banner-invitations" class="hidden bg-indigo-900/40 border border-indigo-500/50 p-4 rounded-2xl flex justify-between items-center relative z-40 shadow-lg animate-pulse-soft">
+            <div>
+                <h3 class="text-indigo-400 font-bold text-sm flex items-center gap-2">🔔 Nouvelles Invitations</h3>
+                <p class="text-xs text-slate-300 mt-1">Vous avez <span id="count-invits" class="font-black text-white">X</span> invitation(s) pour co-évaluer des sessions.</p>
             </div>
-            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                <p class="text-[10px] uppercase font-bold text-slate-500">Apprenants Évalués</p>
-                <p id="stat-apprenants" class="text-2xl font-black text-blue-400">0</p>
-            </div>
-            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
-                <p id="stat-favoris" class="text-2xl font-black text-[#fe9a00]">0</p>
-            </div>
-            <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
-                <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
-                <p id="stat-classes" class="text-2xl font-black text-emerald-400">0</p>
-            </div>
+            <button onclick="ouvrirModalInvitations()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition shadow-md cursor-pointer">Voir les invitations</button>
         </div>
+
+        <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40">
+            </div>
 
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
@@ -97,9 +81,7 @@
 
             <div id="bloc-validations-attente" class="hidden bg-[#030712]/50 p-4 rounded-xl border border-amber-500/30">
                 <div class="text-[11px] font-bold uppercase text-amber-400 mb-3 flex items-center gap-2">⚠️ Demandes d'accès en attente de validation</div>
-                <div class="flex-1 overflow-y-auto max-h-48 space-y-2 pr-1" id="liste-comptes-attente">
-                    <p class="text-slate-600 italic text-xs py-2">Aucune demande en attente.</p>
-                </div>
+                <div class="flex-1 overflow-y-auto max-h-48 space-y-2 pr-1" id="liste-comptes-attente"></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,9 +113,7 @@
                 
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col">
                     <div class="text-[11px] font-bold uppercase text-emerald-400 mb-3">✅ Utilisateurs Actifs & Gestion</div>
-                    <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres">
-                        <p class="text-slate-600 italic text-xs py-2">Chargement...</p>
-                    </div>
+                    <div class="flex-1 overflow-y-auto max-h-[300px] space-y-1.5 pr-1" id="liste-comptes-geres"></div>
                 </div>
             </div>
         </div>
@@ -148,9 +128,9 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
+                <div id="bloc-creation-organismes" class="lg:col-span-1 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
-                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Organismes</div>
+                        <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Organismes (Admin)</div>
                         <div class="flex gap-2">
                             <input type="text" id="annuaire-nom-organisme" placeholder="Ex: CCI..." class="flex-1 bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all min-w-0">
                             <button id="btn-annuaire-org" onclick="creerOuModifierOrganismeMaster()" class="bg-[#fe9a00]/10 border border-[#fe9a00]/30 hover:bg-[#fe9a00]/20 text-[#fe9a00] text-sm font-bold py-2.5 px-3 rounded-xl transition cursor-pointer">Ajouter</button>
@@ -159,7 +139,7 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <div class="lg:col-span-2 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
+                <div id="bloc-creation-formations" class="lg:col-span-2 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -177,9 +157,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="annuaire-liste-formations" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3">
-                        <p class="text-slate-600 italic text-xs col-span-full">Sélectionnez un organisme pour voir ses formations.</p>
-                    </div>
+                    <div id="annuaire-liste-formations" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
                 </div>
             </div>
 
@@ -214,9 +192,7 @@
                     <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-sm font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
                 </div>
 
-                <div id="annuaire-liste-apprenants" class="mt-4 flex flex-wrap gap-2 content-start overflow-y-auto max-h-72 pr-1">
-                    <p class="text-slate-600 italic text-xs w-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
-                </div>
+                <div id="annuaire-liste-apprenants" class="mt-4 flex flex-wrap gap-2 content-start overflow-y-auto max-h-72 pr-1"></div>
             </div>
         </div>
 
@@ -319,7 +295,6 @@
                             </div>
                             <div id="tags-evaluateurs" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -388,6 +363,16 @@
         </div>
     </div>
 
+    <div id="modal-invitations" class="hidden fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-[#101828] border border-indigo-500/40 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="modal-invitations-box">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-indigo-950/20">
+                <h3 class="text-lg font-black text-indigo-400 uppercase tracking-wide flex items-center gap-2">🔔 Vos Invitations en attente</h3>
+                <button onclick="fermerModalInvitations()" class="text-slate-500 hover:text-white cursor-pointer font-bold text-xl px-2">✕</button>
+            </div>
+            <div class="p-5 overflow-y-auto max-h-[60vh] space-y-3" id="liste-invitations-modal"></div>
+        </div>
+    </div>
+
     <script>
         window.onerror = function(msg, url, line) { console.error("🚨 Erreur Système : \n" + msg + "\nLigne: " + line); };
         window.onunhandledrejection = function(event) { console.error("🚨 Erreur Base de données : \n" + (event.reason.message || event.reason)); };
@@ -398,7 +383,6 @@
         
         let idSessionEnCoursModification = null;
 
-        // Variables de session (Impersonation prise en charge)
         let realUserId = null;
         let realUserRole = null;
         let activeUserId = null;
@@ -410,10 +394,10 @@
         let idAppEnCoursModif = null;
 
         let cacheSessionsGlobal = [];
+        let invitationsEnAttenteGlobal = [];
         let globalOrganismes = [];
         let globalFormations = [];
 
-        // Système des évaluateurs
         let annuaireEvaluateurs = []; 
         let listFavorisIds = [];
         let evaluateursSelectionnes = [];
@@ -553,11 +537,21 @@
                     document.getElementById('user-email').innerText = session.user.email;
                 }
 
-                // MODIFICATION DE LA NOMENCLATURE DU BADGE ICI
                 document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'ADMINISTRATEUR' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
-                if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
+                // GESTION AFFICHAGE SELON ROLE
+                if (roleConnecte === 'super_admin') {
                     document.getElementById('btn-tab-comptes').classList.remove('hidden');
+                } else if (roleConnecte === 'rp') {
+                    document.getElementById('btn-tab-comptes').classList.remove('hidden');
+                    document.getElementById('bloc-creation-organismes').classList.add('hidden'); // Masquer Organisme pour RP
+                    document.getElementById('bloc-creation-formations').classList.replace('lg:col-span-2', 'lg:col-span-3');
+                } else {
+                    document.getElementById('bloc-creation-organismes').classList.add('hidden'); // Masquer Organisme pour Formateur
+                    document.getElementById('bloc-creation-formations').classList.replace('lg:col-span-2', 'lg:col-span-3');
+                }
+
+                if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
                     configurerFormulaireComptes();
                 }
 
@@ -565,7 +559,7 @@
                 
                 const [{ data: orgs }, { data: forms }] = await Promise.all([
                     db.from('organismes').select('*').order('nom'),
-                    db.from('formations').select('*').order('nom')
+                    roleConnecte === 'super_admin' ? db.from('formations').select('*').order('nom') : db.from('formations').select('*').eq('proprietaire_id', activeUserId).order('nom')
                 ]);
                 globalOrganismes = orgs || [];
                 globalFormations = forms || [];
@@ -577,8 +571,6 @@
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await chargerSessions();
                 await calculerStatistiquesDashboard();
-                
-                // Vérifier les notifications (Seulement pour les Administrateurs natifs)
                 await verifierNotifications();
 
             } catch(e) {
@@ -673,8 +665,6 @@
                         const nomFormatte = (u.prenom || '') + ' ' + (u.nom || '');
                         
                         const btnSimul = isSimulable ? `<button onclick="simulerCompte('${u.id}', '${(u.prenom||'').replace(/'/g, "\\'")}', '${(u.nom||'').replace(/'/g, "\\'")}')" class="ml-2 h-6 w-6 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Simuler cet utilisateur">👁️</button>` : '';
-                        
-                        // INTÉGRATION DE LA SUPPRESSION MANUELLE (Administrateur)
                         const btnDelete = isSimulable ? `<button onclick="supprimerCompteActif('${u.id}', '${(nomFormatte || u.email).trim().replace(/'/g, "\\'")}')" class="ml-1 h-6 w-6 rounded bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white flex items-center justify-center cursor-pointer text-[10px]" title="Supprimer cet accès">🗑️</button>` : '';
                         
                         return `
@@ -703,6 +693,7 @@
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
                 await verifierNotifications();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
             } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
         }
@@ -718,7 +709,6 @@
             } catch (err) { await UIModal.alert("Erreur suppression : " + err.message, "error"); }
         }
 
-        // FONCTION DE SUPPRESSION POUR LES COMPTES ACTIFS
         async function supprimerCompteActif(id, nomAffiche) {
             try {
                 if (!(await UIModal.confirm(`Révoquer définitivement l'accès de <b>${nomAffiche}</b> à la plateforme ?\n\nCela bloquera immédiatement sa connexion sans altérer l'historique de ses évaluations.`, "Suppression Critique", "error"))) return;
@@ -728,6 +718,7 @@
                 
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
             } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
         }
@@ -755,6 +746,7 @@
                 document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
                 await chargerListeComptes();
                 await chargerAnnuaireEvaluateursEtFavoris();
+                await calculerStatistiquesDashboard();
                 await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
         }
@@ -901,7 +893,7 @@
         }
 
         // ==========================================
-        // GESTION STRUCTURES (ANNUAIRE)
+        // GESTION STRUCTURES (ANNUAIRE CLOISONNÉ)
         // ==========================================
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
@@ -1006,7 +998,11 @@
                     conteneurAppel.innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
                     return;
                 }
-                const { data, error } = await db.from('apprenants_master').select('*').eq('formation_id', formationId).order('nom', { ascending: true });
+                
+                let req = db.from('apprenants_master').select('*').eq('formation_id', formationId);
+                if(roleConnecte !== 'super_admin') req = req.eq('proprietaire_id', activeUserId);
+                
+                const { data, error } = await req.order('nom', { ascending: true });
                 if (error) throw error;
                 
                 if (data && data.length > 0) {
@@ -1018,11 +1014,12 @@
                             </div>
                         </label>
                     `).join('');
-                } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic text-sm">Aucun apprenant enregistré.</p>`; }
+                } else { conteneurAppel.innerHTML = `<p class="text-red-400 italic text-sm">Aucun apprenant enregistré dans votre annuaire.</p>`; }
             } catch(e) { await UIModal.alert("Erreur base de données : " + e.message, "error"); }
         }
 
         function afficherListeOrganismes(data) {
+            if(roleConnecte !== 'super_admin') return; // Sécurité
             const conteneur = document.getElementById('annuaire-liste-organismes');
             if(data && data.length > 0) {
                 conteneur.innerHTML = data.map(o => `
@@ -1062,7 +1059,11 @@
             try {
                 const conteneur = document.getElementById('annuaire-liste-apprenants');
                 if(!formId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-center col-span-full py-4 text-sm">Sélectionnez une classe pour voir ses apprenants.</p>`; return; }
-                const { data, error } = await db.from('apprenants_master').select('*').eq('formation_id', formId).order('nom');
+                
+                let req = db.from('apprenants_master').select('*').eq('formation_id', formId);
+                if(roleConnecte !== 'super_admin') req = req.eq('proprietaire_id', activeUserId);
+                
+                const { data, error } = await req.order('nom');
                 if (error) throw error;
 
                 if(data && data.length > 0) {
@@ -1080,6 +1081,7 @@
         }
 
         async function creerOuModifierOrganismeMaster() {
+            if(roleConnecte !== 'super_admin') return; // Sécurité
             try {
                 const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
                 if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
@@ -1103,6 +1105,7 @@
         }
 
         async function supprimerOrganismeMaster(id, nom) {
+            if(roleConnecte !== 'super_admin') return;
             try {
                 if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
                 const { error } = await db.from('organismes').delete().eq('id', id);
@@ -1133,11 +1136,15 @@
                     idFormEnCoursModif = null; input.value = "";
                     document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
                 } else { 
-                    const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
+                    const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId, proprietaire_id: activeUserId }]);
                     if(error) throw error;
                     input.value = "";
                 }
-                const { data: forms } = await db.from('formations').select('*').order('nom');
+                
+                let reqForms = db.from('formations').select('*').order('nom');
+                if(roleConnecte !== 'super_admin') reqForms = reqForms.eq('proprietaire_id', activeUserId);
+                
+                const { data: forms } = await reqForms;
                 globalFormations = forms || [];
                 afficherListeFormations(orgId);
                 await UIModal.alert("Formation mise à jour.", "success");
@@ -1150,7 +1157,11 @@
                 if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
                 const { error } = await db.from('formations').delete().eq('id', id);
                 if (error) throw error;
-                const { data: forms } = await db.from('formations').select('*').order('nom');
+                
+                let reqForms = db.from('formations').select('*').order('nom');
+                if(roleConnecte !== 'super_admin') reqForms = reqForms.eq('proprietaire_id', activeUserId);
+                
+                const { data: forms } = await reqForms;
                 globalFormations = forms || [];
                 afficherListeFormations(orgId);
                 await UIModal.alert("Classe supprimée.", "success");
@@ -1178,7 +1189,7 @@
                     idAppEnCoursModif = null; p.value = ""; n.value = "";
                     document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
                 } else {
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), formation_id: formId }]);
+                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), formation_id: formId, proprietaire_id: activeUserId }]);
                     if (error) throw error;
                     p.value = ""; n.value = "";
                 }
@@ -1206,86 +1217,212 @@
         }
 
         // ==========================================
-        // GESTION DES SESSIONS
+        // GESTION DES SESSIONS & INVITATIONS
         // ==========================================
         async function chargerSessions() {
             try {
-                let requete = db.from('sessions').select(`
-                    *,
-                    apprenants ( id, prenom ),
-                    criteres ( id ),
-                    evaluateurs ( nom )
+                // 1. Sessions dont je suis le propriétaire
+                let reqMySessions = db.from('sessions').select(`
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation )
                 `);
                 
                 if (roleConnecte === 'formateur') {
-                    requete = requete.eq('proprietaire_id', activeUserId);
+                    reqMySessions = reqMySessions.eq('proprietaire_id', activeUserId);
                 } else if (roleConnecte === 'rp') {
                     const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', activeUserId);
                     const listIds = [activeUserId, ...(formateurs ? formateurs.map(f => f.id) : [])];
-                    requete = requete.in('proprietaire_id', listIds);
+                    reqMySessions = reqMySessions.in('proprietaire_id', listIds);
                 }
 
-                const { data: sessions, error: errS } = await requete;
-                const { data: evalVotes, error: errV } = await db.from('evaluations').select('session_id');
+                // 2. Sessions où je suis invité
+                const { data: myEvals } = await db.from('evaluateurs').select('session_id, statut_invitation').eq('utilisateur_id', activeUserId);
+                const invitedSessionIds = myEvals ? myEvals.map(e => e.session_id) : [];
 
-                if (errS || errV) throw new Error((errS?.message || "") + " " + (errV?.message || ""));
+                let reqInvited = db.from('sessions').select(`
+                    *, apprenants ( id, prenom ), criteres ( id ), evaluateurs ( nom, utilisateur_id, statut_invitation )
+                `).in('id', invitedSessionIds);
 
+                const [ { data: sessionsOwned, error: errS }, { data: sessionsInvited, error: errI }, { data: evalVotes, error: errV } ] = await Promise.all([
+                    reqMySessions,
+                    invitedSessionIds.length > 0 ? reqInvited : { data: [] },
+                    db.from('evaluations').select('session_id')
+                ]);
+
+                if (errS || errI || errV) throw new Error("Erreur de chargement des données.");
+
+                // Merge and deduplicate
+                const allSessionsMap = new Map();
+                (sessionsOwned || []).forEach(s => allSessionsMap.set(s.id, { ...s, est_invite: false }));
+                (sessionsInvited || []).forEach(s => {
+                    if (!allSessionsMap.has(s.id)) {
+                        const monEval = s.evaluateurs.find(e => e.utilisateur_id === activeUserId);
+                        // On intègre la session seulement si l'invitation n'est pas refusée
+                        if (monEval && monEval.statut_invitation !== 'refuse') {
+                            allSessionsMap.set(s.id, { ...s, est_invite: true, mon_statut_invitation: monEval.statut_invitation });
+                        }
+                    }
+                });
+
+                const rawList = Array.from(allSessionsMap.values());
                 const sessionsVerrouillees = new Set((evalVotes || []).map(e => e.session_id));
-                const rawList = sessions || [];
 
                 const t = new Date();
                 const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-
                 const backgroundUpdates = [];
+                invitationsEnAttenteGlobal = [];
 
                 rawList.forEach(s => {
+                    if (s.est_invite && s.mon_statut_invitation === 'en_attente') {
+                        invitationsEnAttenteGlobal.push(s);
+                        return; // On ne l'affiche pas dans la liste normale
+                    }
+
                     let nvStatut = s.statut;
-                    if (s.date_session) {
+                    if (s.date_session && !s.est_invite) { // Seul le proprio met à jour le statut réel
                         if (s.date_session < todayStr) nvStatut = 'terminee';
                         else if (s.date_session > todayStr) nvStatut = 'a_venir';
                         else if (s.date_session === todayStr && s.statut === 'a_venir') nvStatut = 'active';
-                    }
 
-                    if (s.statut !== nvStatut) {
-                        backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
-                        s.statut = nvStatut;
+                        if (s.statut !== nvStatut) {
+                            backgroundUpdates.push(db.from('sessions').update({ statut: nvStatut }).eq('id', s.id));
+                            s.statut = nvStatut;
+                        }
                     }
-                    
                     s.verrouillee = sessionsVerrouillees.has(s.id);
                 });
 
                 if (backgroundUpdates.length > 0) { await Promise.all(backgroundUpdates); }
 
-                rawList.sort((a, b) => {
-                    if (a.date_session !== b.date_session) {
-                        return (a.date_session || "").localeCompare(b.date_session || "");
-                    }
+                // Mise à jour de la bannière d'invitation
+                const banner = document.getElementById('banner-invitations');
+                if (invitationsEnAttenteGlobal.length > 0) {
+                    document.getElementById('count-invits').innerText = invitationsEnAttenteGlobal.length;
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+
+                // Filtrer les sessions en attente pour la vue globale
+                cacheSessionsGlobal = rawList.filter(s => !(s.est_invite && s.mon_statut_invitation === 'en_attente'));
+                
+                cacheSessionsGlobal.sort((a, b) => {
+                    if (a.date_session !== b.date_session) return (a.date_session || "").localeCompare(b.date_session || "");
                     return b.id - a.id;
                 });
 
-                cacheSessionsGlobal = rawList;
-                if (cacheSessionsGlobal.length === 0) {
+                if (cacheSessionsGlobal.length === 0 && invitationsEnAttenteGlobal.length === 0) {
                     document.getElementById('zone-configurateur').classList.remove('hidden');
                 }
                 filtrerEtAfficherSessions(true);
             } catch(e) { await UIModal.alert("Erreur lors du chargement des sessions : " + e.message, "error"); }
         }
 
+        function ouvrirModalInvitations() {
+            const modal = document.getElementById('modal-invitations');
+            const box = document.getElementById('modal-invitations-box');
+            const container = document.getElementById('liste-invitations-modal');
+
+            container.innerHTML = invitationsEnAttenteGlobal.map(s => {
+                const safeNom = s.nom.replace(/'/g, "\\'");
+                const dateFr = s.date_session ? s.date_session.split('-').reverse().join('/') : 'Date non définie';
+                return `
+                    <div class="bg-[#030712] p-4 rounded-xl border border-indigo-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-100 text-sm">📅 ${s.nom}</h4>
+                            <p class="text-[11px] text-slate-400 mt-1">Date prévue : <span class="text-white">${dateFr}</span></p>
+                            <p class="text-[10px] text-indigo-400 mt-0.5">Rôle proposé : Co-évaluateur</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="repondreInvitation('${s.id}', 'accepte')" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition shadow-md">Accepter</button>
+                            <button onclick="repondreInvitation('${s.id}', 'refuse')" class="flex-1 sm:flex-none bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white text-xs font-bold py-2 px-4 rounded-lg transition">Refuser</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            modal.classList.remove('hidden'); void modal.offsetWidth;
+            modal.classList.add('opacity-100'); box.classList.add('scale-100');
+        }
+
+        function fermerModalInvitations() {
+            const modal = document.getElementById('modal-invitations');
+            const box = document.getElementById('modal-invitations-box');
+            modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        async function repondreInvitation(sessionId, reponse) {
+            try {
+                const { error } = await db.from('evaluateurs').update({ statut_invitation: reponse }).eq('session_id', sessionId).eq('utilisateur_id', activeUserId);
+                if (error) throw error;
+                
+                fermerModalInvitations();
+                await chargerSessions();
+                await calculerStatistiquesDashboard();
+                await UIModal.alert(reponse === 'accepte' ? "Invitation acceptée ! La session a été ajoutée." : "Invitation refusée.", "success");
+            } catch (err) { await UIModal.alert("Erreur lors de la réponse : " + err.message, "error"); }
+        }
+
         async function calculerStatistiquesDashboard() {
             try {
-                document.getElementById('stat-sessions').innerText = cacheSessionsGlobal.length;
-                
-                let totalApprenantsEvalues = 0;
-                let classesUniques = new Set();
-                
-                cacheSessionsGlobal.forEach(s => {
-                    if(s.apprenants) totalApprenantsEvalues += s.apprenants.length;
-                    if(s.formation_id) classesUniques.add(s.formation_id);
-                });
-                
-                document.getElementById('stat-apprenants').innerText = totalApprenantsEvalues;
-                document.getElementById('stat-classes').innerText = classesUniques.size;
-                document.getElementById('stat-favoris').innerText = listFavorisIds.length;
+                const conteneurStats = document.getElementById('zone-stats-rapides');
+
+                if (roleConnecte === 'super_admin') {
+                    // Statistiques globales Administrateur
+                    const [ { count: cFormateurs }, { count: cRP }, { count: cOrgs }, { count: cSess } ] = await Promise.all([
+                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'formateur').eq('statut', 'valide'),
+                        db.from('profils').select('*', { count: 'exact', head: true }).eq('role', 'rp').eq('statut', 'valide'),
+                        db.from('organismes').select('*', { count: 'exact', head: true }),
+                        db.from('sessions').select('*', { count: 'exact', head: true })
+                    ]);
+
+                    conteneurStats.innerHTML = `
+                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Total Formateurs</p>
+                            <p class="text-2xl font-black text-indigo-400">${cFormateurs || 0}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Total RP</p>
+                            <p class="text-2xl font-black text-blue-400">${cRP || 0}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Organismes Inscrits</p>
+                            <p class="text-2xl font-black text-[#fe9a00]">${cOrgs || 0}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-indigo-500/30 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Sessions Globales</p>
+                            <p class="text-2xl font-black text-emerald-400">${cSess || 0}</p>
+                        </div>
+                    `;
+                } else {
+                    // Statistiques Personnelles
+                    let totalApprenantsEvalues = 0;
+                    let classesUniques = new Set();
+                    
+                    cacheSessionsGlobal.forEach(s => {
+                        if(s.apprenants) totalApprenantsEvalues += s.apprenants.length;
+                        if(s.formation_id) classesUniques.add(s.formation_id);
+                    });
+                    
+                    conteneurStats.innerHTML = `
+                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Total Sessions</p>
+                            <p class="text-2xl font-black text-indigo-400">${cacheSessionsGlobal.length}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Apprenants Évalués</p>
+                            <p class="text-2xl font-black text-blue-400">${totalApprenantsEvalues}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Collègues Favoris</p>
+                            <p class="text-2xl font-black text-[#fe9a00]">${listFavorisIds.length}</p>
+                        </div>
+                        <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 shadow-md">
+                            <p class="text-[10px] uppercase font-bold text-slate-500">Classes Supervisées</p>
+                            <p class="text-2xl font-black text-emerald-400">${classesUniques.size}</p>
+                        </div>
+                    `;
+                }
             } catch(e) { console.error("Stats Error", e); }
         }
 
@@ -1345,8 +1482,7 @@
                 conteneur.innerHTML = `
                     <div class="bg-[#101828]/40 border border-slate-800/60 rounded-xl p-6 text-center select-none">
                         <span class="text-2xl mb-2 block">📭</span>
-                        <p class="text-sm font-bold text-slate-300">Aucune session enregistrée.</p>
-                        <p class="text-xs text-slate-500 mt-1">Les sessions correspondantes s'afficheront ici.</p>
+                        <p class="text-sm font-bold text-slate-300">Aucune session.</p>
                     </div>
                 `;
                 return;
@@ -1393,6 +1529,8 @@
                 tableauSessions.forEach(s => {
                     const nomValide = s.nom || "Soutenance";
                     const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    
+                    const badgeInvite = s.est_invite ? `<span class="bg-indigo-900 text-indigo-200 text-[9px] px-1.5 py-0.5 rounded ml-2 border border-indigo-700 font-sans">🤝 Co-évaluateur</span>` : '';
 
                     const badgeType = s.type === 'ecrit' 
                         ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2.5 py-1 rounded-lg font-sans">✍️ Écrit</span>`
@@ -1406,8 +1544,10 @@
 
                     const countApprenants = s.apprenants ? s.apprenants.length : 0;
                     const countCriteres = s.criteres ? s.criteres.length : 0;
-                    const stringEvaluateurs = s.evaluateurs && s.evaluateurs.length > 0 ? s.evaluateurs.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
-                    const stringFullEvaluateurs = s.evaluateurs ? s.evaluateurs.map(e => e.nom).join(', ') : '';
+                    
+                    const evalsAcceptes = s.evaluateurs ? s.evaluateurs.filter(e => e.statut_invitation !== 'refuse') : [];
+                    const stringEvaluateurs = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
+                    const stringFullEvaluateurs = evalsAcceptes.map(e => e.nom).join(', ');
 
                     const tagsStatsInfos = `
                         <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center flex-wrap gap-x-2 gap-y-1.5">
@@ -1433,41 +1573,57 @@
                         `;
                     }
 
+                    // Les invités n'ont pas le droit de modifier/supprimer la session
                     let boutonEdition = "";
-                    if (s.verrouillee) {
-                        boutonEdition = `
-                            <div class="group relative inline-block">
-                                <button class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800/30 border border-slate-700/30 text-slate-600 cursor-not-allowed text-sm">🚫</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Édition bloquée : évaluations soumises</div>
-                            </div>`;
-                    } else {
-                        boutonEdition = `
-                            <div class="group relative inline-block">
-                                <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Faire l'appel et modifier</div>
-                            </div>`;
-                    }
-
                     let boutonActionStatut = "";
-                    if (s.statut === 'a_venir') {
-                        boutonActionStatut = `
+                    let boutonDeleteDupli = "";
+
+                    if (!s.est_invite) {
+                        if (s.verrouillee) {
+                            boutonEdition = `
+                                <div class="group relative inline-block">
+                                    <button class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800/30 border border-slate-700/30 text-slate-600 cursor-not-allowed text-sm">🚫</button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Édition bloquée : évaluations soumises</div>
+                                </div>`;
+                        } else {
+                            boutonEdition = `
+                                <div class="group relative inline-block">
+                                    <button onclick="entrerEnModeModification('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:bg-slate-700 transition-all text-sm cursor-pointer">✏️</button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Faire l'appel et modifier</div>
+                                </div>`;
+                        }
+
+                        if (s.statut === 'a_venir') {
+                            boutonActionStatut = `
+                                <div class="group relative inline-block">
+                                    <button onclick="changerStatutSessionDirect('${s.id}', 'active')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lancer la session</div>
+                                </div>`;
+                        } else if (s.statut === 'active') {
+                            boutonActionStatut = `
+                                <div class="group relative inline-block">
+                                    <button onclick="cloturerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-sm cursor-pointer">🔒</button>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Clôturer la session</div>
+                                </div>`;
+                        }
+
+                        boutonDeleteDupli = `
                             <div class="group relative inline-block">
-                                <button onclick="changerStatutSessionDirect('${s.id}', 'active')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400 hover:bg-emerald-950/40 transition-all text-sm cursor-pointer">▶️</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lancer la session</div>
-                            </div>`;
-                    } else if (s.statut === 'active') {
-                        boutonActionStatut = `
+                                <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Dupliquer la session</div>
+                            </div>
                             <div class="group relative inline-block">
-                                <button onclick="cloturerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-400 hover:bg-red-950/40 transition-all text-sm cursor-pointer">🔒</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Clôturer la session</div>
-                            </div>`;
+                                <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Supprimer définitivement</div>
+                            </div>
+                        `;
                     }
 
                     if (!estArchive) {
                         htmlBlocClasse += `
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-2 font-sans">${nomValide} ${badgeType}</div>
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-2 font-sans">${nomValide} ${badgeType} ${badgeInvite}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
@@ -1476,17 +1632,10 @@
                                         <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
                                     </div>
-                                    <div class="w-[1px] h-5 bg-slate-800 mx-1"></div>
+                                    ${s.est_invite ? '' : `<div class="w-[1px] h-5 bg-slate-800 mx-1"></div>`}
                                     ${boutonEdition}
                                     ${boutonActionStatut}
-                                    <div class="group relative inline-block">
-                                        <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 transition-all text-sm cursor-pointer">👥</button>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Dupliquer la session</div>
-                                    </div>
-                                    <div class="group relative inline-block">
-                                        <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Supprimer définitivement</div>
-                                    </div>
+                                    ${boutonDeleteDupli}
                                 </div>
                             </div>
                         `;
@@ -1494,7 +1643,7 @@
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-2 font-sans">🗃️ ${nomValide} ${badgeType}</div>
+                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-2 font-sans">🗃️ ${nomValide} ${badgeType} ${badgeInvite}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
@@ -1502,14 +1651,7 @@
                                         <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
                                     </div>
-                                    <div class="group relative inline-block">
-                                        <button onclick="dupliquerSession('${s.id}', '${nomEchappe}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-500 hover:text-slate-300 transition-all text-sm cursor-pointer">👥</button>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Dupliquer la session</div>
-                                    </div>
-                                    <div class="group relative inline-block">
-                                        <button onclick="supprimerSession('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-slate-800 border border-slate-700 text-red-500 hover:bg-red-600 transition-all text-sm cursor-pointer">🗑️</button>
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Supprimer définitivement</div>
-                                    </div>
+                                    ${boutonDeleteDupli}
                                 </div>
                             </div>
                         `;
@@ -1564,7 +1706,12 @@
                 }
 
                 if (evaluateursSelectionnes.length > 0) {
-                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ session_id: session.id, nom: ev.nom }));
+                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ 
+                        session_id: session.id, 
+                        nom: ev.nom,
+                        utilisateur_id: ev.id, // null if manual
+                        statut_invitation: ev.id ? 'en_attente' : 'accepte'
+                    }));
                     const { error: eEval } = await db.from('evaluateurs').insert(payloadEvals);
                     if(eEval) throw eEval;
                 }
@@ -1589,7 +1736,7 @@
                 })));
                 if(eApp) throw eApp;
 
-                await UIModal.alert("La session a été générée avec succès ! Les groupes ont été constitués.", "success", "Session Créée");
+                await UIModal.alert("La session a été générée avec succès ! Les invitations ont été envoyées aux co-évaluateurs.", "success", "Session Créée");
                 
                 document.getElementById('nouveau-nom-session').value = ""; document.getElementById('criteres-session').value = "";
                 document.getElementById('select-organisme').value = ""; document.getElementById('select-organisme-label').innerText = "-- Organisme --";
@@ -1617,7 +1764,7 @@
 
                 const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
                 const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
-                const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
+                const { data: evals } = await db.from('evaluateurs').select('nom, utilisateur_id').eq('session_id', idSession);
                 const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
                 const { data: apps = [] } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
 
@@ -1630,7 +1777,7 @@
                 }
                 if(crits) document.getElementById('criteres-session').value = crits.map(c => c.description ? `${c.nom} : ${c.description}` : c.nom).join('\n');
                 
-                evaluateursSelectionnes = evals ? evals.map(e => ({id: null, nom: e.nom})) : [];
+                evaluateursSelectionnes = evals ? evals.map(e => ({id: e.utilisateur_id, nom: e.nom})) : [];
                 renderTagsEvaluateurs();
                 
                 if(grps && grps.length > 0) {
@@ -1720,7 +1867,12 @@
                 }
 
                 if (evaluateursSelectionnes.length > 0) {
-                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ session_id: idSessionEnCoursModification, nom: ev.nom }));
+                    const payloadEvals = evaluateursSelectionnes.map(ev => ({ 
+                        session_id: idSessionEnCoursModification, 
+                        nom: ev.nom,
+                        utilisateur_id: ev.id,
+                        statut_invitation: ev.id ? 'en_attente' : 'accepte'
+                    }));
                     await db.from('evaluateurs').insert(payloadEvals);
                 }
 
