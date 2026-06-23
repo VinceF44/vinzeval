@@ -113,7 +113,7 @@
                             <div class="custom-dropdown-container relative w-full text-left">
                                 <input type="hidden" id="annuaire-select-org-pour-formation" value="">
                                 <button type="button" onclick="toggleDropdown('annuaire-select-org-pour-formation')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-[#fe9a00] transition-all cursor-pointer shadow-sm">
-                                    <span id="annuaire-select-org-pour-formation-label" class="truncate pr-2">-- Organisme --</span>
+                                    <span id="annuaire-select-org-pour-formation-label" class="truncate pr-2">-- Sélectionner l'organisme --</span>
                                     <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="annuaire-select-org-pour-formation-arrow">▼</span>
                                 </button>
                                 <div id="annuaire-select-org-pour-formation-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all"></div>
@@ -158,15 +158,14 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#030712] p-3 rounded-xl border border-slate-900 shadow-inner">
                     <input type="text" id="annuaire-prenom-app" placeholder="Prénom" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
                     <input type="text" id="annuaire-nom-app" placeholder="Nom de famille" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
-                    <input type="email" id="annuaire-email-app" placeholder="Adresse email" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#fe9a00] transition-all">
                     <button id="btn-annuaire-app" onclick="creerOuModifierApprenantMaster()" class="w-full bg-[#fe9a00] text-slate-950 text-sm font-bold py-2.5 px-4 rounded-xl transition hover:bg-[#e08b00] cursor-pointer">Enregistrer l'apprenant</button>
                 </div>
 
-                <div id="annuaire-liste-apprenants" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
-                    <p class="text-slate-600 italic text-xs col-span-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
+                <div id="annuaire-liste-apprenants" class="mt-4 flex flex-wrap gap-2 content-start overflow-y-auto max-h-72 pr-1">
+                    <p class="text-slate-600 italic text-xs w-full py-4 text-center">Sélectionnez un organisme puis une classe ci-dessus pour afficher les fiches apprenants.</p>
                 </div>
             </div>
         </div>
@@ -668,10 +667,9 @@
                 if (data && data.length > 0) {
                     conteneurAppel.innerHTML = data.map(app => `
                         <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80 transition-colors hover:bg-slate-800/40">
-                            <input type="checkbox" name="apprenant-present" data-name="${app.prenom} ${app.nom}" data-email="${app.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
+                            <input type="checkbox" name="apprenant-present" data-name="${app.prenom} ${app.nom}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                             <div class="leading-tight">
                                 <span class="font-semibold text-slate-200 block text-sm font-sans">${app.prenom} ${app.nom}</span>
-                                ${app.email ? `<span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${app.email}</span>` : ''}
                             </div>
                         </label>
                     `).join('');
@@ -722,9 +720,9 @@
                 if(data && data.length > 0) {
                     conteneur.innerHTML = data.map(a => `
                         <div class="flex items-center gap-2 bg-[#030712] px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-sans hover:border-slate-700 transition-colors shadow-sm w-fit">
-                            <span class="font-medium text-slate-300 truncate max-w-[120px]" title="${a.prenom} ${a.nom} - ${a.email || 'Pas d\'email'}">${a.prenom} ${a.nom}</span>
+                            <span class="font-medium text-slate-300 truncate max-w-[120px]" title="${a.prenom} ${a.nom}">${a.prenom} ${a.nom}</span>
                             <div class="flex gap-1 shrink-0 ml-1 border-l border-slate-800/80 pl-1.5">
-                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white cursor-pointer text-[11px]">✏️</button>
+                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white cursor-pointer text-[11px]">✏️</button>
                                 <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white cursor-pointer text-[11px]">🗑️</button>
                             </div>
                         </div>
@@ -819,22 +817,19 @@
         async function creerOuModifierApprenantMaster() {
             try {
                 const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
+                const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app');
                 if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
                 if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
                 
                 if (idAppEnCoursModif) {
-                    const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
+                    const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value }).eq('id', idAppEnCoursModif);
                     if (error) throw error;
-                    const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
-                    await db.from('apprenants').update({ email: e.value.trim() || null }).eq('prenom', nomCompletInstancie);
-
-                    idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                    document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
+                    idAppEnCoursModif = null; p.value = ""; n.value = "";
+                    document.getElementById('btn-annuaire-app').innerText = "Enregistrer l'apprenant";
                 } else {
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), email: e.value.trim() || null, formation_id: formId }]);
+                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), formation_id: formId }]);
                     if (error) throw error;
-                    p.value = ""; n.value = ""; e.value = "";
+                    p.value = ""; n.value = "";
                 }
                 await afficherListeApprenantsMaster(formId);
                 await UIModal.alert("Fiche apprenant enregistrée !", "success");
@@ -852,11 +847,10 @@
             } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
         }
 
-        function entrerModifApprenant(id, prenom, nom, email) {
+        function entrerModifApprenant(id, prenom, nom) {
             idAppEnCoursModif = id;
             document.getElementById('annuaire-prenom-app').value = prenom;
             document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
             document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
         }
 
@@ -867,7 +861,7 @@
             try {
                 let requete = db.from('sessions').select(`
                     *,
-                    apprenants ( id, prenom, email ),
+                    apprenants ( id, prenom ),
                     criteres ( id ),
                     evaluateurs ( nom )
                 `);
@@ -974,46 +968,6 @@
             regrouperEtAfficherSessionsParGroupe(arrTerminees, 'liste-sessions-terminees', true, estChargementInitial ? true : null);
         }
 
-        // ==========================================
-        // FONCTIONS D'ENVOI D'EMAILS SÉPARÉS
-        // ==========================================
-        function envoyerLienApprenants(idSession) {
-            const session = cacheSessionsGlobal.find(s => s.id === idSession);
-            if (!session) return;
-            
-            const emails = (session.apprenants || [])
-                .map(a => a.email)
-                .filter(e => e && e.trim() !== "")
-                .join(',');
-                
-            const baseURL = window.location.origin;
-            const lienApprenant = `${baseURL}/vote.html?session_id=${idSession}`;
-            
-            const subject = encodeURIComponent(`Évaluation - Session : ${session.nom}`);
-            let bodyText = `Bonjour,\n\nVous trouverez ci-dessous votre lien d'accès pour la session d'évaluation : ${session.nom}\n\n`;
-            bodyText += `📌 LIEN APPRENANTS (Auto-évaluation et évaluation entre pairs) :\n${lienApprenant}\n\n`;
-            bodyText += `Merci de vous connecter au moment indiqué par votre formateur.\n\nCordialement.`;
-            
-            const body = encodeURIComponent(bodyText);
-            window.location.href = `mailto:?bcc=${emails}&subject=${subject}&body=${body}`;
-        }
-
-        function envoyerLienFormateurs(idSession) {
-            const session = cacheSessionsGlobal.find(s => s.id === idSession);
-            if (!session) return;
-            
-            const baseURL = window.location.origin;
-            const lienFormateur = `${baseURL}/vote_formateur.html?session_id=${idSession}`;
-            
-            const subject = encodeURIComponent(`Lien Jury - Session : ${session.nom}`);
-            let bodyText = `Bonjour,\n\nVous trouverez ci-dessous le lien sécurisé pour accéder à la grille d'évaluation du jury concernant la session : ${session.nom}\n\n`;
-            bodyText += `👩‍🏫 LIEN FORMATEURS / JURY :\n${lienFormateur}\n\n`;
-            bodyText += `Cordialement.`;
-            
-            const body = encodeURIComponent(bodyText);
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
-
         function regrouperEtAfficherSessionsParGroupe(sessionsList, conteneurId, estArchive, forcerEtatCollapse = null) {
             const conteneur = document.getElementById(conteneurId);
             if (!conteneur) return; conteneur.innerHTML = "";
@@ -1096,7 +1050,6 @@
                     `;
 
                     let liensVotesHtml = "";
-                    let btnEmailHtml = "";
 
                     if (s.statut === 'active') {
                         liensVotesHtml = `
@@ -1107,19 +1060,6 @@
                             <div class="group relative inline-block">
                                 <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluation formateur</div>
-                            </div>
-                        `;
-                    }
-
-                    if (s.statut === 'active' || s.statut === 'a_venir') {
-                        btnEmailHtml = `
-                            <div class="group relative inline-block">
-                                <button onclick="envoyerLienApprenants('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-900/40 hover:bg-blue-800 border border-blue-700/50 text-blue-300 transition-all text-sm cursor-pointer">📩</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Mail avec lien Apprenants</div>
-                            </div>
-                            <div class="group relative inline-block">
-                                <button onclick="envoyerLienFormateurs('${s.id}')" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-900/40 hover:bg-purple-800 border border-purple-700/50 text-purple-300 transition-all text-sm cursor-pointer">📩</button>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Mail avec lien Formateurs</div>
                             </div>
                         `;
                     }
@@ -1163,7 +1103,6 @@
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
-                                    ${btnEmailHtml}
                                     <div class="group relative inline-block">
                                         <a href="index.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-[#fe9a00] text-slate-900 transition-all text-sm font-bold">📊</a>
                                         <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Consulter les résultats</div>
@@ -1214,7 +1153,7 @@
 
         function extraireApprenantsPresents() {
             const cases = document.querySelectorAll('input[name="apprenant-present"]:checked');
-            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name'), email: c.getAttribute('data-email') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
+            return Array.from(cases).map(c => ({ nomComplet: c.getAttribute('data-name') })).filter(obj => obj.nomComplet && obj.nomComplet.trim() !== "");
         }
 
         async function genererSessionComplete() {
@@ -1280,7 +1219,7 @@
                 }
 
                 const { error: eApp } = await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                    session_id: session.id, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+                    session_id: session.id, prenom: appObj.nomComplet, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
                 })));
                 if(eApp) throw eApp;
 
@@ -1310,7 +1249,7 @@
                 const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
                 const { data: evals } = await db.from('evaluateurs').select('nom').eq('session_id', idSession);
                 const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
-                const { data: apps = [] } = await db.from('apprenants').select('prenom, email').eq('session_id', idSession);
+                const { data: apps = [] } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
 
                 if(session) {
                     document.getElementById('nouveau-nom-session').value = session.nom;
@@ -1334,10 +1273,9 @@
                     
                     document.getElementById('liste-appel-checkbox').innerHTML = apps.map(a => `
                         <label class="flex items-center gap-2.5 cursor-pointer text-slate-300 hover:text-white select-none bg-[#101828]/60 px-3 py-2 rounded-xl border border-slate-800/80">
-                            <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" data-email="${a.email || ''}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
+                            <input type="checkbox" name="apprenant-present" data-name="${a.prenom}" checked class="h-4 w-4 bg-[#030712] border-slate-700 rounded text-blue-600 accent-blue-500 focus:outline-none cursor-pointer">
                             <div class="leading-tight">
                                 <span class="font-semibold text-slate-200 block text-sm font-sans">${a.prenom}</span>
-                                <span class="text-[10px] text-slate-500 block truncate max-w-[140px] mt-0.5">${a.email || 'Pas d\'email'}</span>
                             </div>
                         </label>
                     `).join('');
@@ -1426,7 +1364,7 @@
                 }
 
                 await db.from('apprenants').insert(listApprenantsPresents.map((appObj, index) => ({
-                    session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, email: appObj.email || null, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
+                    session_id: idSessionEnCoursModification, prenom: appObj.nomComplet, groupe_id: mapNomVersIdGroupe[listeNomsGroupes[index % nbGroupes]]
                 })));
 
                 await UIModal.alert("Appel et groupes mis à jour avec succès !", "success");
