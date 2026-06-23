@@ -11,7 +11,6 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- EN-TÊTE CONSOLE SÉCURISÉ -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -23,26 +22,25 @@
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
-                <button onclick="basculerZoneAnnuaire()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
+                <button onclick="basculerZoneAnnuaire()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🗃️ Annuaire
                 </button>
-                <button onclick="basculerZoneConfigurateur()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
+                <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
-                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-indigo-400 text-xs font-bold py-2.5 px-4 rounded-xl border border-indigo-900/50 transition-all cursor-pointer shadow-sm">
+                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-indigo-900/50 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👥 Comptes
                 </button>
-                <button onclick="window.location.href='stats.html'" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-5 rounded-xl border border-indigo-500 shadow-lg transition cursor-pointer flex items-center justify-center gap-2 tracking-wide font-sans shrink-0 active:scale-95">
-                📈 Voir les Statistiques Globales
+                <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl border border-indigo-500 shadow-sm transition-all cursor-pointer shrink-0 active:scale-95">
+                    📈 Stats Globales
                 </button>
                 <div class="hidden sm:block w-px h-6 bg-slate-800 mx-1"></div>
-                <button onclick="executerDeconnexion()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-red-950/20 hover:bg-red-900/40 text-red-400 text-xs font-bold py-2.5 px-4 rounded-xl border border-red-900/30 transition-all cursor-pointer shadow-sm">
+                <button onclick="executerDeconnexion()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-bold rounded-xl border border-red-500/20 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     🚪 Quitter
                 </button>
             </div>
         </div>
 
-        <!-- ZONE DE GESTION DES COMPTES (RP & ADMIN) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -89,7 +87,6 @@
             </div>
         </div>
 
-        <!-- BLOC ANNUAIRE RESTRUCTURÉ (PROPORTIONS AJUSTÉES 1/3 - 2/3) -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -100,7 +97,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- ORGANISMES -->
                 <div class="lg:col-span-1 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Organismes</div>
@@ -112,7 +108,6 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
-                <!-- FORMATIONS -->
                 <div class="lg:col-span-2 bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
@@ -328,7 +323,7 @@
                 <div class="flex-1 pt-1">
                     <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
                     <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
-                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-[#2563eb] transition-all" />
+                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-gray-100 focus:outline-none focus:border-[#2563eb] transition-all" />
                 </div>
             </div>
             <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
