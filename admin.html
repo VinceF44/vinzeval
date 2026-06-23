@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE CONSOLE SÉCURISÉ -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -38,6 +39,7 @@
             </div>
         </div>
 
+        <!-- ZONE DE GESTION DES COMPTES (RP & ADMIN) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -866,7 +868,13 @@
         // ==========================================
         async function chargerSessions() {
             try {
-                let requete = db.from('sessions').select('*');
+                // Modification : récupération croisée des stats associées
+                let requete = db.from('sessions').select(`
+                    *,
+                    apprenants ( id, prenom ),
+                    criteres ( id ),
+                    evaluateurs ( nom )
+                `);
                 
                 if (roleConnecte === 'formateur') {
                     requete = requete.eq('proprietaire_id', userConnecte.id);
@@ -918,7 +926,7 @@
                 if (cacheSessionsGlobal.length === 0) {
                     document.getElementById('zone-configurateur').classList.remove('hidden');
                 }
-                filtrerEtAfficherSessions(true); // Forcer l'effondrement initial au premier chargement
+                filtrerEtAfficherSessions(true);
             } catch(e) { await UIModal.alert("Erreur lors du chargement des sessions : " + e.message, "error"); }
         }
 
@@ -948,9 +956,13 @@
                     let dateFormateeFr = "";
                     if(s.date_session) { const [y,m,d] = s.date_session.split('-'); dateFormateeFr = `${d}/${m}/${y}`; }
 
+                    // Amélioration Moteur de Recherche : Recherche dans les évaluateurs et les apprenants
+                    const matchEvaluateur = s.evaluateurs && s.evaluateurs.some(e => e.nom.toLowerCase().includes(rechercheTexte));
+                    const matchApprenant = s.apprenants && s.apprenants.some(a => a.prenom && a.prenom.toLowerCase().includes(rechercheTexte));
+
                     return nomSess.includes(rechercheTexte) || typeSess.includes(rechercheTexte) ||
                            formationNom.includes(rechercheTexte) || organismeNom.includes(rechercheTexte) ||
-                           dateFormateeFr.includes(rechercheTexte);
+                           dateFormateeFr.includes(rechercheTexte) || matchEvaluateur || matchApprenant;
                 }
                 return true;
             });
@@ -1000,12 +1012,10 @@
                 const blockTargetId = `collapse-${conteneurId}-${groupCounter}`;
                 const blockIconId = `icon-${conteneurId}-${groupCounter}`;
 
-                // Détermination de l'état (ouvert/fermé) basé sur la règle demandée au chargement
                 let doitEtreRetracte = (conteneurId === 'liste-sessions-avenir' || conteneurId === 'liste-sessions-terminees');
                 if (forcerEtatCollapse !== null) {
                     doitEtreRetracte = forcerEtatCollapse;
                 } else {
-                    // Si on filtre/cherche plus tard, on regarde l'état actuel de l'élément s'il existe déjà
                     const elementExistant = document.getElementById(blockTargetId);
                     if (elementExistant) doitEtreRetracte = elementExistant.classList.contains('hidden');
                 }
@@ -1035,6 +1045,20 @@
                     else { dateSess = "--/--/----"; }
 
                     const tagDate = `<span class="text-slate-400 font-mono text-[11px] ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
+
+                    // CONSTRUCTION DES STATISTIQUES AVEC INFOBULLES
+                    const countApprenants = s.apprenants ? s.apprenants.length : 0;
+                    const countCriteres = s.criteres ? s.criteres.length : 0;
+                    const stringEvaluateurs = s.evaluateurs && s.evaluateurs.length > 0 ? s.evaluateurs.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
+                    const stringFullEvaluateurs = s.evaluateurs ? s.evaluateurs.map(e => e.nom).join(', ') : '';
+
+                    const tagsStatsInfos = `
+                        <div class="text-[10px] text-slate-400 font-mono mt-1.5 flex items-center flex-wrap gap-x-2 gap-y-1">
+                            <span class="bg-[#030712]/60 px-2 py-0.5 rounded-md border border-slate-800/80">👥 ${countApprenants} apprenant(s)</span>
+                            <span class="bg-[#030712]/60 px-2 py-0.5 rounded-md border border-slate-800/80">📋 ${countCriteres} critère(s)</span>
+                            <span class="bg-[#030712]/60 px-2 py-0.5 rounded-md border border-slate-800/80 truncate max-w-[140px]" title="${stringFullEvaluateurs}">👩‍🏫 ${stringEvaluateurs}</span>
+                        </div>
+                    `;
 
                     let liensVotesHtml = "";
                     if (s.statut === 'active') {
@@ -1085,7 +1109,7 @@
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1">${nomValide} ${badgeType} ${tagDate}</div>
-                                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${s.id}</div>
+                                    ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
                                     ${liensVotesHtml}
@@ -1110,9 +1134,9 @@
                     } else {
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
-                                <div>
+                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
                                     <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
-                                    <span class="bg-[#030712] text-slate-500 text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border border-slate-800 mt-1 inline-block">Clos / Archivé</span>
+                                    ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
                                     <div class="group relative inline-block">
@@ -1385,7 +1409,6 @@
                 const { data: src, error: e1 } = await db.from('sessions').select('type, date_session, formation_id').eq('id', idSessionSource).single();
                 if(e1) throw e1;
                 
-                // On injecte la date du jour par défaut pour éviter l'archivage automatique
                 const t = new Date();
                 const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
                 
@@ -1408,7 +1431,6 @@
                 
                 await chargerSessions();
                 
-                // Ouverture immédiate du panneau de modification pour la nouvelle session
                 entrerEnModeModification(nv.id);
                 
             } catch(e) { await UIModal.alert("Erreur de duplication : " + e.message, "error"); }
@@ -1422,134 +1444,6 @@
                 await chargerSessions();
                 await UIModal.alert("Session supprimée avec succès.", "success");
             } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
-        }
-
-        async function ouveirModifOrganismeMaster() { /* Conservé pour cohérence globale */ }
-        async function creerOuModifierOrganismeMaster() {
-            try {
-                const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-                if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-                
-                if (idOrgEnCoursModif) {
-                    const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                    if (error) throw error;
-                    idOrgEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('organismes').insert([{ nom: nom }]);
-                    if (error) throw error;
-                    input.value = "";
-                }
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme enregistré.", "success");
-            } catch(e) { await UIModal.alert("Erreur organisme : " + e.message, "error"); }
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            try {
-                if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('organismes').delete().eq('id', id);
-                if (error) throw error;
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme supprimé.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierFormationMaster() {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
-                if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
-                if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
-                
-                if (idFormEnCoursModif) {
-                    const { error } = await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                    if(error) throw error;
-                    idFormEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
-                    if(error) throw error;
-                    input.value = "";
-                }
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Formation mise à jour.", "success");
-            } catch(e) { await UIModal.alert("Erreur formation : " + e.message, "error"); }
-        }
-
-        async function supprimerFormationMaster(id, nom) {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
-                const { error } = await db.from('formations').delete().eq('id', id);
-                if (error) throw error;
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Classe supprimée.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierApprenantMaster() {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
-                if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
-                if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
-                
-                if (idAppEnCoursModif) {
-                    const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
-                    if (error) throw error;
-                    const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
-                    await db.from('apprenants').update({ email: e.value.trim() || null }).eq('prenom', nomCompletInstancie);
-
-                    idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                    document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
-                } else {
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), email: e.value.trim() || null, formation_id: formId }]);
-                    if (error) throw error;
-                    p.value = ""; n.value = ""; e.value = "";
-                }
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Fiche apprenant enregistrée !", "success");
-            } catch(err) { await UIModal.alert("Erreur apprenant : " + err.message, "error"); }
-        }
-
-        async function supprimerApprenantMaster(id) {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('apprenants_master').delete().eq('id', id);
-                if (error) throw error;
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Apprenant retiré.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
         }
 
         window.onload = initAdmin;
