@@ -80,10 +80,14 @@
                 <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📜 Journal
                 </button>
-                <!-- BOUTON MESSAGERIE ADMIN -->
-                <button id="btn-tab-messagerie" onclick="basculerZoneMessagerie()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                
+                <!-- RECONSTRUCTION DE LA ZONE DE RECEPTION AVEC DOUBLE BADGE DE SUIVI -->
+                <button id="btn-tab-messagerie" onclick="basculerZoneMessagerie()" class="relative hidden h-10 pr-12 pl-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📬 Support
-                    <span id="badge-notif-messagerie" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
+                    <!-- Badge Rouge : Nouveaux messages à lire -->
+                    <span id="badge-notif-messagerie" class="hidden absolute top-2.5 right-6 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft" title="Nouveaux messages à lire">0</span>
+                    <!-- Badge Ambre : Messages en attente de traitement -->
+                    <span id="badge-notif-atraiter" class="hidden absolute top-2.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-slate-950 shadow-sm ring-2 ring-[#101828] px-1" title="Tickets à traiter">0</span>
                 </button>
 
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
@@ -108,17 +112,35 @@
 
         <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
 
-        <!-- ZONE MESSAGERIE SUPPORT -->
+        <!-- CONSOLE DE SUPPORT AVEC FILTRAGE ET TRAITEMENT MULTI-LISTES -->
         <div id="zone-messagerie-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-blue-500/30 space-y-6 shadow-xl transition-all relative z-40">
-            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+            <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
                 <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📬 Boîte de Réception Support</h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Tickets, idées et bugs remontés par vos utilisateurs.</p>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📬 Boîte de Réception & Support Applicatif</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Suivi rigoureux et workflow de traitement de vos tickets.</p>
                 </div>
                 <button onclick="basculerZoneMessagerie()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
-            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2" id="contenu-messagerie">
-                <p class="text-slate-500 italic text-sm text-center py-4">Chargement des messages...</p>
+
+            <!-- STRUCTURE EN 3 SECTIONS DE WORKFLOW -->
+            <div class="space-y-6">
+                <!-- 1. BLOC TRAVAIL PRIORITAIRE -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5 pl-1 select-none">📌 À Traiter / En Cours</h3>
+                    <div class="space-y-2.5" id="container-suivi-atraiter"></div>
+                </div>
+
+                <!-- 2. BOITE DE RECEPTION CLASSIQUE -->
+                <div class="space-y-2 pt-4 border-t border-slate-800/80">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5 pl-1 select-none">📩 Nouveaux Messages à lire</h3>
+                    <div class="space-y-2.5" id="container-suivi-nouveaux"></div>
+                </div>
+
+                <!-- 3. ARCHIVES GRISEES -->
+                <div class="space-y-2 pt-4 border-t border-slate-800/80">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5 pl-1 select-none">🗃️ Messages Archivés</h3>
+                    <div class="space-y-2.5 opacity-60" id="container-suivi-archives"></div>
+                </div>
             </div>
         </div>
 
@@ -470,7 +492,7 @@
         </div>
     </div>
 
-    <!-- MODAL SOUMISSION FEEDBACK / BUG -->
+    <!-- MODAL SOUMISSION FEEDBACK / BUG AVEC SELECT INTERFACE CUSTOMISÉ -->
     <div id="modal-app-feedback" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
         <div class="bg-[#101828] border border-indigo-500/40 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="modal-app-feedback-box">
             <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-indigo-950/20">
@@ -479,14 +501,24 @@
             </div>
             <form onsubmit="soumettreAppFeedback(event)" class="p-5 space-y-4">
                 <p class="text-xs text-slate-400">Une idée d'amélioration ? Un bug rencontré ? Envoyez-nous un message, il sera lu par l'équipe technique.</p>
+                
+                <!-- RECONSTRUCTION ERGONOMIQUE DU MENU DEROULANT TYPE DE MESSAGE -->
                 <div>
                     <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type de message :</label>
-                    <select id="feedback-type" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
-                        <option value="idee">💡 Idée / Amélioration</option>
-                        <option value="bug">🐛 Signaler un Bug</option>
-                        <option value="remarque">💬 Autre remarque</option>
-                    </select>
+                    <div class="custom-dropdown-container relative w-full text-left">
+                        <input type="hidden" id="feedback-type" value="idee">
+                        <button type="button" onclick="toggleDropdown('feedback-type')" class="w-full bg-[#030712] rounded-xl p-3 text-sm border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                            <span id="feedback-type-label" class="truncate pr-2">💡 Idée / Amélioration</span>
+                            <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="feedback-type-arrow">▼</span>
+                        </button>
+                        <div id="feedback-type-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 z-50 transition-all">
+                            <button type="button" onclick="selectOption('feedback-type', 'idee', '💡 Idée / Amélioration')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">💡 Idée / Amélioration</button>
+                            <button type="button" onclick="selectOption('feedback-type', 'bug', '🐛 Signaler un Bug')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">🐛 Signaler un Bug</button>
+                            <button type="button" onclick="selectOption('feedback-type', 'remarque', '💬 Autre remarque')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">💬 Autre remarque</button>
+                        </div>
+                    </div>
                 </div>
+
                 <div>
                     <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Votre message :</label>
                     <textarea id="feedback-texte" required rows="5" placeholder="Décrivez votre idée ou le problème rencontré..." class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
@@ -745,11 +777,19 @@
                 if (cWait > 0) { badge.innerText = cWait; badge.classList.remove('hidden'); } 
                 else { badge.classList.add('hidden'); }
 
-                // Notifs Messagerie Support
-                const { count: cMsg } = await db.from('app_feedbacks').select('*', { count: 'exact', head: true }).eq('statut', 'nouveau');
+                // RECALCUL ALERTE PAR STATUTS INDÉPENDANTS (Support technique)
+                const [{ count: cNouveau }, { count: cATraiter }] = await Promise.all([
+                    db.from('app_feedbacks').select('*', { count: 'exact', head: true }).eq('statut', 'nouveau'),
+                    db.from('app_feedbacks').select('*', { count: 'exact', head: true }).eq('statut', 'a_traiter')
+                ]);
+
                 const badgeMsg = document.getElementById('badge-notif-messagerie');
-                if (cMsg > 0) { badgeMsg.innerText = cMsg; badgeMsg.classList.remove('hidden'); } 
+                if (cNouveau > 0) { badgeMsg.innerText = cNouveau; badgeMsg.classList.remove('hidden'); } 
                 else { badgeMsg.classList.add('hidden'); }
+
+                const badgeATraiter = document.getElementById('badge-notif-atraiter');
+                if (cATraiter > 0) { badgeATraiter.innerText = cATraiter; badgeATraiter.classList.remove('hidden'); } 
+                else { badgeATraiter.classList.add('hidden'); }
 
             } catch(e) { console.error("Erreur check notifs :", e); }
         }
@@ -838,68 +878,8 @@
             } catch(err) { console.error(err); }
         }
 
-        async function validerCompte(id, prenom) {
-            try {
-                const { error } = await db.from('profils').update({ statut: 'valide' }).eq('id', id);
-                if (error) throw error;
-                await chargerListeComptes();
-                await chargerAnnuaireEvaluateursEtFavoris();
-                await verifierNotifications();
-                await UIModal.alert(`L'accès de ${prenom || 'l\'utilisateur'} a été validé.`, "success");
-            } catch (err) { await UIModal.alert("Erreur validation : " + err.message, "error"); }
-        }
-
-        async function refuserCompte(id, prenom) {
-            try {
-                if (!(await UIModal.confirm(`Refuser définitivement la demande de ${prenom || 'cet utilisateur'} ?`, "Refus d'accès", "error"))) return;
-                const { error } = await db.from('profils').delete().eq('id', id);
-                if (error) throw error;
-                await chargerListeComptes();
-                await verifierNotifications();
-                await UIModal.alert(`Demande refusée et effacée.`, "success");
-            } catch (err) { await UIModal.alert("Erreur suppression : " + err.message, "error"); }
-        }
-
-        async function supprimerCompteActif(id, nomAffiche) {
-            try {
-                if (!(await UIModal.confirm(`Révoquer définitivement l'accès de <b>${nomAffiche}</b> à la plateforme ?\n\nCela bloquera immédiatement sa connexion sans altérer l'historique de ses évaluations.`, "Suppression Critique", "error"))) return;
-                const { error } = await db.from('profils').delete().eq('id', id);
-                if (error) throw error;
-                await chargerListeComptes();
-                await chargerAnnuaireEvaluateursEtFavoris();
-                await UIModal.alert(`Le compte de ${nomAffiche} a été supprimé.`, "success");
-            } catch (err) { await UIModal.alert("Erreur lors de la suppression : " + err.message, "error"); }
-        }
-
-        async function creerCompteCollaborateur(e) {
-            e.preventDefault();
-            const email = document.getElementById('compte-email').value.trim();
-            const password = document.getElementById('compte-password').value;
-            const role = document.getElementById('compte-role').value;
-
-            if (password.length < 6) return await UIModal.alert("Le mot de passe doit faire au moins 6 caractères.", "error");
-
-            try {
-                const authIsoleClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
-                const { data: authData, error: authError } = await authIsoleClient.auth.signUp({ email, password });
-                if (authError) throw authError;
-
-                if (authData.user) {
-                    const { error: profError } = await db.from('profils').insert([{
-                        id: authData.user.id, email: email, role: role, createur_id: activeUserId, statut: 'valide'
-                    }]);
-                    if (profError) throw profError;
-                }
-
-                document.getElementById('compte-email').value = ""; document.getElementById('compte-password').value = "";
-                await chargerListeComptes();
-                await chargerAnnuaireEvaluateursEtFavoris();
-                await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
-            } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
-        }
-
         // ==========================================
-        // FEEDBACK APPLICATION (SUPPORT BUGS/IDEES)
+        // FEEDBACK APPLICATION (SUPPORT WORKFLOW)
         // ==========================================
         function ouvrirModalAppFeedback() {
             const modal = document.getElementById('modal-app-feedback');
@@ -953,64 +933,68 @@
             if (!mess.classList.contains('hidden')) { chargerMessagerie(); }
         }
 
+        // RECONSTRUCTION DE L'AFFICHAGE EN 3 SECTIONS ÉVOLUTIVES (Workflow Ligne Unique)
         async function chargerMessagerie() {
-            const conteneur = document.getElementById('contenu-messagerie');
+            const cATraiter = document.getElementById('container-suivi-atraiter');
+            const cNouveaux = document.getElementById('container-suivi-nouveaux');
+            const cArchives = document.getElementById('container-suivi-archives');
+            
             try {
                 const { data, error } = await db.from('app_feedbacks').select('*, profils(prenom, nom, role)').order('created_at', { ascending: false });
                 if (error) throw error;
 
+                let htmlATraiter = "", htmlNouveaux = "", htmlArchives = "";
+
                 if (!data || data.length === 0) {
-                    conteneur.innerHTML = `<p class="text-slate-500 italic text-sm text-center py-4">Aucun message de support reçu.</p>`;
+                    const vide = `<p class="text-slate-600 italic text-xs py-3 pl-1">Aucun message dans cette catégorie.</p>`;
+                    cATraiter.innerHTML = vide; cNouveaux.innerHTML = vide; cArchives.innerHTML = vide;
                     return;
                 }
 
-                conteneur.innerHTML = data.map(f => {
-                    const d = new Date(f.created_at).toLocaleString('fr-FR');
-                    const exp = f.profils ? `${f.profils.prenom || ''} ${f.profils.nom || ''}`.trim() : 'Utilisateur inconnu';
-                    const roleExp = f.profils ? f.profils.role : '';
+                data.forEach(f => {
+                    const dateStr = new Date(f.created_at).toLocaleString('fr-FR');
+                    const expediteur = f.profils ? `${f.profils.prenom || ''} ${f.profils.nom || ''}`.trim() : 'Utilisateur';
                     
                     let badgeType = '';
-                    if(f.type === 'bug') badgeType = `<span class="bg-red-950/50 text-red-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-red-800/50">🐛 Bug</span>`;
-                    else if(f.type === 'idee') badgeType = `<span class="bg-amber-950/50 text-amber-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-amber-800/50">💡 Idée</span>`;
-                    else badgeType = `<span class="bg-blue-950/50 text-blue-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-blue-800/50">💬 Remarque</span>`;
+                    if(f.type === 'bug') badgeType = `<span class="bg-red-950/40 text-red-400 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-red-900/30">Bug</span>`;
+                    else if(f.type === 'idee') badgeType = `<span class="bg-amber-950/40 text-amber-400 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-amber-900/30">Idée</span>`;
+                    else badgeType = `<span class="bg-blue-950/40 text-blue-400 text-[9px] uppercase font-black px-1.5 py-0.5 rounded border border-blue-900/30">Remarque</span>`;
 
-                    const estNouveau = f.statut === 'nouveau';
-                    const borderCls = estNouveau ? 'border-indigo-500/50 bg-[#101828]/80' : 'border-slate-800 bg-[#030712] opacity-75';
-                    
-                    const btnLu = estNouveau ? `<button onclick="marquerFeedbackLu(${f.id})" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded shadow-sm transition">Marquer lu ✅</button>` : '';
-
-                    return `
-                        <div class="flex flex-col gap-2 p-4 rounded-xl border ${borderCls} transition-all">
-                            <div class="flex justify-between items-start border-b border-slate-800/50 pb-2">
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        ${badgeType}
-                                        ${estNouveau ? `<span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>` : ''}
-                                    </div>
-                                    <span class="font-bold text-slate-200 text-xs">De : ${exp}</span>
-                                    <span class="text-[10px] text-slate-500 ml-1">(${roleExp})</span>
+                    // Injection unifiée du layout sur une ligne ultra-ergonomique
+                    const rowHtml = `
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-3 bg-[#030712]/50 border border-slate-800 rounded-xl font-sans hover:border-slate-700 transition-colors">
+                            <div class="flex-1 space-y-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 text-xs">
+                                    ${badgeType}
+                                    <span class="font-bold text-slate-200 truncate">${expediteur}</span>
+                                    <span class="text-[10px] text-slate-500 font-mono">${dateStr}</span>
                                 </div>
-                                <div class="text-right">
-                                    <span class="text-[9px] text-slate-500 font-mono block mb-1">${d}</span>
-                                    <div class="flex gap-2 justify-end">
-                                        ${btnLu}
-                                        <button onclick="supprimerFeedbackSupport(${f.id})" class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/20 transition">Supprimer 🗑️</button>
-                                    </div>
-                                </div>
+                                <div class="text-sm text-slate-300 pr-4 break-words leading-relaxed">${f.message}</div>
                             </div>
-                            <div class="text-sm text-slate-300 whitespace-pre-wrap">${f.message}</div>
+                            <div class="flex items-center gap-1.5 shrink-0 self-end md:self-center border-t border-slate-900 md:border-t-0 pt-2 md:pt-0 w-full md:w-auto justify-end">
+                                ${f.statut === 'nouveau' ? `<button onclick="changerStatutFeedback(${f.id}, 'a_traiter')" class="text-[10px] font-bold bg-amber-600/10 hover:bg-amber-600/20 text-amber-400 border border-amber-500/20 px-2.5 py-1.5 rounded-lg cursor-pointer transition shadow-sm">⚠️ A traiter</button>` : ''}
+                                ${f.statut !== 'archive' ? `<button onclick="changerStatutFeedback(${f.id}, 'archive')" class="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg cursor-pointer transition shadow-sm">🗃️ Archiver</button>` : ''}
+                                <button onclick="supprimerFeedbackSupport(${f.id})" class="text-[10px] font-bold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-2.5 py-1.5 rounded-lg cursor-pointer transition shadow-sm">🗑️ Supprimer</button>
+                            </div>
                         </div>
                     `;
-                }).join('');
 
-            } catch(e) {
-                conteneur.innerHTML = `<p class="text-red-500 italic text-sm text-center py-4">Erreur: ${e.message}</p>`;
-            }
+                    if (f.statut === 'a_traiter') htmlATraiter += rowHtml;
+                    else if (f.statut === 'nouveau') htmlNouveaux += rowHtml;
+                    else if (f.statut === 'archive') htmlArchives += rowHtml;
+                });
+
+                const vide = `<p class="text-slate-600 italic text-xs py-2 pl-1">Aucun ticket dans cet onglet.</p>`;
+                cATraiter.innerHTML = htmlATraiter || vide;
+                cNouveaux.innerHTML = htmlNouveaux || vide;
+                cArchives.innerHTML = htmlArchives || vide;
+
+            } catch(e) { console.error("Erreur d'actualisation de la messagerie", e); }
         }
 
-        async function marquerFeedbackLu(id) {
+        async function changerStatutFeedback(id, nvStatut) {
             try {
-                await db.from('app_feedbacks').update({ statut: 'lu' }).eq('id', id);
+                await db.from('app_feedbacks').update({ statut: nvStatut }).eq('id', id);
                 await chargerMessagerie();
                 await verifierNotifications();
             } catch(e) { console.error(e); }
@@ -1018,13 +1002,12 @@
 
         async function supprimerFeedbackSupport(id) {
             try {
-                if (!(await UIModal.confirm("Supprimer ce message de support ?", "Suppression", "warning"))) return;
+                if (!(await UIModal.confirm("Supprimer définitivement ce ticket de la base de données ?", "Alerte de suppression", "error"))) return;
                 await db.from('app_feedbacks').delete().eq('id', id);
                 await chargerMessagerie();
                 await verifierNotifications();
             } catch(e) { console.error(e); }
         }
-
 
         // ==========================================
         // GESTION ÉVALUATEURS (RECHERCHE & FAVORIS)
@@ -1529,49 +1512,6 @@
                     `).join('');
                 } else { conteneur.innerHTML = `<p class="text-slate-500 italic col-span-full py-4 text-center text-sm">Aucun apprenant enregistré.</p>`; }
             } catch(e) { await UIModal.alert("Erreur : " + e.message, "error"); }
-        }
-
-        async function creerOuModifierOrganismeMaster() {
-            if(roleConnecte !== 'super_admin') return; 
-            try {
-                const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-                if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-                
-                if (idOrgEnCoursModif) {
-                    const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                    if (error) throw error;
-                    idOrgEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-org').innerText = "Ajouter";
-                } else { 
-                    const { error } = await db.from('organismes').insert([{ nom: nom }]);
-                    if (error) throw error;
-                    input.value = "";
-                }
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme enregistré.", "success");
-            } catch(e) { await UIModal.alert("Erreur organisme : " + e.message, "error"); }
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            if(roleConnecte !== 'super_admin') return;
-            try {
-                if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('organismes').delete().eq('id', id);
-                if (error) throw error;
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme supprimé.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
         }
 
         async function creerOuModifierFormationMaster() {
@@ -2250,8 +2190,8 @@
 
                 const { data: session } = await db.from('sessions').select('nom, type, date_session, statut').eq('id', idSession).single();
                 const { data: crits } = await db.from('criteres').select('nom, description').eq('session_id', idSession).order('id');
-                const { data: evals } = await db.from('evaluateurs').select('nom, utilisateur_id').eq('session_id', idSession).order('nom');
-                const { data: grps } = await db.from('groupes').select('id, nom').eq('session_id', idSession).order('nom');
+                const { data: evals } = await db.from('evaluateurs').select('nom, presidential_id, utilisateur_id').eq('session_id', idSession);
+                const { data: grps = [] } = await db.from('groupes').select('id, nom').eq('session_id', idSession);
                 const { data: apps = [] } = await db.from('apprenants').select('prenom').eq('session_id', idSession);
 
                 if(session) {
@@ -2268,7 +2208,7 @@
                 
                 if(grps && grps.length > 0) {
                     document.getElementById('nb-groupes').value = grps.length;
-                    const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1].trim() + " ";
+                    const match = grps[0].nom.match(/^(.*?)(\d+)$/); if (match) document.getElementById('prefixe-groupes').value = match[1];
                 }
                 
                 if(apps) {
@@ -2288,8 +2228,8 @@
 
                 document.getElementById('conteneur-boutons-action').innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                        <button type="button" onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md transition-all active:scale-[0.99]">💾 Mettre à jour l'appel et les groupes</button>
-                        <button type="button" onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer transition-all active:scale-95">Annuler</button>
+                        <button type="button" onclick="sauvegarderModificationsSession()" class="sm:col-span-3 text-sm font-bold py-3.5 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-md">💾 Mettre à jour l'appel et les groupes</button>
+                        <button type="button" onclick="annulerModeModification()" class="text-sm font-bold py-3.5 rounded-xl text-slate-400 bg-[#030712] border border-slate-800 hover:bg-slate-900 cursor-pointer">Annuler</button>
                     </div>
                 `;
                 window.scrollTo({ top: zoneConfigurateur.offsetTop - 20, behavior: 'smooth' });
@@ -2311,7 +2251,7 @@
             document.getElementById('liste-appel-checkbox').innerHTML = `<p class="text-slate-600 italic text-sm">Le registre d'appel apparaîtra après sélection du groupe.</p>`;
             document.getElementById('nb-groupes').value = "3"; document.getElementById('prefixe-groupes').value = "Groupe "; document.getElementById('date-session').valueAsDate = new Date();
 
-            document.getElementById('conteneur-boutons-action').innerHTML = `<button type="button" onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer transition-all active:scale-[0.99]">🚀 Générer la session complète</button>`;
+            document.getElementById('conteneur-boutons-action').innerHTML = `<button type="button" onclick="genererSessionComplete()" class="w-full text-sm font-bold py-3.5 rounded-xl text-white bg-[#2563eb] border border-blue-500/20 hover:bg-[#1d4ed8] cursor-pointer">🚀 Générer la session complète</button>`;
         }
 
         async function sauvegarderModificationsSession() {
