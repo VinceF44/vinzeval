@@ -48,6 +48,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE DU DASHBOARD -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="space-y-2">
                 <span class="bg-amber-950/50 text-amber-400 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border border-amber-800/50 font-sans">👑 Console Master — Vue Analytique</span>
@@ -59,6 +60,7 @@
             </button>
         </div>
 
+        <!-- BLOC SÉLECTION ÉQUIPE -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-3 shadow-xl">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="space-y-1 max-w-xl">
@@ -78,6 +80,7 @@
             </div>
         </div>
 
+        <!-- GRILLES DÉTAILLÉES -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl space-y-5">
             <div class="border-b border-gray-800 pb-3">
                 <h2 class="text-base font-black text-white font-sans">🔎 Grilles d'Évaluations Détaillées</h2>
@@ -89,6 +92,7 @@
             </div>
         </div>
 
+        <!-- MATRICE DES NOTES ET ACCÈS RAPPORTS -->
         <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 space-y-4 shadow-xl">
             <div class="border-b border-gray-800 pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -121,12 +125,15 @@
         </div>
     </div>
 
+    <!-- MODALE RAPPORT INDIVIDUEL -->
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-gray-900 border border-gray-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             
             <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans">
-                </div>
+                <!-- Contenu injecté dynamiquement -->
+            </div>
             
+            <!-- FOOTER D'ACTIONS EXCLUSIVEMENT PDF -->
             <div id="modal-rapport-footer" class="p-4 border-t border-gray-800 bg-gray-950 rounded-b-2xl flex justify-between items-center print-hide font-sans">
                 <span class="text-xs text-gray-500 italic">Relevé officiel consolidé</span>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
@@ -136,6 +143,7 @@
         </div>
     </div>
 
+    <!-- GRANDE MODALE DE LECTURE FEEDBACK + SUPPRESSION -->
     <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
@@ -154,6 +162,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4 font-sans">
@@ -480,16 +489,25 @@
                     }
 
                     const estAutoEval = e.groupe_votant === e.sujet;
-                    let typeLabel = e.estProf ? ' JURY' : (estAutoEval ? ' AUTO' : ' PAIRS');
+                    let typeLabel = e.estProf ? ' FORMATEUR' : (estAutoEval ? ' AUTO' : ' PAIRS');
                     let styleLabel = e.estProf ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                     
                     let nomAffiche = e.groupe_votant;
-                    if (!e.estProf && e.groupe_votant !== e.sujet) nomAffiche = `Pour : ${e.sujet}`;
+                    if (e.estProf) {
+                        nomAffiche = e.groupe_votant;
+                    } else if (e.groupe_votant === e.sujet) {
+                        const membres = membresParNomGroupe[e.groupe_votant] || [];
+                        if (membres.length > 0) nomAffiche += ` <span class="text-gray-500 font-normal text-xs tracking-normal">(${membres.map(formaterPrenomInitiale).join(', ')})</span>`;
+                    } else {
+                        const membres = membresParNomGroupe[e.sujet] || [];
+                        let strMembres = membres.length > 0 ? ` <span class="text-gray-500 font-normal text-xs tracking-normal">(${membres.map(formaterPrenomInitiale).join(', ')})</span>` : '';
+                        nomAffiche = `Pour : ${e.sujet}${strMembres}`;
+                    }
 
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche, id: e.id });
+                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche.replace(/<[^>]*>?/gm, ''), id: e.id });
 
                         htmlBlockFeedback = `
                             <div class="group relative inline-block">
@@ -696,7 +714,7 @@
             const txtJuryRaw = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && e.estProf && e.feedback).map(e => e.feedback);
             const txtPairsRaw = evaluationsSession.filter(e => e.sujet === dataApp.nomGroupe && !e.estProf && e.feedback && e.groupe_votant !== dataApp.nomGroupe).map(e => e.feedback);
 
-            const feedbacksJury = txtJuryRaw.map(f => `<li><span class="text-purple-400 font-bold">[Jury]</span> ${f}</li>`).join('');
+            const feedbacksJury = txtJuryRaw.map(f => `<li><span class="text-purple-400 font-bold">[Formateur]</span> ${f}</li>`).join('');
             const feedbacksPairs = txtPairsRaw.map(f => `<li><span class="text-blue-400 font-bold">[Pair]</span> ${f}</li>`).join('');
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-gray-300 leading-relaxed">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-gray-500 italic font-sans">Aucun retour rédigé pour cette équipe.</p>`;
 
@@ -721,7 +739,7 @@
                 ${enteteOfficielDocumentHtml}
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl text-center shadow-inner">
-                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 font-sans">Moyenne Jury</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 font-sans">Moyenne Formateur</div>
                         <div class="text-3xl font-black text-white mt-1 font-mono">${dataApp.noteProfSur20 !== -1 ? dataApp.noteProfSur20.toFixed(2) : '--'}<span class="text-sm text-gray-600 font-sans">/20</span></div>
                     </div>
                     <div class="bg-indigo-950/20 border border-indigo-900/50 p-4 rounded-xl text-center shadow-inner">
@@ -762,14 +780,14 @@
             document.getElementById('modal-rapport').classList.remove('hidden');
         }
 
-        function ouvrirModalFeedback(index) {
-            const dataFeedback = listeFeedbacksCartesCourantes[index];
-            if(!dataFeedback) return;
-            document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
-            document.getElementById('modal-feedback-corps').innerHTML = dataFeedback.texte || "Aucun texte enregistré.";
-            const btnSupprimer = document.getElementById('btn-modal-supprimer-feedback');
-            btnSupprimer.onclick = function() { modererFeedback(dataFeedback.id, true); };
-            document.getElementById('modal-feedback').classList.remove('hidden');
+        async function modererFeedback(idEvaluation, suppression) {
+            try {
+                if (suppression && !(await UIModal.confirm("Voulez-vous vraiment supprimer définitivement ce feedback ?", "Suppression", "error"))) return;
+                const { error } = await db.from('evaluations').update({ feedback: "" }).eq('id', idEvaluation);
+                if (error) throw error;
+                fermerModalFeedback();
+                await chargerDonneesDashboard();
+            } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
         }
 
         function fermerModalFeedback() { document.getElementById('modal-feedback').classList.add('hidden'); }
