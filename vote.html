@@ -28,6 +28,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
+                <!-- DROPDOWN CUSTOM : ÉQUIPE VOTANT -->
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
@@ -37,10 +38,12 @@
                             <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-votant-arrow">▼</span>
                         </button>
                         <div id="select-groupe-votant-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-gray-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            </div>
+                            <!-- Injecté via JS -->
+                        </div>
                     </div>
                 </div>
 
+                <!-- DROPDOWN CUSTOM : SUJET ÉVALUÉ -->
                 <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
@@ -50,7 +53,8 @@
                             <span class="dropdown-arrow text-xs text-blue-500/50 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                         </button>
                         <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-blue-800/60 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            </div>
+                            <!-- Injecté via JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,6 +95,7 @@
         </div>
     </div>
 
+    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
@@ -203,7 +208,8 @@
                 });
             },
             alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information'), isConfirm: false }); },
-            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); }
+            confirm: function(message, title = 'Confirmation', type = 'warning') { return this.show({ message, type, title, isConfirm: true, confirmText: 'Confirmer' }); },
+            prompt: function(message, defaultValue = '', title = 'Saisie requise') { return this.show({ message, type: 'info', title, isPrompt: true, defaultValue, confirmText: 'Valider' }); }
         };
 
         let chronoInterval = null;
@@ -248,7 +254,7 @@
                     document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
                 }
 
-                const { data: g = [] } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation).order('nom');
+                const { data: g = [] } = await db.from('groupes').select('id, nom').eq('session_id', idSessionEvaluation);
                 const { data: apps = [] } = await db.from('apprenants').select('prenom, groupe_id').eq('session_id', idSessionEvaluation);
 
                 if (g && g.length > 0) {
@@ -257,6 +263,7 @@
                     g.forEach(grp => { membresParIdGroupeGlobal[grp.id] = []; });
                     if (apps) apps.forEach(student => { if (membresParIdGroupeGlobal[student.groupe_id]) membresParIdGroupeGlobal[student.groupe_id].push(student.prenom); });
 
+                    // Construction dynamique des options pour nos menus custom
                     let optionsHtmlVotant = `<button type="button" onclick="selectOption('select-groupe-votant', '', '-- Choisissez votre équipe --')" class="w-full text-left block px-4 py-3 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre équipe --</button>`;
 
                     g.forEach(grp => {
@@ -293,8 +300,8 @@
                 const safeValue = grp.nom.replace(/'/g, "\\'");
                 
                 if (groupesSoumisDB.includes(grp.nom)) {
-                    // Équipe déjà évaluée => barrée et désactivée
-                    optionsHtmlSujet += `<button type="button" disabled class="w-full text-left block px-4 py-3 text-sm text-gray-600 line-through bg-gray-900/50 cursor-not-allowed font-sans">${labelComplet} <span class="text-gray-500 text-[10px] uppercase font-bold tracking-wider ml-1">(évaluation envoyée)</span></button>`;
+                    // Équipe déjà évaluée => barrée et désactivée + Checkmark
+                    optionsHtmlSujet += `<button type="button" disabled class="w-full flex justify-between items-center px-4 py-3 text-sm text-gray-600 bg-gray-900/50 cursor-not-allowed font-sans"><span class="line-through">${labelComplet}</span> <span>✅</span></button>`;
                 } else {
                     const safeLabel = labelComplet.replace(/'/g, "\\'");
                     if (!premierDispoTrouve) { premierDispoTrouve = grp.nom; labelPremierDispo = labelComplet; }
