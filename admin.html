@@ -12,6 +12,9 @@
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
         
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         @keyframes pulse-soft {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.05); }
@@ -51,6 +54,11 @@
                 <button onclick="basculerZoneConfigurateur()" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     ✨ Configurer
                 </button>
+                
+                <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                    📜 Journal
+                </button>
+
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📈 Stats Globales
                 </button>
@@ -76,6 +84,20 @@
         <!-- DASHBOARD STATISTIQUES DYNAMIQUE -->
         <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
 
+        <!-- ESPACE JOURNAL D'ACTIVITE (SUPER ADMIN SEUL) -->
+        <div id="zone-journal-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-blue-500/20 space-y-6 shadow-xl transition-all relative z-40">
+            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📜 Journal d'Activité</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Historique et traçabilité des événements de la plateforme.</p>
+                </div>
+                <button onclick="basculerZoneJournal()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
+            </div>
+            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2" id="contenu-journal">
+                <p class="text-slate-500 italic text-sm text-center py-4">Chargement du journal...</p>
+            </div>
+        </div>
+
         <!-- ESPACE GESTION COMPTES ET DROITS (Multi-Vues) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
@@ -86,7 +108,6 @@
                 <button onclick="basculerZoneComptes()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
             </div>
 
-            <!-- VUE : SUPER ADMIN -->
             <div id="admin-comptes-view" class="hidden space-y-6">
                 <div id="bloc-validations-attente" class="hidden bg-[#030712]/50 p-4 rounded-xl border border-amber-500/30">
                     <div class="text-[11px] font-bold uppercase text-amber-400 mb-3 flex items-center gap-2">⚠️ Demandes d'accès en attente de validation</div>
@@ -127,7 +148,6 @@
                 </div>
             </div>
 
-            <!-- VUE : FORMATEUR / RP -->
             <div id="user-comptes-view" class="hidden space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80">
@@ -149,7 +169,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- ESPACE ANNUAIRE CLOISONNÉ -->
@@ -325,7 +344,6 @@
                             </div>
                         </div>
 
-                        <!-- RECHERCHE & SÉLECTION DES ÉVALUATEURS -->
                         <div class="relative">
                             <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Ajouter des évaluateurs / co-formateurs :</label>
                             <div class="flex gap-2">
@@ -590,6 +608,7 @@
                 if (roleConnecte === 'super_admin') {
                     document.getElementById('admin-comptes-view').classList.remove('hidden');
                     document.getElementById('user-comptes-view').classList.add('hidden');
+                    document.getElementById('btn-tab-journal').classList.remove('hidden'); // Journal Actif
                 } else {
                     document.getElementById('admin-comptes-view').classList.add('hidden');
                     document.getElementById('user-comptes-view').classList.remove('hidden');
@@ -823,7 +842,6 @@
         async function chargerAnnuaireEvaluateursEtFavoris() {
             try {
                 const [{ data: profils }, { data: favs }] = await Promise.all([
-                    // L'Admin est désormais dans la liste de recherche
                     db.from('profils').select('id, prenom, nom, role').in('role', ['rp', 'formateur', 'super_admin']).eq('statut', 'valide'),
                     db.from('favoris').select('favori_id').eq('user_id', activeUserId)
                 ]);
@@ -972,30 +990,131 @@
         }
 
         // ==========================================
+        // JOURNAL D'ACTIVITE (SUPER ADMIN)
+        // ==========================================
+        function basculerZoneJournal() { 
+            const journal = document.getElementById('zone-journal-master');
+            
+            document.getElementById('zone-annuaire-master').classList.add('hidden');
+            document.getElementById('zone-configurateur').classList.add('hidden');
+            document.getElementById('zone-comptes-master').classList.add('hidden');
+            
+            journal.classList.toggle('hidden');
+            if (!journal.classList.contains('hidden')) {
+                chargerJournalActivite();
+            }
+        }
+
+        async function chargerJournalActivite() {
+            if (roleConnecte !== 'super_admin') return;
+            const conteneur = document.getElementById('contenu-journal');
+            try {
+                const [{ data: profils }, { data: sessions }, { data: evals }] = await Promise.all([
+                    db.from('profils').select('*'),
+                    db.from('sessions').select('*, profils(prenom, nom)'),
+                    db.from('evaluateurs').select('*, sessions(nom)')
+                ]);
+
+                let events = [];
+
+                (profils || []).forEach(p => {
+                    if(p.date_creation) {
+                        events.push({
+                            date: new Date(p.date_creation),
+                            titre: 'Nouveau Compte',
+                            desc: `Le compte <b>${p.email}</b> (${p.role}) a été créé.`,
+                            icon: '👤', color: 'text-indigo-400', border: 'border-indigo-500/30'
+                        });
+                    }
+                });
+
+                (sessions || []).forEach(s => {
+                    if(s.created_at) {
+                        const createur = s.profils ? `${s.profils.prenom||''} ${s.profils.nom||''}` : 'Inconnu';
+                        events.push({
+                            date: new Date(s.created_at),
+                            titre: 'Création de Session',
+                            desc: `<b>${createur}</b> a créé la session "${s.nom}".`,
+                            icon: '📅', color: 'text-emerald-400', border: 'border-emerald-500/30'
+                        });
+                    }
+                });
+
+                (evals || []).forEach(e => {
+                    if(e.created_at && e.utilisateur_id) {
+                        const sessionNom = e.sessions ? e.sessions.nom : 'Inconnue';
+                        let statutMsg = e.statut_invitation === 'accepte' ? 'a accepté l\'invitation pour' : (e.statut_invitation === 'refuse' ? 'a refusé l\'invitation pour' : 'a été invité(e) à co-évaluer');
+                        let ic = e.statut_invitation === 'accepte' ? '✅' : (e.statut_invitation === 'refuse' ? '❌' : '✉️');
+                        let col = e.statut_invitation === 'accepte' ? 'text-emerald-400' : (e.statut_invitation === 'refuse' ? 'text-red-400' : 'text-amber-400');
+                        let bor = e.statut_invitation === 'accepte' ? 'border-emerald-500/30' : (e.statut_invitation === 'refuse' ? 'border-red-500/30' : 'border-amber-500/30');
+                        
+                        events.push({
+                            date: new Date(e.created_at),
+                            titre: 'Invitation & Réponse',
+                            desc: `<b>${e.nom}</b> ${statutMsg} la session "${sessionNom}".`,
+                            icon: ic, color: col, border: bor
+                        });
+                    }
+                });
+
+                events.sort((a, b) => b.date - a.date);
+
+                if (events.length === 0) {
+                    conteneur.innerHTML = `<p class="text-slate-500 italic text-sm text-center py-4">Aucune activité enregistrée.</p>`;
+                    return;
+                }
+
+                conteneur.innerHTML = events.slice(0, 100).map(ev => `
+                    <div class="flex items-start gap-3 bg-[#030712] p-3 rounded-xl border ${ev.border}">
+                        <div class="text-xl shrink-0 mt-0.5">${ev.icon}</div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="${ev.color} font-bold text-xs uppercase tracking-wide">${ev.titre}</h4>
+                                <span class="text-[9px] text-slate-500 font-mono">${ev.date.toLocaleString('fr-FR')}</span>
+                            </div>
+                            <p class="text-sm text-slate-300 mt-1">${ev.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch(err) {
+                conteneur.innerHTML = `<p class="text-red-500 italic text-sm text-center py-4">Erreur: ${err.message}</p>`;
+            }
+        }
+
+
+        // ==========================================
         // GESTION STRUCTURES (ANNUAIRE CLOISONNÉ)
         // ==========================================
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
-            const cpt = document.getElementById('zone-comptes-master');
+            
+            document.getElementById('zone-journal-master').classList.add('hidden');
+            document.getElementById('zone-configurateur').classList.add('hidden');
+            document.getElementById('zone-comptes-master').classList.add('hidden');
+            
             ann.classList.toggle('hidden'); 
-            if (!ann.classList.contains('hidden')) { conf.classList.add('hidden'); cpt.classList.add('hidden'); }
         }
 
         function basculerZoneConfigurateur() { 
-            const ann = document.getElementById('zone-annuaire-master');
             const conf = document.getElementById('zone-configurateur');
-            const cpt = document.getElementById('zone-comptes-master');
+            
+            document.getElementById('zone-journal-master').classList.add('hidden');
+            document.getElementById('zone-annuaire-master').classList.add('hidden');
+            document.getElementById('zone-comptes-master').classList.add('hidden');
+            
             conf.classList.toggle('hidden'); 
-            if (!conf.classList.contains('hidden')) { ann.classList.add('hidden'); cpt.classList.add('hidden'); }
         }
 
         function basculerZoneComptes() {
-            const ann = document.getElementById('zone-annuaire-master');
-            const conf = document.getElementById('zone-configurateur');
             const cpt = document.getElementById('zone-comptes-master');
+            
+            document.getElementById('zone-journal-master').classList.add('hidden');
+            document.getElementById('zone-annuaire-master').classList.add('hidden');
+            document.getElementById('zone-configurateur').classList.add('hidden');
+            
             cpt.classList.toggle('hidden'); 
-            if (!cpt.classList.contains('hidden')) { ann.classList.add('hidden'); conf.classList.add('hidden'); chargerListeComptes(); }
+            if (!cpt.classList.contains('hidden')) { chargerListeComptes(); }
         }
 
         function toggleGroupCollapse(targetId, iconId) {
@@ -1346,7 +1465,7 @@
                     
                     if(s.evaluateurs) {
                         s.evaluateurs.forEach(e => {
-                            if (e.statut_invitation === 'accepte' && e.utilisateur_id !== activeUserId) {
+                            if (e.statut_invitation === 'accepte' && e.utilisateur_id !== activeUserId && s.proprietaire_id === activeUserId) {
                                 alertesAcceptation.push({ evalId: e.id, evalNom: e.nom, sessionNom: s.nom });
                             }
                         });
@@ -1362,7 +1481,6 @@
                     }
                 });
 
-                // Rendu de la notification d'acceptation (Créateur)
                 const bannerAcc = document.getElementById('banner-acceptations');
                 if (alertesAcceptation.length > 0) {
                     bannerAcc.innerHTML = alertesAcceptation.map(a => `
@@ -1646,14 +1764,14 @@
                     const badgeInvite = s.est_invite ? `<span class="bg-indigo-900 text-indigo-200 text-[9px] px-1.5 py-0.5 rounded ml-2 border border-indigo-700 font-sans">🤝 Co-évaluateur</span>` : '';
 
                     const badgeType = s.type === 'ecrit' 
-                        ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2.5 py-1 rounded-lg font-sans">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-2.5 py-1 rounded-lg font-sans">🗣️ Oral</span>`;
+                        ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2.5 py-1 rounded-lg font-sans shrink-0">✍️ Écrit</span>`
+                        : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-2.5 py-1 rounded-lg font-sans shrink-0">🗣️ Oral</span>`;
 
                     let dateSess = s.date_session;
                     if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
                     else { dateSess = "--/--/----"; }
 
-                    const tagDate = `<span class="text-slate-300 font-sans font-medium text-[11px] bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800">📅 ${dateSess}</span>`;
+                    const tagDate = `<span class="text-slate-300 font-sans font-medium text-[11px] bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 shrink-0">📅 ${dateSess}</span>`;
 
                     const countApprenants = s.apprenants ? s.apprenants.length : 0;
                     const countCriteres = s.criteres ? s.criteres.length : 0;
@@ -1675,22 +1793,23 @@
                         const attenteHtml = evalsEnAttente.map(e => {
                             const prenom = e.nom.split(' ')[0];
                             const dateInv = e.created_at ? new Date(e.created_at).toLocaleDateString('fr-FR') : 'récemment';
-                            return `<div class="italic text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded border border-amber-700/50 mt-1.5 text-[10px] w-fit">⏳ ${prenom} n'a pas encore accepté (invitation envoyée le ${dateInv})</div>`;
+                            return `<span class="italic text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded border border-amber-700/50 text-[10px] whitespace-nowrap shrink-0">⏳ ${prenom} n'a pas encore accepté (invitation envoyée le ${dateInv})</span>`;
                         }).join('');
                         
                         const names = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun actif';
-                        stringEvaluateursHtml = `<div class="flex flex-col"><span class="truncate max-w-[160px]">👩‍🏫 ${names}</span>${attenteHtml}</div>`;
+                        stringEvaluateursHtml = `<div class="flex items-center gap-2 shrink-0"><span class="truncate max-w-[160px] whitespace-nowrap shrink-0">👩‍🏫 ${names}</span>${attenteHtml}</div>`;
                     } else {
                         const names = evalsAcceptes.length > 0 ? evalsAcceptes.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
-                        stringEvaluateursHtml = `<span class="truncate max-w-[160px]" title="${evalsAcceptes.map(e => e.nom).join(', ')}">👩‍🏫 ${names}</span>`;
+                        stringEvaluateursHtml = `<span class="truncate max-w-[160px] whitespace-nowrap shrink-0" title="${evalsAcceptes.map(e => e.nom).join(', ')}">👩‍🏫 ${names}</span>`;
                     }
 
+                    // ALIGNEMENT HORIZONTAL STRICT (sans passage à la ligne)
                     const tagsStatsInfos = `
-                        <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex flex-wrap gap-x-2 gap-y-1.5 items-start">
+                        <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center gap-2 overflow-x-auto whitespace-nowrap hide-scrollbar pb-1">
                             ${tagDate}
-                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">👥 ${countApprenants} apprenant(s)</span>
-                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">📋 ${countCriteres} critère(s)</span>
-                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">${stringEvaluateursHtml}</span>
+                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 whitespace-nowrap shrink-0">👥 ${countApprenants} apprenant(s)</span>
+                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 whitespace-nowrap shrink-0">📋 ${countCriteres} critère(s)</span>
+                            <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 flex items-center shrink-0">${stringEvaluateursHtml}</span>
                         </div>
                     `;
 
@@ -1782,11 +1901,11 @@
                     if (!estArchive) {
                         htmlBlocClasse += `
                             <div class="${cardClasses}">
-                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-2 font-sans">${nomValide} ${badgeType} ${badgeInvite}</div>
-                                    ${tagsStatsInfos}
+                                <div class="w-full sm:w-[60%] lg:w-[70%] overflow-hidden">
+                                    <div class="font-bold text-slate-100 text-base tracking-tight flex items-center gap-2 font-sans truncate">${nomValide} ${badgeType} ${badgeInvite}</div>
+                                    <div class="w-full overflow-hidden">${tagsStatsInfos}</div>
                                 </div>
-                                <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
+                                <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center shrink-0">
                                     ${liensVotesHtml}
                                     ${boutonDashboard}
                                     ${s.est_invite || hasPendingEvaluator ? '' : `<div class="w-[1px] h-5 bg-slate-800 mx-1"></div>`}
@@ -1799,11 +1918,11 @@
                     } else {
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
-                                <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-2 font-sans">🗃️ ${nomValide} ${badgeType} ${badgeInvite}</div>
-                                    ${tagsStatsInfos}
+                                <div class="w-full sm:w-[60%] lg:w-[70%] overflow-hidden">
+                                    <div class="font-medium text-slate-400 text-base flex items-center gap-2 font-sans truncate">🗃️ ${nomValide} ${badgeType} ${badgeInvite}</div>
+                                    <div class="w-full overflow-hidden">${tagsStatsInfos}</div>
                                 </div>
-                                <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
+                                <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center shrink-0">
                                     ${boutonDashboard}
                                     ${boutonDeleteDupli}
                                 </div>
