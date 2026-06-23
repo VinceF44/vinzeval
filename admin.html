@@ -11,25 +11,29 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
+        <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
                     <span class="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md border bg-[#030712]/50 text-[#fe9a00] border-[#fe9a00]/30">⚙️ Espace Gestion</span>
                     <span id="badge-role" class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Chargement...</span>
                 </div>
-                <h1 class="text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-100 mt-2 tracking-tight">Générateur de Sessions</h1>
                 <p id="user-email" class="text-xs text-slate-400 font-mono mt-1"></p>
             </div>
             
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0 mt-2 lg:mt-0">
-                <button onclick="executerDeconnexion()" class="flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-slate-400 text-sm font-bold py-3.5 px-5 rounded-xl border border-slate-800 transition-all cursor-pointer shadow-sm">
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
+                <button onclick="basculerZoneAnnuaire()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
+                    🗃️ Annuaire
+                </button>
+                <button onclick="basculerZoneConfigurateur()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
+                    ✨ Configurer
+                </button>
+                <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="hidden flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-[#030712] hover:bg-slate-800 text-indigo-400 text-xs font-bold py-2.5 px-4 rounded-xl border border-indigo-900/50 transition-all cursor-pointer shadow-sm">
+                    👥 Comptes
+                </button>
+                <div class="hidden sm:block w-px h-6 bg-slate-800 mx-1"></div>
+                <button onclick="executerDeconnexion()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-red-950/20 hover:bg-red-900/40 text-red-400 text-xs font-bold py-2.5 px-4 rounded-xl border border-red-900/30 transition-all cursor-pointer shadow-sm">
                     🚪 Quitter
-                </button>
-                <button onclick="basculerZoneAnnuaire()" class="flex items-center justify-center gap-2 bg-[#101828] hover:bg-slate-800 text-slate-200 text-sm font-bold py-3.5 px-5 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm">
-                    🗃️ Annuaire pédagogique
-                </button>
-                <button onclick="basculerZoneConfigurateur()" class="flex items-center justify-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-sm font-bold py-3.5 px-5 rounded-xl border border-blue-500/50 transition-all cursor-pointer shadow-lg active:scale-95">
-                    ✨ Configurer une session
                 </button>
             </div>
         </div>
@@ -57,7 +61,15 @@
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-bold uppercase text-slate-500">Rôle</label>
-                            <select id="compte-role" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all"></select>
+                            <div class="custom-dropdown-container relative w-full text-left">
+                                <input type="hidden" id="compte-role" value="formateur">
+                                <button type="button" onclick="toggleDropdown('compte-role')" class="w-full bg-[#030712] rounded-xl p-2.5 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-sm">
+                                    <span id="compte-role-label" class="truncate pr-2">Formateur / Évaluateur</span>
+                                    <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="compte-role-arrow">▼</span>
+                                </button>
+                                <div id="compte-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
+                                </div>
+                            </div>
                         </div>
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold py-2.5 rounded-xl transition cursor-pointer">Générer l'accès</button>
                     </form>
@@ -324,11 +336,11 @@
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         let db;
-        
+        let idSessionEnCoursModification = null;
+
         let userConnecte = null;
         let roleConnecte = null;
 
-        let idSessionEnCoursModification = null;
         let idOrgEnCoursModif = null;
         let idFormEnCoursModif = null;
         let idAppEnCoursModif = null;
@@ -483,14 +495,8 @@
                 roleConnecte = profil.role;
                 document.getElementById('badge-role').innerText = roleConnecte === 'super_admin' ? 'SUPER ADMIN' : (roleConnecte === 'rp' ? 'RESPONSABLE PÉDAGOGIQUE' : 'FORMATEUR');
 
-                // AFFICHER L'ONGLET COMPTES SI AUTORISÉ
                 if (roleConnecte === 'super_admin' || roleConnecte === 'rp') {
-                    const btnGrp = document.querySelector('.flex.flex-col.sm\\:flex-row.items-stretch');
-                    btnGrp.innerHTML = `
-                        <button onclick="basculerZoneComptes()" class="flex items-center justify-center gap-2 bg-[#101828] hover:bg-slate-800 text-indigo-400 text-sm font-bold py-3.5 px-5 rounded-xl border border-indigo-900 transition-all cursor-pointer shadow-sm">
-                            👥 Accès & Comptes
-                        </button>
-                    ` + btnGrp.innerHTML;
+                    document.getElementById('btn-tab-comptes').classList.remove('hidden');
                     configurerFormulaireComptes();
                 }
 
@@ -523,12 +529,13 @@
         // GESTION COMPTES UTILISATEURS (ADMIN/RP)
         // ==========================================
         function configurerFormulaireComptes() {
-            const select = document.getElementById('compte-role');
-            select.innerHTML = '';
+            const menu = document.getElementById('compte-role-menu');
+            let html = '';
             if (roleConnecte === 'super_admin') {
-                select.innerHTML += `<option value="rp">Responsable Pédagogique (RP)</option>`;
+                html += `<button type="button" onclick="selectOption('compte-role', 'rp', 'Responsable Pédagogique (RP)')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">Responsable Pédagogique (RP)</button>`;
             }
-            select.innerHTML += `<option value="formateur">Formateur / Évaluateur</option>`;
+            html += `<button type="button" onclick="selectOption('compte-role', 'formateur', 'Formateur / Évaluateur')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">Formateur / Évaluateur</button>`;
+            menu.innerHTML = html;
         }
 
         async function chargerListeComptes() {
@@ -581,7 +588,7 @@
         }
 
         // ==========================================
-        // GESTION STRUCTURE (ORGANISMES / CLASSES)
+        // GESTION STRUCTURES (CLASSES / FORMATIONS / ORGANISMES)
         // ==========================================
         function renderDropdownsOrganismes() {
             let htmlOpts = `<button type="button" onclick="selectOption('select-organisme', '', '-- Organisme --')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Organisme --</button>`;
@@ -861,7 +868,6 @@
             try {
                 let requete = db.from('sessions').select('*');
                 
-                // Restriction RLS logique
                 if (roleConnecte === 'formateur') {
                     requete = requete.eq('proprietaire_id', userConnecte.id);
                 } else if (roleConnecte === 'rp') {
@@ -1110,9 +1116,8 @@
                 if (dateSession < todayStr) statutSession = 'terminee';
                 else if (dateSession > todayStr) statutSession = 'a_venir';
 
-                // LIAISON DU PROPRIETAIRE
                 const { data: session, error: errSess } = await db.from('sessions').insert([{ 
-                    nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null, proprietaire_id: userConnecte.id 
+                    nom: nomSession, statut: statutSession, type: typeSession, date_session: dateSession || null, formation_id: formationId ? parseInt(formationId) : null, proprietaire_id: userConnecte.id
                 }]).select().single();
                 if (errSess) throw errSess;
 
