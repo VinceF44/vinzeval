@@ -3,290 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion — Espace Zen Pro</title>
+    <title>Connexion — Plateforme Multi-Jury</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* SCROLLBARS PERSONNALISÉES SANS BARRES BLANCHES */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    </style>
 </head>
-<body class="bg-[#030712] text-slate-200 font-sans min-h-screen flex flex-col items-center justify-center p-4 selection:bg-[#2563eb]/30 relative overflow-hidden">
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex items-center justify-center p-4 select-none">
 
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
-
-    <div class="w-full max-w-md bg-[#101828]/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-800 shadow-2xl relative z-10 transition-all duration-300" id="auth-container">
+    <div class="w-full max-w-md bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl space-y-6">
         
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-2xl mb-4 shadow-inner">
-                🎓
-            </div>
-            <h1 class="text-2xl font-black text-white tracking-tight" id="titre-auth">Espace Pédagogique</h1>
-            <p class="text-sm text-slate-400 mt-2" id="soustitre-auth">Connectez-vous pour piloter vos sessions.</p>
+        <div class="text-center space-y-2">
+            <span class="bg-indigo-950/50 text-indigo-400 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded border border-indigo-800/50">Console d'accès sécurisée</span>
+            <h1 class="text-2xl font-black text-white tracking-tight mt-2">Authentification Collaborative</h1>
+            <p class="text-xs text-gray-400">Saisissez vos identifiants pour accéder à votre espace de travail.</p>
         </div>
 
-        <form id="form-login" onsubmit="soumettreLogin(event)" class="space-y-5">
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Adresse Email</label>
-                <input type="email" id="login-email" required placeholder="vous@organisme.fr" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
+        <form id="form-login" onsubmit="executerConnexion(event)" class="space-y-4">
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase">Adresse Email</label>
+                <input type="email" id="login-email" required placeholder="nom@exemple.com" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Mot de passe</label>
-                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-400 uppercase">Mot de passe</label>
+                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
-            
-            <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer mt-2">
-                Se connecter
+
+            <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white text-sm font-bold py-3 rounded-xl transition cursor-pointer active:scale-98 shadow-lg font-sans tracking-wide">
+                🔓 Se connecter
             </button>
-
-            <div class="text-center pt-4 border-t border-slate-800/60 mt-6">
-                <p class="text-xs text-slate-400">Nouveau collaborateur ?</p>
-                <button type="button" onclick="basculerMode('register')" class="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors mt-1 cursor-pointer">
-                    Demander un accès
-                </button>
-            </div>
-        </form>
-
-        <form id="form-register" onsubmit="soumettreInscription(event)" class="space-y-4 hidden">
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Prénom</label>
-                    <input type="text" id="reg-prenom" required placeholder="Jean" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Nom</label>
-                    <input type="text" id="reg-nom" required placeholder="Dupont" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
-                </div>
-            </div>
-            
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Adresse Email (Pro)</label>
-                <input type="email" id="reg-email" required placeholder="jean.dupont@ecole.fr" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
-            </div>
-            
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Mot de passe (Min. 6 car.)</label>
-                <input type="password" id="reg-password" required placeholder="••••••••" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all shadow-inner">
-            </div>
-
-            <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Rôle demandé</label>
-                <div class="custom-dropdown-container relative w-full text-left">
-                    <input type="hidden" id="reg-role" value="formateur">
-                    <button type="button" onclick="toggleDropdown('reg-role')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
-                        <span id="reg-role-label" class="truncate pr-2">👩‍🏫 Formateur / Évaluateur</span>
-                        <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="reg-role-arrow">▼</span>
-                    </button>
-                    <div id="reg-role-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-48 overflow-y-auto z-50 transition-all">
-                        <button type="button" onclick="selectOption('reg-role', 'formateur', '👩‍🏫 Formateur / Évaluateur')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">👩‍🏫 Formateur / Évaluateur</button>
-                        <button type="button" onclick="selectOption('reg-role', 'rp', '👔 Responsable Pédagogique')" class="w-full text-left block px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">👔 Responsable Pédagogique</button>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="submit" id="btn-register" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 cursor-pointer mt-2">
-                Envoyer la demande
-            </button>
-
-            <div class="text-center pt-4 border-t border-slate-800/60 mt-4">
-                <button type="button" onclick="basculerMode('login')" class="h-10 w-full bg-[#030712] hover:bg-slate-800 text-slate-400 text-xs font-bold rounded-xl border border-slate-700 transition-all cursor-pointer flex items-center justify-center tracking-wide font-sans shrink-0 active:scale-95 shadow-sm">
-                    ← Revenir à la page d'identification
-                </button>
-            </div>
         </form>
 
     </div>
 
-    <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
-            <div class="p-5 flex items-start gap-4 font-sans">
-                <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
+    <div id="ui-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+            <div class="p-5 flex items-start gap-4">
+                <div class="text-3xl shrink-0 mt-1">❌</div>
                 <div class="flex-1 pt-1">
-                    <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
-                    <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
+                    <h3 class="text-base font-black text-red-500 mb-1.5 uppercase tracking-wide">Erreur</h3>
+                    <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
                 </div>
             </div>
-            <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3 font-sans" id="ui-modal-actions">
-                <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
+            <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end">
+                <button onclick="fermerModal()" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
             </div>
         </div>
     </div>
 
     <script>
-        window.UIModal = {
-            show: function(options) {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById('ui-modal');
-                    const box = document.getElementById('ui-modal-box');
-                    const title = document.getElementById('ui-modal-title');
-                    const msg = document.getElementById('ui-modal-message');
-                    const icon = document.getElementById('ui-modal-icon');
-                    const btnConfirm = document.getElementById('ui-btn-confirm');
-
-                    title.innerText = options.title || 'Information';
-                    msg.innerHTML = options.message || '';
-                    
-                    if(options.type === 'error') { icon.innerText = '❌'; title.className = "text-base font-black text-red-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'success') { icon.innerText = '✅'; title.className = "text-base font-black text-emerald-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else if(options.type === 'warning') { icon.innerText = '⚠️'; title.className = "text-base font-black text-amber-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-gray-900 bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 cursor-pointer"; }
-                    else { icon.innerText = 'ℹ️'; title.className = "text-base font-black text-blue-500 mb-1.5 uppercase tracking-wide"; btnConfirm.className = "px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer"; }
-
-                    btnConfirm.innerText = options.confirmText || 'OK';
-
-                    const cleanup = () => {
-                        modal.classList.remove('opacity-100'); box.classList.remove('scale-100');
-                        setTimeout(() => modal.classList.add('hidden'), 200);
-                        btnConfirm.onclick = null;
-                    };
-
-                    btnConfirm.onclick = () => { cleanup(); resolve(true); };
-
-                    modal.classList.remove('hidden'); void modal.offsetWidth;
-                    modal.classList.add('opacity-100'); box.classList.add('scale-100');
-                });
-            },
-            alert: function(message, type = 'info', title) { return this.show({ message, type, title: title || (type === 'error' ? 'Erreur' : type==='success' ? 'Succès' : type==='warning' ? 'Attention' : 'Information') }); }
-        };
-
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
-        let db;
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        window.onload = async () => {
-            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            const { data: { session } } = await db.auth.getSession();
-            if (session) { verifierEtRediriger(session.user.id); }
-        };
-
-        function toggleDropdown(id) {
-            const menu = document.getElementById(id + '-menu');
-            const arrow = document.getElementById(id + '-arrow');
-            document.querySelectorAll('.custom-dropdown-menu').forEach(m => { if (m.id !== id + '-menu') m.classList.add('hidden'); });
-            document.querySelectorAll('.dropdown-arrow').forEach(a => { if (a.id !== id + '-arrow') a.style.transform = 'rotate(0deg)'; });
-            if(menu) {
-                const isHidden = menu.classList.toggle('hidden');
-                if(arrow) arrow.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
-            }
+        function afficherErreur(msg) {
+            document.getElementById('ui-modal-message').innerText = msg;
+            const modal = document.getElementById('ui-modal');
+            const box = document.getElementById('ui-modal-box');
+            modal.classList.remove('hidden'); void modal.offsetWidth;
+            modal.classList.add('opacity-100'); box.classList.add('scale-100');
         }
 
-        function selectOption(dropdownId, value, label) {
-            const hiddenInput = document.getElementById(dropdownId);
-            const labelSpan = document.getElementById(dropdownId + '-label');
-            if(!hiddenInput) return;
-            hiddenInput.value = value;
-            if(labelSpan) labelSpan.innerHTML = label;
-            toggleDropdown(dropdownId);
+        function fermerModal() {
+            const modal = document.getElementById('ui-modal');
+            modal.classList.add('hidden');
         }
 
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-dropdown-container')) {
-                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.add('hidden'));
-                document.querySelectorAll('.dropdown-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
-            }
-        });
-
-        function basculerMode(mode) {
-            const fLogin = document.getElementById('form-login');
-            const fRegister = document.getElementById('form-register');
-            const titre = document.getElementById('titre-auth');
-            const sousTitre = document.getElementById('soustitre-auth');
-
-            if (mode === 'register') {
-                fLogin.classList.add('hidden');
-                fRegister.classList.remove('hidden');
-                titre.innerText = "Demande d'accès";
-                sousTitre.innerText = "Remplissez vos informations pour rejoindre la plateforme.";
-            } else {
-                fRegister.classList.add('hidden');
-                fLogin.classList.remove('hidden');
-                titre.innerText = "Espace Pédagogique";
-                sousTitre.innerText = "Connectez-vous pour piloter vos sessions.";
-            }
-        }
-
-        async function verifierEtRediriger(userId) {
-            try {
-                const { data: profil, error } = await db.from('profils').select('statut, role').eq('id', userId).single();
-                if (error || !profil) {
-                    await db.auth.signOut();
-                    return UIModal.alert("Impossible de récupérer vos informations de profil. Contactez l'administrateur.", "error");
-                }
-                if (profil.statut === 'en_attente') {
-                    await db.auth.signOut();
-                    return UIModal.alert("Votre compte est en cours de validation par un administrateur. Vous recevrez un accès prochainement.", "warning", "Compte en attente");
-                }
-                if (profil.statut === 'refuse') {
-                    await db.auth.signOut();
-                    return UIModal.alert("Votre demande d'accès a été refusée. Veuillez contacter votre responsable.", "error", "Accès refusé");
-                }
-                window.location.href = "admin.html";
-            } catch (err) {
-                console.error(err);
-                await db.auth.signOut();
-            }
-        }
-
-        async function soumettreLogin(e) {
+        async function executerConnexion(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-login');
-            btn.innerHTML = "Connexion en cours..."; btn.disabled = true;
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-submit');
 
             try {
-                const { data, error } = await db.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                await verifierEtRediriger(data.user.id);
-            } catch (err) {
-                UIModal.alert("Email ou mot de passe incorrect.", "error");
-            } finaly {
-                btn.innerHTML = "Se connecter"; btn.disabled = false;
-            }
-        }
+                btn.innerText = "⏳ Vérification..."; btn.disabled = true;
 
-        async function soumettreInscription(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-register');
-            btn.innerHTML = "Envoi en cours..."; btn.disabled = true;
-
-            const prenom = document.getElementById('reg-prenom').value.trim();
-            const nom = document.getElementById('reg-nom').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const role = document.getElementById('reg-role').value;
-
-            if (password.length < 6) {
-                btn.innerHTML = "Envoyer la demande"; btn.disabled = false;
-                return UIModal.alert("Le mot de passe doit faire au moins 6 caractères.", "warning");
-            }
-
-            try {
-                const { data: authData, error: authError } = await db.auth.signUp({ email, password });
+                // 1. Connexion Auth Supabase
+                const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
 
-                if (authData.user) {
-                    const { error: profError } = await db.from('profils').insert([{
-                        id: authData.user.id, email: email, prenom: prenom, nom: nom, role: role, statut: 'en_attente'
-                    }]);
-                    if (profError) {
-                        if (profError.code === '23503') throw new Error("Cette adresse email possède déjà un compte dans le système. Veuillez vous connecter.");
-                        throw profError;
+                // 2. Récupération du rôle dans la table profils
+                const { data: profil, error: profError } = await db.from('profils').select('role').eq('id', authData.user.id).single();
+                if (profError || !profil) {
+                    // Si le profil n'existe pas encore (ex: ton compte admin d'origine), on le crée par défaut en super_admin
+                    if (email === "vincent.fallick@gmail.com") {
+                        await db.from('profils').insert([{ id: authData.user.id, email: email, role: 'super_admin' }]);
+                        window.location.href = "admin.html";
+                        return;
                     }
+                    throw new Error("Aucun profil associé à ce compte utilisateur.");
                 }
 
-                await db.auth.signOut();
-                await UIModal.alert("Votre demande d'accès a été envoyée avec succès ! Un administrateur doit maintenant valider votre compte.", "success", "Demande envoyée");
-                document.getElementById('form-register').reset();
-                basculerMode('login');
+                // 3. Redirection intelligente selon le rôle
+                // Les RP et Super_Admin vont sur la console globale admin.html
+                if (profil.role === 'super_admin' || profil.role === 'rp') {
+                    window.location.href = "admin.html";
+                } else {
+                    // Les formateurs simples vont directement sur l'index (Leur Dashboard)
+                    window.location.href = "index.html";
+                }
+
             } catch (err) {
-                let messageFinal = err.message;
-                if (messageFinal.includes("already registered")) messageFinal = "Cette adresse email possède déjà un compte.";
-                UIModal.alert(messageFinal, "error");
-            } finally {
-                btn.innerHTML = "Envoyer la demande"; btn.disabled = false;
+                afficherErreur(err.message || "Identifiants incorrects.");
+                btn.innerText = "🔓 Se connecter"; btn.disabled = false;
             }
         }
     </script>
