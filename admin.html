@@ -22,12 +22,19 @@
         .animate-pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
-<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative">
+<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-4 md:p-8 selection:bg-[#2563eb]/30 relative pb-24">
 
+    <!-- BANNIÈRE D'IMPERSONATION -->
     <div id="banner-impersonation" class="hidden fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
         <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
         <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
     </div>
+
+    <!-- BOUTON FLOTTANT SUPPORT / FEEDBACK (Pour tous) -->
+    <button onclick="ouvrirModalAppFeedback()" class="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full p-3 sm:p-4 shadow-2xl flex items-center justify-center group z-[100] transition-all hover:scale-105 border border-indigo-400/50 cursor-pointer">
+        <span class="text-xl sm:text-2xl">💡</span>
+        <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 whitespace-nowrap transition-all duration-300 font-bold text-sm tracking-wide hidden sm:block">Suggérer / Signaler</span>
+    </button>
 
     <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
@@ -35,7 +42,6 @@
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             
             <div class="flex items-center gap-5">
-                <!-- LOGO SPIREO SVG -->
                 <div class="flex items-center gap-2.5 select-none pr-5 border-r border-slate-800/80">
                     <svg class="w-8 h-8 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo)" stroke-width="3.5" stroke-linecap="round"/>
@@ -51,19 +57,16 @@
                     <span class="text-2xl font-black text-white tracking-tighter">Spireo<span class="text-indigo-500">.</span></span>
                 </div>
                 
-                <!-- INFOS UTILISATEUR -->
                 <div class="hidden sm:block space-y-1">
                     <div class="flex items-center gap-2">
                         <span id="badge-role" class="bg-indigo-950/50 text-indigo-400 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-800/50">Chargement...</span>
                         <span class="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-md border bg-[#030712]/50 text-slate-400 border-slate-800">Espace Gestion</span>
                     </div>
-                    <!-- Suppression de font-mono pour harmoniser la typographie -->
                     <p id="user-email" class="text-xs text-slate-400 font-medium"></p>
                 </div>
             </div>
             
             <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 mt-3 lg:mt-0">
-                <!-- Bouton raccourci -->
                 <button id="btn-tab-comptes" onclick="basculerZoneComptes()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     👤 Mon profil
                     <span id="badge-notif-comptes" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
@@ -77,6 +80,12 @@
                 <button id="btn-tab-journal" onclick="basculerZoneJournal()" class="hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📜 Journal
                 </button>
+                <!-- BOUTON MESSAGERIE ADMIN -->
+                <button id="btn-tab-messagerie" onclick="basculerZoneMessagerie()" class="relative hidden h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
+                    📬 Support
+                    <span id="badge-notif-messagerie" class="hidden absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-[#101828] px-1 animate-pulse-soft">0</span>
+                </button>
+
                 <button onclick="window.location.href='stats.html'" class="h-10 px-4 flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm shrink-0 active:scale-95">
                     📈 Mes Statistiques
                 </button>
@@ -99,10 +108,24 @@
 
         <div id="zone-stats-rapides" class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-40"></div>
 
-        <div id="zone-journal-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-blue-500/20 space-y-6 shadow-xl transition-all relative z-40">
+        <!-- ZONE MESSAGERIE SUPPORT -->
+        <div id="zone-messagerie-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-blue-500/30 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📜 Journal d'Activité</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">📬 Boîte de Réception Support</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Tickets, idées et bugs remontés par vos utilisateurs.</p>
+                </div>
+                <button onclick="basculerZoneMessagerie()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
+            </div>
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2" id="contenu-messagerie">
+                <p class="text-slate-500 italic text-sm text-center py-4">Chargement des messages...</p>
+            </div>
+        </div>
+
+        <div id="zone-journal-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-slate-700 space-y-6 shadow-xl transition-all relative z-40">
+            <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">📜 Journal d'Activité</h2>
                     <p class="text-[11px] text-slate-400 mt-0.5">Historique et traçabilité de vos événements sur la plateforme.</p>
                 </div>
                 <button onclick="basculerZoneJournal()" class="text-slate-500 hover:text-white cursor-pointer text-lg font-bold px-2">✕</button>
@@ -419,7 +442,7 @@
     </div>
 
     <!-- UI MODAL PRINCIPAL -->
-    <div id="ui-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
+    <div id="ui-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
         <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
@@ -444,6 +467,34 @@
                 <button onclick="fermerModalInvitations()" class="text-slate-500 hover:text-white cursor-pointer font-bold text-xl px-2">✕</button>
             </div>
             <div class="p-5 overflow-y-auto max-h-[60vh] space-y-3" id="liste-invitations-modal"></div>
+        </div>
+    </div>
+
+    <!-- MODAL SOUMISSION FEEDBACK / BUG -->
+    <div id="modal-app-feedback" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0">
+        <div class="bg-[#101828] border border-indigo-500/40 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="modal-app-feedback-box">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-indigo-950/20">
+                <h3 class="text-lg font-black text-indigo-400 uppercase tracking-wide flex items-center gap-2">💡 Suggérer / Signaler</h3>
+                <button onclick="fermerModalAppFeedback()" class="text-slate-500 hover:text-white cursor-pointer font-bold text-xl px-2">✕</button>
+            </div>
+            <form onsubmit="soumettreAppFeedback(event)" class="p-5 space-y-4">
+                <p class="text-xs text-slate-400">Une idée d'amélioration ? Un bug rencontré ? Envoyez-nous un message, il sera lu par l'équipe technique.</p>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Type de message :</label>
+                    <select id="feedback-type" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                        <option value="idee">💡 Idée / Amélioration</option>
+                        <option value="bug">🐛 Signaler un Bug</option>
+                        <option value="remarque">💬 Autre remarque</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Votre message :</label>
+                    <textarea id="feedback-texte" required rows="5" placeholder="Décrivez votre idée ou le problème rencontré..." class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-indigo-500 transition-all resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition cursor-pointer shadow-md text-sm uppercase tracking-wide active:scale-95">
+                    Envoyer le message
+                </button>
+            </form>
         </div>
     </div>
 
@@ -615,8 +666,9 @@
 
                 document.getElementById('btn-tab-comptes').classList.remove('hidden'); 
                 document.getElementById('btn-tab-journal').classList.remove('hidden');
-
+                
                 if (roleConnecte === 'super_admin') {
+                    document.getElementById('btn-tab-messagerie').classList.remove('hidden');
                     document.getElementById('admin-comptes-view').classList.remove('hidden');
                     document.getElementById('user-comptes-view').classList.add('hidden');
                 } else {
@@ -687,15 +739,18 @@
         async function verifierNotifications() {
             if (realUserRole !== 'super_admin') return;
             try {
-                const { count, error } = await db.from('profils').select('*', { count: 'exact', head: true }).eq('statut', 'en_attente');
+                // Notifs Comptes en attente
+                const { count: cWait } = await db.from('profils').select('*', { count: 'exact', head: true }).eq('statut', 'en_attente');
                 const badge = document.getElementById('badge-notif-comptes');
-                
-                if (count > 0) {
-                    badge.innerText = count;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
+                if (cWait > 0) { badge.innerText = cWait; badge.classList.remove('hidden'); } 
+                else { badge.classList.add('hidden'); }
+
+                // Notifs Messagerie Support
+                const { count: cMsg } = await db.from('app_feedbacks').select('*', { count: 'exact', head: true }).eq('statut', 'nouveau');
+                const badgeMsg = document.getElementById('badge-notif-messagerie');
+                if (cMsg > 0) { badgeMsg.innerText = cMsg; badgeMsg.classList.remove('hidden'); } 
+                else { badgeMsg.classList.add('hidden'); }
+
             } catch(e) { console.error("Erreur check notifs :", e); }
         }
 
@@ -842,6 +897,134 @@
                 await UIModal.alert(`Accès ${role.toUpperCase()} généré et validé avec succès !`, "success");
             } catch (err) { await UIModal.alert("Erreur création d'accès : " + err.message, "error"); }
         }
+
+        // ==========================================
+        // FEEDBACK APPLICATION (SUPPORT BUGS/IDEES)
+        // ==========================================
+        function ouvrirModalAppFeedback() {
+            const modal = document.getElementById('modal-app-feedback');
+            const box = document.getElementById('modal-app-feedback-box');
+            document.getElementById('feedback-texte').value = '';
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.add('opacity-100');
+            box.classList.add('scale-100');
+        }
+
+        function fermerModalAppFeedback() {
+            const modal = document.getElementById('modal-app-feedback');
+            const box = document.getElementById('modal-app-feedback-box');
+            modal.classList.remove('opacity-100');
+            box.classList.remove('scale-100');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        async function soumettreAppFeedback(e) {
+            e.preventDefault();
+            const type = document.getElementById('feedback-type').value;
+            const msg = document.getElementById('feedback-texte').value.trim();
+            if (!msg) return;
+            
+            try {
+                const { error } = await db.from('app_feedbacks').insert([{
+                    utilisateur_id: activeUserId,
+                    type: type,
+                    message: msg
+                }]);
+                if (error) throw error;
+                
+                fermerModalAppFeedback();
+                await UIModal.alert("Votre message a été envoyé à l'administrateur. Merci pour votre contribution !", "success", "Message envoyé");
+            } catch (err) {
+                await UIModal.alert("Erreur lors de l'envoi : " + err.message, "error");
+            }
+        }
+
+        function basculerZoneMessagerie() {
+            if (roleConnecte !== 'super_admin') return;
+            const mess = document.getElementById('zone-messagerie-master');
+            
+            document.getElementById('zone-journal-master').classList.add('hidden');
+            document.getElementById('zone-annuaire-master').classList.add('hidden');
+            document.getElementById('zone-configurateur').classList.add('hidden');
+            document.getElementById('zone-comptes-master').classList.add('hidden');
+            
+            mess.classList.toggle('hidden'); 
+            if (!mess.classList.contains('hidden')) { chargerMessagerie(); }
+        }
+
+        async function chargerMessagerie() {
+            const conteneur = document.getElementById('contenu-messagerie');
+            try {
+                const { data, error } = await db.from('app_feedbacks').select('*, profils(prenom, nom, role)').order('created_at', { ascending: false });
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    conteneur.innerHTML = `<p class="text-slate-500 italic text-sm text-center py-4">Aucun message de support reçu.</p>`;
+                    return;
+                }
+
+                conteneur.innerHTML = data.map(f => {
+                    const d = new Date(f.created_at).toLocaleString('fr-FR');
+                    const exp = f.profils ? `${f.profils.prenom || ''} ${f.profils.nom || ''}`.trim() : 'Utilisateur inconnu';
+                    const roleExp = f.profils ? f.profils.role : '';
+                    
+                    let badgeType = '';
+                    if(f.type === 'bug') badgeType = `<span class="bg-red-950/50 text-red-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-red-800/50">🐛 Bug</span>`;
+                    else if(f.type === 'idee') badgeType = `<span class="bg-amber-950/50 text-amber-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-amber-800/50">💡 Idée</span>`;
+                    else badgeType = `<span class="bg-blue-950/50 text-blue-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-blue-800/50">💬 Remarque</span>`;
+
+                    const estNouveau = f.statut === 'nouveau';
+                    const borderCls = estNouveau ? 'border-indigo-500/50 bg-[#101828]/80' : 'border-slate-800 bg-[#030712] opacity-75';
+                    
+                    const btnLu = estNouveau ? `<button onclick="marquerFeedbackLu(${f.id})" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded shadow-sm transition">Marquer lu ✅</button>` : '';
+
+                    return `
+                        <div class="flex flex-col gap-2 p-4 rounded-xl border ${borderCls} transition-all">
+                            <div class="flex justify-between items-start border-b border-slate-800/50 pb-2">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        ${badgeType}
+                                        ${estNouveau ? `<span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>` : ''}
+                                    </div>
+                                    <span class="font-bold text-slate-200 text-xs">De : ${exp}</span>
+                                    <span class="text-[10px] text-slate-500 ml-1">(${roleExp})</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-slate-500 font-mono block mb-1">${d}</span>
+                                    <div class="flex gap-2 justify-end">
+                                        ${btnLu}
+                                        <button onclick="supprimerFeedbackSupport(${f.id})" class="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2 py-1 rounded border border-red-500/20 transition">Supprimer 🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-slate-300 whitespace-pre-wrap">${f.message}</div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(e) {
+                conteneur.innerHTML = `<p class="text-red-500 italic text-sm text-center py-4">Erreur: ${e.message}</p>`;
+            }
+        }
+
+        async function marquerFeedbackLu(id) {
+            try {
+                await db.from('app_feedbacks').update({ statut: 'lu' }).eq('id', id);
+                await chargerMessagerie();
+                await verifierNotifications();
+            } catch(e) { console.error(e); }
+        }
+
+        async function supprimerFeedbackSupport(id) {
+            try {
+                if (!(await UIModal.confirm("Supprimer ce message de support ?", "Suppression", "warning"))) return;
+                await db.from('app_feedbacks').delete().eq('id', id);
+                await chargerMessagerie();
+                await verifierNotifications();
+            } catch(e) { console.error(e); }
+        }
+
 
         // ==========================================
         // GESTION ÉVALUATEURS (RECHERCHE & FAVORIS)
@@ -997,7 +1180,7 @@
         }
 
         // ==========================================
-        // JOURNAL D'ACTIVITE
+        // JOURNAL D'ACTIVITE (Existante)
         // ==========================================
         function basculerZoneJournal() { 
             const journal = document.getElementById('zone-journal-master');
@@ -1005,6 +1188,7 @@
             document.getElementById('zone-annuaire-master').classList.add('hidden');
             document.getElementById('zone-configurateur').classList.add('hidden');
             document.getElementById('zone-comptes-master').classList.add('hidden');
+            if (document.getElementById('zone-messagerie-master')) document.getElementById('zone-messagerie-master').classList.add('hidden');
             
             journal.classList.toggle('hidden');
             if (!journal.classList.contains('hidden')) {
@@ -1157,31 +1341,28 @@
         // ==========================================
         function basculerZoneAnnuaire() { 
             const ann = document.getElementById('zone-annuaire-master');
-            
             document.getElementById('zone-journal-master').classList.add('hidden');
             document.getElementById('zone-configurateur').classList.add('hidden');
             document.getElementById('zone-comptes-master').classList.add('hidden');
-            
+            if (document.getElementById('zone-messagerie-master')) document.getElementById('zone-messagerie-master').classList.add('hidden');
             ann.classList.toggle('hidden'); 
         }
 
         function basculerZoneConfigurateur() { 
             const conf = document.getElementById('zone-configurateur');
-            
             document.getElementById('zone-journal-master').classList.add('hidden');
             document.getElementById('zone-annuaire-master').classList.add('hidden');
             document.getElementById('zone-comptes-master').classList.add('hidden');
-            
+            if (document.getElementById('zone-messagerie-master')) document.getElementById('zone-messagerie-master').classList.add('hidden');
             conf.classList.toggle('hidden'); 
         }
 
         function basculerZoneComptes() {
             const cpt = document.getElementById('zone-comptes-master');
-            
             document.getElementById('zone-journal-master').classList.add('hidden');
             document.getElementById('zone-annuaire-master').classList.add('hidden');
             document.getElementById('zone-configurateur').classList.add('hidden');
-            
+            if (document.getElementById('zone-messagerie-master')) document.getElementById('zone-messagerie-master').classList.add('hidden');
             cpt.classList.toggle('hidden'); 
             if (!cpt.classList.contains('hidden')) { chargerListeComptes(); }
         }
