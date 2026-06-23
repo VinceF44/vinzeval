@@ -9,10 +9,6 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex items-center justify-center p-4 select-none">
 
-    <a href="admin.html" class="fixed top-6 left-6 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-white transition-colors bg-gray-900/50 border border-gray-800/80 px-4 py-2 rounded-xl backdrop-blur-sm">
-        <span>←</span> Retour au site
-    </a>
-
     <div class="w-full max-w-md bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl space-y-6 relative overflow-hidden">
         
         <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -54,9 +50,6 @@
                         <div onclick="selectionnerRole('rp', '💼 Responsable Pédagogique')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
                             <span>💼 Responsable Pédagogique</span>
                         </div>
-                        <div onclick="selectionnerRole('super_admin', '⚡ Super Admin')" class="p-3 text-sm text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer flex items-center justify-between">
-                            <span>⚡ Super Admin</span>
-                        </div>
                     </div>
                 </div>
                 <input type="hidden" id="auth-role" value="">
@@ -91,13 +84,13 @@
     </div>
 
     <script>
-        // Configuration Supabase stable
+        // Configuration Supabase stable (Espace corrigé au niveau du token)
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3IDEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // Variables d'état
-        let modeActuel = "connexion"; // Valeurs possibles: "connexion" ou "inscription"
+        let modeActuel = "connexion"; 
 
         // Gestion de l'affichage de la modal personnalisée
         function afficherModal(message, estErreur = true, titreAlternatif = "") {
@@ -119,7 +112,7 @@
             }
 
             modal.classList.remove('hidden');
-            void modal.offsetWidth; // Force le reflow pour l'animation CSS
+            void modal.offsetWidth; 
             modal.classList.add('opacity-100');
             box.classList.add('scale-100');
         }
@@ -218,11 +211,9 @@
                 btn.innerText = "⏳ Vérification sécurisée...";
                 btn.disabled = true;
 
-                // Identification auprès de l'Auth Supabase
                 const { data: authData, error: authError } = await db.auth.signInWithPassword({ email, password });
                 if (authError) throw authError;
 
-                // Récupération des métadonnées du profil utilisateur
                 const { data: profil, error: profError } = await db.from('profils').select('role, status').eq('id', authData.user.id).single();
                 
                 if (profError || !profil) {
@@ -234,13 +225,11 @@
                     throw new Error("Aucun profil applicatif n'est configuré pour ce compte.");
                 }
 
-                // Vérification stricte du verrou de validation requis par le Responsable/Super Admin
                 if (profil.status === 'en_attente') {
-                    await db.auth.signOut(); // Déconnexion immédiate du state auth global pour des raisons de sécurité
+                    await db.auth.signOut(); 
                     throw new Error("Votre compte a bien été créé, mais il est actuellement en attente de validation par un Super Admin.");
                 }
 
-                // Routage exclusif selon le niveau d'habilitation
                 if (profil.role === 'super_admin' || profil.role === 'rp') {
                     window.location.href = "admin.html";
                 } else {
@@ -267,7 +256,6 @@
                 btn.innerText = "⏳ Cryptage et création...";
                 btn.disabled = true;
 
-                // Tentative de création du compte utilisateur Supabase Auth
                 const { data: authData, error: authError } = await db.auth.signUp({ email, password });
                 
                 if (authError) {
@@ -277,7 +265,6 @@
                     throw authError;
                 }
 
-                // Injection du profil avec statut par défaut sécurisé 'en_attente'
                 if (authData && authData.user) {
                     const { error: profError } = await db.from('profils').insert([
                         { 
@@ -292,7 +279,6 @@
 
                     afficherModal("Inscription réussie ! Votre compte est configuré sous le statut 'en_attente'. Un Super Admin doit valider votre accès avant votre première connexion.", false, "Succès");
                     
-                    // Reset et bascule automatique
                     document.getElementById('form-auth').reset();
                     document.getElementById('dropdown-label').innerText = "Sélectionner un rôle...";
                     document.getElementById('auth-role').value = "";
@@ -301,7 +287,7 @@
 
             } catch (err) {
                 afficherModal(err.message || "Erreur lors de la tentative d'inscription.");
-            } finally {
+            } disable {
                 btn.innerHTML = "🔐 Créer mon compte";
                 btn.disabled = false;
             }
