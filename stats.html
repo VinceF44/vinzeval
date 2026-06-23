@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -23,9 +24,15 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-3 sm:p-6 md:p-8 select-none relative">
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <!-- BANNIÈRE D'IMPERSONATION -->
+    <div id="banner-impersonation" class="hidden fixed top-0 left-0 w-full bg-[#fe9a00] text-slate-950 font-bold text-xs sm:text-sm py-2 px-4 z-[200] flex justify-center items-center gap-4 shadow-lg">
+        <span class="animate-pulse">⚠️ ATTENTION : Vous naviguez actuellement en tant que <span id="impersonation-name" class="font-black bg-white/20 px-2 py-0.5 rounded">...</span></span>
+        <button onclick="quitterSimulation()" class="bg-slate-950 text-white px-3 py-1 rounded shadow hover:bg-slate-800 transition-colors text-xs cursor-pointer">Quitter la simulation</button>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 mt-4">
         
-        <div class="bg-gray-900 p-5 sm:p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+        <div class="bg-gray-900 p-5 sm:p-6 rounded-2xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl relative z-50">
             <div class="space-y-1">
                 <span class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border border-indigo-800/50">📈 Centre de Pilotage Global</span>
                 <h1 class="text-xl sm:text-2xl font-extrabold text-white mt-1 tracking-tight">Statistiques & Évolution</h1>
@@ -38,7 +45,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-40">
             <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-col items-center justify-center text-center shadow-inner">
                 <div class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">Sessions Réalisées</div>
                 <div id="kpi-sessions" class="text-3xl font-black text-white font-mono tracking-tighter">--</div>
@@ -53,7 +60,7 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-wrap gap-4 items-end print-hide shadow-inner">
+        <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl flex flex-wrap gap-4 items-end print-hide shadow-inner relative z-40">
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">Année</label>
                 <select id="filtre-annee" onchange="appliquerFiltres()" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 cursor-pointer font-medium">
@@ -68,7 +75,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-40">
             <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 shadow-xl">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-800 pb-2">📈 Évolution Chronologique des Moyennes</h3>
                 <div class="w-full h-56 relative">
@@ -91,7 +98,7 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-xl space-y-4">
+        <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-xl space-y-4 relative z-40">
             <div class="border-b border-gray-800 pb-2">
                 <h2 class="text-sm font-black text-emerald-400 uppercase tracking-wider">🔎 Dossier Apprenant Individuel</h2>
                 <p class="text-xs text-gray-400 mt-0.5">Retrouvez l'historique et les feedbacks d'un apprenant sur l'ensemble de ses sessions.</p>
@@ -147,6 +154,13 @@
         let chartOrga = null;
         let chartDossier = null;
 
+        // Variables pour l'impersonation (Identiques à admin.html)
+        let realUserId = null;
+        let realUserRole = null;
+        let activeUserId = null;
+        let roleConnecte = null;
+        let isImpersonating = false;
+
         function decoderNotePleine(notePleine) {
             if (!notePleine && notePleine !== 0) return 0;
             const chaineNote = Number(notePleine).toFixed(14);
@@ -163,24 +177,43 @@
                 const { data: { session } } = await db.auth.getSession();
                 if (!session) { window.location.href = "login.html"; return; }
                 
-                const userId = session.user.id;
-                const { data: profil } = await db.from('profils').select('*').eq('id', userId).single();
-                if(!profil) { window.location.href = "login.html"; return; }
+                realUserId = session.user.id;
                 
-                const userRole = profil.role;
+                const { data: realProfil } = await db.from('profils').select('*').eq('id', realUserId).single();
+                if(!realProfil) { window.location.href = "login.html"; return; }
+                
+                realUserRole = realProfil.role;
 
-                // Construction de la requête selon le rôle (Cloisonnement des données)
-                let requeteSessions = db.from('sessions').select('id, nom, date_session, proprietaire_id, formations(nom, organismes(nom))');
+                // GESTION DE L'IMPERSONATION
+                const targetImpersonation = sessionStorage.getItem('impersonation_id');
+                const targetImpersonationName = sessionStorage.getItem('impersonation_name');
                 
-                if (userRole === 'formateur') {
-                    requeteSessions = requeteSessions.eq('proprietaire_id', userId);
-                } else if (userRole === 'rp') {
-                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', userId);
-                    const listIds = [userId, ...(formateurs ? formateurs.map(f => f.id) : [])];
-                    requeteSessions = requeteSessions.in('proprietaire_id', listIds);
+                if (realUserRole === 'super_admin' && targetImpersonation) {
+                    isImpersonating = true;
+                    activeUserId = targetImpersonation;
+                    
+                    const { data: impProfil } = await db.from('profils').select('role').eq('id', activeUserId).single();
+                    roleConnecte = impProfil ? impProfil.role : 'formateur';
+
+                    document.getElementById('banner-impersonation').classList.remove('hidden');
+                    document.getElementById('impersonation-name').innerText = targetImpersonationName || "un utilisateur";
+                } else {
+                    activeUserId = realUserId;
+                    roleConnecte = realUserRole;
                 }
 
-                // Exécution des requêtes
+                // Construction de la requête selon le rôle ACTIF (Cloisonnement des données)
+                let requeteSessions = db.from('sessions').select('id, nom, date_session, proprietaire_id, formations(nom, organismes(nom))');
+                
+                if (roleConnecte === 'formateur') {
+                    requeteSessions = requeteSessions.eq('proprietaire_id', activeUserId);
+                } else if (roleConnecte === 'rp') {
+                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', activeUserId);
+                    const listIds = [activeUserId, ...(formateurs ? formateurs.map(f => f.id) : [])];
+                    requeteSessions = requeteSessions.in('proprietaire_id', listIds);
+                }
+                // Si roleConnecte === 'super_admin', il voit TOUTES les sessions de la base
+
                 const resSessions = await requeteSessions;
                 if (resSessions.error) throw resSessions.error;
                 dbSessions = resSessions.data || [];
@@ -217,6 +250,12 @@
                 console.error(err);
                 alert("Erreur lors du chargement des statistiques : " + err.message);
             }
+        }
+
+        function quitterSimulation() {
+            sessionStorage.removeItem('impersonation_id');
+            sessionStorage.removeItem('impersonation_name');
+            window.location.reload();
         }
 
         function peuplerFiltres() {
