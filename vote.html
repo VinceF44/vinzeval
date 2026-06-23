@@ -169,6 +169,13 @@
         });
         // -----------------------------------
 
+        function formaterPrenomInitiale(nomComplet) {
+            if (!nomComplet) return "Inconnu";
+            const parties = nomComplet.trim().split(/\s+/);
+            if (parties.length <= 1) return nomComplet;
+            return `${parties[0]} ${parties.slice(1).join(" ").charAt(0).toUpperCase()}.`;
+        }
+
         const UIModal = {
             show: function(options) {
                 return new Promise((resolve) => {
@@ -269,7 +276,9 @@
                     let optionsHtmlSujet = ``;
 
                     g.forEach(grp => {
-                        const label = `${grp.nom}${membresParIdGroupe[grp.id].length > 0 ? ` (${membresParIdGroupe[grp.id].join(', ')})` : ''}`;
+                        const listeMembres = (membresParIdGroupe[grp.id] || []).map(formaterPrenomInitiale).join(', ');
+                        const label = listeMembres ? `${grp.nom} (${listeMembres})` : grp.nom;
+                        
                         const safeValue = grp.nom.replace(/'/g, "\\'");
                         const safeLabel = label.replace(/'/g, "\\'");
                         
@@ -284,7 +293,9 @@
                     
                     // Initialisation du sujet par défaut (1er de la liste)
                     const firstGrp = g[0];
-                    const firstLabel = `${firstGrp.nom}${membresParIdGroupe[firstGrp.id].length > 0 ? ` (${membresParIdGroupe[firstGrp.id].join(', ')})` : ''}`;
+                    const firstGrpMembres = (membresParIdGroupe[firstGrp.id] || []).map(formaterPrenomInitiale).join(', ');
+                    const firstLabel = firstGrpMembres ? `${firstGrp.nom} (${firstGrpMembres})` : firstGrp.nom;
+
                     document.getElementById('select-sujet-evalue').value = firstGrp.nom;
                     document.getElementById('select-sujet-evalue-label').innerText = firstLabel;
                     ciblePrecedente = firstGrp.nom;
@@ -428,7 +439,7 @@
 
             const { data: verifDejaFait } = await db.from('evaluations').select('id').eq('session_id', idSessionEvaluation).eq('groupe_votant', groupeVotant).limit(1);
             if (verifDejaFait && verifDejaFait.length > 0) { 
-                await UIModal.alert(`Votre équipe (${groupeVotant}) a déjà validé et transmis ses évaluations.`, "warning", "Évaluations déjà reçues");
+                await UIModal.alert(`Votre équipe a déjà validé et transmis ses évaluations.`, "warning", "Évaluations déjà reçues");
                 return; 
             }
 
