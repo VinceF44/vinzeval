@@ -3,74 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Session Évaluation — Formulaire d'Évaluation Croisée & Auto-Évaluation</title>
+    <title>Évaluation Apprenants — Spireo</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center relative">
+<body class="bg-[#030712] text-slate-200 font-sans min-h-screen p-3 sm:p-6 md:p-8 flex items-center justify-center relative">
 
-    <div id="bloc-principal-evaluation" class="w-full max-w-5xl bg-gray-900 p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-6 shadow-2xl transition-all">
+    <div id="bloc-principal-evaluation" class="w-full max-w-5xl bg-[#101828] p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-6 shadow-2xl transition-all">
         
         <div id="ecran-formulaire" class="space-y-6">
-            <div class="sticky top-0 bg-gray-900 z-30 border-b border-gray-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
-                <div>
-                    <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
-                    <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+            <div class="sticky top-0 bg-[#101828] z-30 border-b border-slate-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+                
+                <div class="flex items-start gap-4">
+                    <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80 mt-1">
+                        <svg class="w-7 h-7 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo-v)" stroke-width="3.5" stroke-linecap="round"/>
+                            <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
+                            <circle cx="20" cy="14" r="3" fill="#fe9a00"/>
+                            <defs>
+                                <linearGradient id="grad-spireo-v" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#818cf8"/>
+                                    <stop offset="1" stop-color="#3b82f6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="bg-blue-950/50 text-blue-400 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-blue-800/50">📝 Espace Évaluation</span>
+                        <h1 id="titre-session-evaluation" class="text-xl font-black text-white mt-1">Chargement de la session...</h1>
+                    </div>
                 </div>
                 
-                <div class="flex items-center gap-4 bg-gray-950 px-4 py-2.5 rounded-2xl border border-gray-800 shadow-inner select-none shrink-0 self-end sm:self-auto ring-1 ring-gray-900">
+                <div class="flex items-center gap-4 bg-[#030712] px-4 py-2.5 rounded-2xl border border-slate-800 shadow-inner select-none shrink-0 self-end sm:self-auto ring-1 ring-[#030712]">
                     <span id="timer-display" class="text-white font-black text-2xl tracking-widest font-mono tabular-nums">00:00</span>
-                    <div class="flex items-center gap-2 border-l border-gray-800 pl-3">
-                        <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-700 hover:bg-gray-800 hover:border-gray-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">▶️</button>
-                        <button onclick="resetChrono()" title="Réinitialiser" class="h-10 w-10 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-700 hover:bg-gray-800 hover:border-gray-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">🔄</button>
+                    <div class="flex items-center gap-2 border-l border-slate-800 pl-3">
+                        <button onclick="toggleChrono()" id="btn-timer-play" title="Lancer / Pause" class="h-10 w-10 flex items-center justify-center rounded-xl bg-[#101828] border border-slate-700 hover:bg-slate-800 hover:border-slate-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">▶️</button>
+                        <button onclick="resetChrono()" title="Réinitialiser" class="h-10 w-10 flex items-center justify-center rounded-xl bg-[#101828] border border-slate-700 hover:bg-slate-800 hover:border-slate-500 text-xl transition-all cursor-pointer shadow-sm active:scale-95">🔄</button>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-40">
-                <!-- DROPDOWN CUSTOM : ÉQUIPE VOTANT -->
                 <div>
-                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Votre équipe (Évaluateur) :</label>
+                    <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Votre équipe (Évaluateur) :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
                         <input type="hidden" id="select-groupe-votant" value="">
-                        <button type="button" onclick="toggleDropdown('select-groupe-votant')" class="w-full bg-gray-950 rounded-xl p-3 text-sm font-sans border border-gray-800 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                        <button type="button" onclick="toggleDropdown('select-groupe-votant')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
                             <span id="select-groupe-votant-label" class="truncate pr-2">-- Choisissez votre équipe --</span>
-                            <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-votant-arrow">▼</span>
+                            <span class="dropdown-arrow text-xs text-slate-500 transition-transform duration-200" id="select-groupe-votant-arrow">▼</span>
                         </button>
-                        <div id="select-groupe-votant-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-gray-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            <!-- Injecté via JS -->
-                        </div>
+                        <div id="select-groupe-votant-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all"></div>
                     </div>
                 </div>
 
-                <!-- DROPDOWN CUSTOM : SUJET ÉVALUÉ -->
-                <div class="bg-gray-950/40 p-3 rounded-xl border border-gray-800/60">
+                <div class="bg-[#030712]/40 p-3 rounded-xl border border-slate-800/60">
                     <label class="block text-xs font-bold uppercase text-blue-400 mb-1">Équipe à évaluer :</label>
                     <div class="custom-dropdown-container relative w-full text-left">
                         <input type="hidden" id="select-sujet-evalue" value="">
-                        <button type="button" onclick="toggleDropdown('select-sujet-evalue')" class="w-full bg-gray-950 rounded-xl p-3 text-sm font-sans border border-blue-900/50 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
+                        <button type="button" onclick="toggleDropdown('select-sujet-evalue')" class="w-full bg-[#030712] rounded-xl p-3 text-sm font-sans border border-blue-900/50 text-white flex justify-between items-center focus:outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
                             <span id="select-sujet-evalue-label" class="truncate pr-2 flex items-center gap-2">Chargement...</span>
                             <span class="dropdown-arrow text-xs text-blue-500/50 transition-transform duration-200" id="select-sujet-evalue-arrow">▼</span>
                         </button>
-                        <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-blue-800/60 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all">
-                            <!-- Injecté via JS -->
-                        </div>
+                        <div id="select-sujet-evalue-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-blue-800/60 bg-[#101828]/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all"></div>
                     </div>
                 </div>
             </div>
 
-            <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-gray-800/60 relative z-10"></div>
+            <div id="conteneur-criteres-evaluation" class="space-y-5 pt-2 border-t border-slate-800/60 relative z-10"></div>
 
-            <div class="pt-4 border-t border-gray-800/60 space-y-1.5">
-                <label class="block text-xs font-bold uppercase text-gray-400">📝 Feedback Global & Impressions :</label>
-                <div class="flex flex-col rounded-xl overflow-hidden border border-gray-800 focus-within:border-blue-500 transition-all">
-                    <div class="flex items-center gap-1 bg-gray-950 p-2 border-b border-gray-800 select-none">
-                        <button type="button" onclick="appliquerFormatText('bold')" class="h-7 w-8 font-black text-xs rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">B</button>
-                        <button type="button" onclick="appliquerFormatText('italic')" class="h-7 w-8 italic text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">I</button>
-                        <button type="button" onclick="appliquerFormatText('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer">U</button>
-                        <button type="button" onclick="appliquerFormatText('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-gray-800 text-gray-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
+            <div class="pt-4 border-t border-slate-800/60 space-y-1.5">
+                <label class="block text-xs font-bold uppercase text-slate-400">📝 Feedback Global & Impressions :</label>
+                <div class="flex flex-col rounded-xl overflow-hidden border border-slate-800 focus-within:border-blue-500 transition-all">
+                    <div class="flex items-center gap-1 bg-[#030712] p-2 border-b border-slate-800 select-none">
+                        <button type="button" onclick="appliquerFormatText('bold')" class="h-7 w-8 font-black text-xs rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">B</button>
+                        <button type="button" onclick="appliquerFormatText('italic')" class="h-7 w-8 italic text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">I</button>
+                        <button type="button" onclick="appliquerFormatText('underline')" class="h-7 w-8 underline text-xs font-bold rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer">U</button>
+                        <button type="button" onclick="appliquerFormatText('insertUnorderedList')" class="h-7 w-8 font-bold text-base rounded hover:bg-slate-800 text-slate-300 transition-all cursor-pointer flex items-center justify-center pb-0.5">•</button>
                     </div>
-                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-gray-950/60 p-4 text-sm font-sans leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5 [&_i]:italic"></div>
+                    <div id="feedback-global" contenteditable="true" oninput="enregistrerEtatCurseursEnContinu()" placeholder="Vos impressions générales sur la prestation..." class="w-full bg-[#030712]/60 p-4 text-sm font-sans leading-relaxed text-white min-h-[150px] focus:outline-none transition-all overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5 [&_i]:italic"></div>
                 </div>
             </div>
 
@@ -87,27 +97,26 @@
                 <h2 class="text-2xl font-black text-white">Évaluations Terminées !</h2>
                 <p id="rapport-nom-groupe" class="text-sm text-blue-400 font-semibold mt-1"></p>
             </div>
-            <div class="bg-gray-950 p-5 rounded-xl border border-gray-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
-                <div class="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-800 pb-2">📊 Résumé de votre session</div>
-                <div class="flex justify-between items-center text-sm"><span class="text-gray-400">Équipes évaluées au total :</span><span id="rapport-nb-groupes" class="font-bold text-white font-mono text-base">0</span></div>
-                <div class="flex justify-between items-center text-sm"><span class="text-gray-400">Statut auto-évaluation :</span><span id="rapport-auto-statut" class="font-bold font-mono">Vérification...</span></div>
+            <div class="bg-[#030712] p-5 rounded-xl border border-slate-800 text-left space-y-3.5 my-2 max-w-md mx-auto">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">📊 Résumé de votre session</div>
+                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Équipes évaluées au total :</span><span id="rapport-nb-groupes" class="font-bold text-white font-mono text-base">0</span></div>
+                <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Statut auto-évaluation :</span><span id="rapport-auto-statut" class="font-bold font-mono">Vérification...</span></div>
             </div>
         </div>
     </div>
 
-    <!-- UI MODALS DYNAMIQUES -->
     <div id="ui-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity opacity-0" style="transition: opacity 0.2s;">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
+        <div class="bg-[#101828] border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform" id="ui-modal-box" style="transition: transform 0.2s;">
             <div class="p-5 flex items-start gap-4">
                 <div id="ui-modal-icon" class="text-3xl shrink-0 mt-1">🔔</div>
                 <div class="flex-1 pt-1">
                     <h3 id="ui-modal-title" class="text-base font-black text-white mb-1.5 uppercase tracking-wide">Information</h3>
-                    <p id="ui-modal-message" class="text-sm text-gray-400 leading-relaxed"></p>
-                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-gray-950 rounded-xl p-3 text-sm font-sans border border-gray-800 text-gray-100 focus:outline-none focus:border-blue-500 transition-all" />
+                    <p id="ui-modal-message" class="text-sm text-slate-400 leading-relaxed"></p>
+                    <input type="text" id="ui-modal-input" class="hidden w-full mt-4 bg-[#030712] rounded-xl p-3 text-sm font-sans border border-slate-800 text-slate-100 focus:outline-none focus:border-blue-500 transition-all" />
                 </div>
             </div>
-            <div class="p-4 bg-gray-950/50 border-t border-gray-800 flex justify-end gap-3" id="ui-modal-actions">
-                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer">Annuler</button>
+            <div class="p-4 bg-[#030712]/50 border-t border-slate-800 flex justify-end gap-3" id="ui-modal-actions">
+                <button id="ui-btn-cancel" class="hidden px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">Annuler</button>
                 <button id="ui-btn-confirm" class="px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 cursor-pointer">OK</button>
             </div>
         </div>
@@ -248,7 +257,7 @@
                 const { data: s } = await db.from('sessions').select('nom, statut').eq('id', idSessionEvaluation).single();
                 if (s) {
                     if (s.statut === 'terminee') {
-                        document.body.innerHTML = `<div class="max-w-lg w-full bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center shadow-2xl"><div class="text-4xl">🔒</div><h1 class="text-xl font-black text-white mt-4">Session Clôturée</h1><p class="text-gray-400 text-sm mt-2">Cette session n'accepte plus d'évaluations.</p></div>`;
+                        document.body.innerHTML = `<div class="max-w-lg w-full bg-[#101828] p-8 rounded-2xl border border-slate-800 text-center shadow-2xl"><div class="text-4xl">🔒</div><h1 class="text-xl font-black text-white mt-4">Session Clôturée</h1><p class="text-slate-400 text-sm mt-2">Cette session n'accepte plus d'évaluations.</p></div>`;
                         return;
                     }
                     document.getElementById('titre-session-evaluation').innerText = `Session : ${s.nom}`;
@@ -263,8 +272,7 @@
                     g.forEach(grp => { membresParIdGroupeGlobal[grp.id] = []; });
                     if (apps) apps.forEach(student => { if (membresParIdGroupeGlobal[student.groupe_id]) membresParIdGroupeGlobal[student.groupe_id].push(student.prenom); });
 
-                    // Construction dynamique des options pour nos menus custom
-                    let optionsHtmlVotant = `<button type="button" onclick="selectOption('select-groupe-votant', '', '-- Choisissez votre équipe --')" class="w-full text-left block px-4 py-3 text-sm text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre équipe --</button>`;
+                    let optionsHtmlVotant = `<button type="button" onclick="selectOption('select-groupe-votant', '', '-- Choisissez votre équipe --')" class="w-full text-left block px-4 py-3 text-sm text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">-- Choisissez votre équipe --</button>`;
 
                     g.forEach(grp => {
                         const listeMembres = (membresParIdGroupeGlobal[grp.id] || []).map(formaterPrenomInitiale).join(', ');
@@ -272,13 +280,12 @@
                         const safeValue = grp.nom.replace(/'/g, "\\'");
                         const safeLabel = label.replace(/'/g, "\\'");
                         
-                        optionsHtmlVotant += `<button type="button" onclick="selectOption('select-groupe-votant', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${label}</button>`;
+                        optionsHtmlVotant += `<button type="button" onclick="selectOption('select-groupe-votant', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${label}</button>`;
                     });
 
                     document.getElementById('select-groupe-votant-menu').innerHTML = optionsHtmlVotant;
                     
-                    // On force l'utilisateur à choisir son équipe avant d'afficher le menu des cibles
-                    document.getElementById('select-sujet-evalue-menu').innerHTML = `<div class="p-3 text-sm text-gray-500 italic text-center">Sélectionnez d'abord votre équipe</div>`;
+                    document.getElementById('select-sujet-evalue-menu').innerHTML = `<div class="p-3 text-sm text-slate-500 italic text-center">Sélectionnez d'abord votre équipe</div>`;
                 }
 
                 const { data: crits = [] } = await db.from('criteres').select('*').eq('session_id', idSessionEvaluation).order('id');
@@ -300,12 +307,11 @@
                 const safeValue = grp.nom.replace(/'/g, "\\'");
                 
                 if (groupesSoumisDB.includes(grp.nom)) {
-                    // Équipe déjà évaluée => barrée et désactivée + Checkmark
-                    optionsHtmlSujet += `<button type="button" disabled class="w-full flex justify-between items-center px-4 py-3 text-sm text-gray-600 bg-gray-900/50 cursor-not-allowed font-sans"><span class="line-through">${labelComplet}</span> <span>✅</span></button>`;
+                    optionsHtmlSujet += `<button type="button" disabled class="w-full flex justify-between items-center px-4 py-3 text-sm text-slate-600 bg-[#030712]/50 cursor-not-allowed font-sans"><span class="line-through">${labelComplet}</span> <span>✅</span></button>`;
                 } else {
                     const safeLabel = labelComplet.replace(/'/g, "\\'");
                     if (!premierDispoTrouve) { premierDispoTrouve = grp.nom; labelPremierDispo = labelComplet; }
-                    optionsHtmlSujet += `<button type="button" id="btn-cible-${safeValue}" onclick="selectOption('select-sujet-evalue', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
+                    optionsHtmlSujet += `<button type="button" id="btn-cible-${safeValue}" onclick="selectOption('select-sujet-evalue', '${safeValue}', '${safeLabel}')" class="w-full text-left block px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors cursor-pointer">${labelComplet}</button>`;
                 }
             });
 
@@ -341,30 +347,30 @@
 
         function genererCurseursCriteres() {
             document.getElementById('conteneur-criteres-evaluation').innerHTML = listeCriteres.map((c, index) => `
-                <div class="bg-gray-950/40 p-5 rounded-xl border border-gray-800/60 shadow-inner space-y-4">
+                <div class="bg-[#030712]/40 p-5 rounded-xl border border-slate-800/60 shadow-inner space-y-4">
                     <div class="flex justify-between items-center gap-4">
                         <div>
-                            <span class="text-gray-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
-                            ${c.description ? `<p class="text-xs text-gray-500 mt-0.5 leading-relaxed font-normal">${c.description}</p>` : ''}
+                            <span class="text-slate-200 font-bold text-sm md:text-base leading-tight">🎯 ${c.nom}</span>
+                            ${c.description ? `<p class="text-xs text-slate-500 mt-0.5 leading-relaxed font-normal">${c.description}</p>` : ''}
                         </div>
                         <div id="badge-note-app-${index}" class="flex shrink-0 items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-black text-xl border border-amber-500/30 shadow-lg">3</div>
                     </div>
                     <div class="relative pt-2 pb-4">
                         <input type="range" id="eval-crit-${index}" min="1" max="5" step="0.5" value="3" 
                             oninput="mettreAJourCouleurBadge(${index}, this.value); enregistrerEtatCurseursEnContinu();" 
-                            class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-blue-500 relative z-10 focus:outline-none">
-                        <div class="flex justify-between px-1.5 text-[11px] text-gray-500 mt-2 font-mono font-bold select-none">
+                            class="w-full h-3 bg-slate-800 rounded-full appearance-none cursor-pointer accent-blue-500 relative z-10 focus:outline-none">
+                        <div class="flex justify-between px-1.5 text-[11px] text-slate-500 mt-2 font-mono font-bold select-none">
                             <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-800/50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/50">
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">❓ Questions à poser :</label>
-                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm font-sans focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">❓ Questions à poser :</label>
+                            <textarea id="questions-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Pourquoi ce choix technique ?" class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2.5 text-sm font-sans focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-gray-500 mb-1">📔 Notes personnelles :</label>
-                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Bonne présentation..." class="w-full bg-gray-900 border border-gray-800 text-slate-200 placeholder:text-gray-700 rounded-lg p-2.5 text-sm font-sans focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">📔 Notes personnelles :</label>
+                            <textarea id="journal-crit-${index}" oninput="enregistrerEtatCurseursEnContinu()" rows="4" placeholder="Ex: Bonne présentation..." class="w-full bg-[#030712] border border-slate-800 text-slate-200 placeholder:text-slate-700 rounded-lg p-2.5 text-sm font-sans focus:outline-none focus:border-blue-500 transition-all resize-y min-h-[100px]"></textarea>
                         </div>
                     </div>
                 </div>
