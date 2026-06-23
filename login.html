@@ -24,6 +24,17 @@
 
         <form id="form-auth" onsubmit="gererSoumission(event)" class="space-y-4 relative z-10">
             
+            <div id="container-identite" class="grid grid-cols-2 gap-4 hidden opacity-0 transition-opacity duration-300">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Prénom</label>
+                    <input type="text" id="auth-prenom" placeholder="Jean" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nom</label>
+                    <input type="text" id="auth-nom" placeholder="Dupont" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
+                </div>
+            </div>
+
             <div class="space-y-1.5">
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Adresse Email</label>
                 <input type="email" id="auth-email" required placeholder="nom@exemple.com" class="w-full bg-gray-950 rounded-xl p-3 text-sm border border-gray-800 text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500 transition-colors">
@@ -84,15 +95,12 @@
     </div>
 
     <script>
-        // Configuration Supabase stable (Espace corrigé au niveau du token)
         const SUPABASE_URL = "https://rtzmhjvmqjwttscwhcyt.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0em1oanZtcWp3dHRzY3doY3l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzI0MDksImV4cCI6MjA5Njg0ODQwOX0.QGfMkLLpBKe6q6rl_5jdqNP1Cht4KIWAeZrTGYwBByo";
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Variables d'état
         let modeActuel = "connexion"; 
 
-        // Gestion de l'affichage de la modal personnalisée
         function afficherModal(message, estErreur = true, titreAlternatif = "") {
             const modal = document.getElementById('ui-modal');
             const box = document.getElementById('ui-modal-box');
@@ -125,13 +133,16 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 200);
         }
 
-        // Bascule dynamique d'interface entre Connexion et Inscription
         function basculerMode() {
             const title = document.getElementById('auth-title');
             const subtitle = document.getElementById('auth-subtitle');
             const btnSubmit = document.getElementById('btn-submit');
             const btnToggle = document.getElementById('btn-toggle-mode');
             const containerRole = document.getElementById('container-role');
+            const containerIdentite = document.getElementById('container-identite');
+            
+            const inputPrenom = document.getElementById('auth-prenom');
+            const inputNom = document.getElementById('auth-nom');
 
             fermerDropdown();
 
@@ -142,8 +153,14 @@
                 btnSubmit.innerText = "🔐 Créer mon compte";
                 btnToggle.innerText = "Déjà inscrit ? Retourner à la connexion";
                 
+                // Rendre requis en mode inscription
+                inputPrenom.required = true;
+                inputNom.required = true;
+
+                containerIdentite.classList.remove('hidden');
                 containerRole.classList.remove('hidden');
                 void containerRole.offsetWidth;
+                containerIdentite.classList.add('opacity-100');
                 containerRole.classList.add('opacity-100');
             } else {
                 modeActuel = "connexion";
@@ -152,12 +169,17 @@
                 btnSubmit.innerText = "🔐 Se connecter";
                 btnToggle.innerText = "Pas encore de compte ? Créer un profil d'accès";
                 
+                // Désactiver requis pour éviter les blocages fantômes du navigateur
+                inputPrenom.required = false;
+                inputNom.required = false;
+
+                containerIdentite.classList.remove('opacity-100');
                 containerRole.classList.remove('opacity-100');
+                containerIdentite.classList.add('hidden');
                 containerRole.classList.add('hidden');
             }
         }
 
-        // Fonctions liées au Custom Dropdown des rôles
         function toggleDropdown() {
             const menu = document.getElementById('dropdown-menu');
             const arrow = document.getElementById('dropdown-arrow');
@@ -182,7 +204,6 @@
             fermerDropdown();
         }
 
-        // Fermer le dropdown si clic à l'extérieur
         document.addEventListener('click', function(e) {
             const btn = document.getElementById('dropdown-btn');
             const menu = document.getElementById('dropdown-menu');
@@ -191,7 +212,6 @@
             }
         });
 
-        // Routeur centralisé de traitement du formulaire
         async function gererSoumission(e) {
             e.preventDefault();
             const email = document.getElementById('auth-email').value.trim();
@@ -205,7 +225,6 @@
             }
         }
 
-        // Pipeline 1 : Connexion
         async function traiterConnexion(email, password, btn) {
             try {
                 btn.innerText = "⏳ Vérification sécurisée...";
@@ -243,9 +262,10 @@
             }
         }
 
-        // Pipeline 2 : Inscription avec interception des doublons d'emails
         async function traiterInscription(email, password, btn) {
             const roleDemande = document.getElementById('auth-role').value;
+            const prenom = document.getElementById('auth-prenom').value.trim();
+            const nom = document.getElementById('auth-nom').value.trim();
             
             if (!roleDemande) {
                 afficherModal("Veuillez sélectionner un rôle fonctionnel via le menu déroulant.");
@@ -266,12 +286,15 @@
                 }
 
                 if (authData && authData.user) {
+                    // Insertion complète incluant prenom et nom + forçage en_attente
                     const { error: profError } = await db.from('profils').insert([
                         { 
                             id: authData.user.id, 
                             email: email, 
                             role: roleDemande, 
-                            status: 'en_attente' 
+                            status: 'en_attente',
+                            prenom: prenom,
+                            nom: nom
                         }
                     ]);
 
@@ -287,7 +310,7 @@
 
             } catch (err) {
                 afficherModal(err.message || "Erreur lors de la tentative d'inscription.");
-            } disable {
+            } finally {
                 btn.innerHTML = "🔐 Créer mon compte";
                 btn.disabled = false;
             }
