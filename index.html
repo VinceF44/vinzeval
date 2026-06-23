@@ -79,7 +79,7 @@
         
         <div class="bg-[#101828] p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
             <div class="flex items-center gap-4">
-                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80">
+                <div class="hidden sm:flex items-center gap-2.5 select-none pr-4 border-r border-slate-800/80 mt-1">
                     <svg class="w-8 h-8 drop-shadow-md" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 11.5817 24.4183 8 20 8" stroke="url(#grad-spireo-idx)" stroke-width="3.5" stroke-linecap="round"/>
                         <path d="M20 8C16.6863 8 13 10.6863 13 14C13 17.3137 16.6863 20 20 20C22.2091 20 24.1273 18.7456 25.1613 16.938" stroke="#10b981" stroke-width="3.5" stroke-linecap="round"/>
@@ -174,9 +174,9 @@
 
     <div id="modal-rapport" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="fermerModalRapport()">
         <div class="bg-[#101828] border border-slate-700 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
-            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans"></div>
+            <div id="rapport-corps" class="p-6 overflow-y-auto flex-1 space-y-6 font-sans relative"></div>
             <div id="modal-rapport-footer" class="p-4 border-t border-slate-800 bg-[#030712] rounded-b-2xl flex justify-between items-center print-hide font-sans">
-                <span class="text-xs text-slate-500 italic">Relevé officiel consolidé</span>
+                <button onclick="fermerModalRapport()" class="text-slate-400 hover:text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">✕ Fermer</button>
                 <button onclick="window.print()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2.5 px-6 rounded-xl border border-red-500 transition cursor-pointer active:scale-95 shadow-md tracking-wide">
                     📥 Exporter / Imprimer PDF
                 </button>
@@ -379,7 +379,6 @@
                 }
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                // GESTION IMPERSONATION
                 const targetImpersonation = sessionStorage.getItem('impersonation_id');
                 const targetImpersonationName = sessionStorage.getItem('impersonation_name');
                 if (targetImpersonation) {
@@ -870,8 +869,9 @@
             const zoneFeedbacks = (feedbacksJury || feedbacksPairs) ? `<ul class="list-disc pl-5 space-y-3 text-sm text-slate-300 leading-relaxed">${feedbacksJury}${feedbacksPairs}</ul>` : `<p class="text-sm text-slate-500 italic font-sans">Aucun retour rédigé pour cette équipe.</p>`;
 
             const enteteOfficielDocumentHtml = `
-                <div class="mb-5 pb-5 border-b-2 border-slate-800">
-                    <h2 class="text-xl font-black text-white tracking-tight uppercase">📄 Bilan Individuel de Compétences</h2>
+                <div class="mb-5 pb-5 border-b-2 border-slate-800 relative">
+                    <button onclick="fermerModalRapport()" class="absolute top-0 right-0 text-slate-500 hover:text-white text-xl font-bold px-2 cursor-pointer transition-colors print-hide">✕</button>
+                    <h2 class="text-xl font-black text-white tracking-tight uppercase pr-8">📄 Bilan Individuel de Compétences</h2>
                     <h3 class="text-base font-bold text-indigo-400 mt-1 uppercase tracking-wide font-sans">${dataApp.prenomSeul} ${dataApp.nomSeul} — Équipe : ${dataApp.nomGroupe}</h3>
                     
                     <div class="mt-4 flex flex-col sm:flex-row sm:flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-400 font-mono uppercase tracking-wider">
@@ -941,7 +941,7 @@
             } catch(e) { await window.UIModal.alert("Erreur de suppression : " + e.message, "error"); }
         }
 
-        function abrirModalFeedback(index) {
+        function ouvrirModalFeedback(index) {
             const dataFeedback = listeFeedbacksCartesCourantes[index];
             if(!dataFeedback) return;
             document.getElementById('modal-feedback-titre').innerText = `💬 Feedback — Par : ${dataFeedback.auteur}`;
@@ -991,7 +991,10 @@
             const labels = listeCriteresProf.map(c => c.nom.length > 20 ? c.nom.substring(0, 20) + "..." : c.nom);
 
             const ctx = document.getElementById('projection-radar-chart').getContext('2d');
-            if (radarChartInstance) radarChartInstance.destroy();
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+                radarChartInstance = null;
+            }
 
             const datasets = [];
             if (hasFormateur) datasets.push({ label: 'Formateur', data: dataFormateur, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.2)', borderWidth: 3, pointBackgroundColor: '#a855f7' });
@@ -1021,7 +1024,7 @@
                     let couleurBordure = e.estProf ? "border-purple-500" : (e.groupe_votant === cible ? "border-emerald-500" : "border-blue-500");
                     fbHtml += `
                         <div class="bg-[#030712]/50 p-4 rounded-xl border-l-4 ${couleurBordure}">
-                            <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">${titleFb}</div>
+                            <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">${titreFb}</div>
                             <div class="text-sm text-slate-200 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5">${e.feedback}</div>
                         </div>
                     `;
@@ -1030,6 +1033,14 @@
 
             zoneFeedbacks.innerHTML = fbHtml || `<p class="text-slate-500 italic">Aucun retour détaillé n'a été rédigé pour cette présentation.</p>`;
             document.getElementById('modal-projection').classList.remove('hidden');
+        }
+
+        function fermerProjection() {
+            document.getElementById('modal-projection').classList.add('hidden');
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+                radarChartInstance = null;
+            }
         }
 
         window.onload = initDashboard;
