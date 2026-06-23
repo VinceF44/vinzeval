@@ -9,7 +9,7 @@
     <style>
         /* CSS SPÉCIAL POUR UN EXPORT PDF PARFAIT */
         @media print {
-            @media print { margin: 1.5cm; }
+            @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important; }
             .max-w-7xl, #ui-modal, #modal-feedback, .print-hide { display: none !important; }
             
@@ -72,7 +72,7 @@
                             <span id="select-groupe-formateur-label" class="truncate pr-2">-- Sélectionner une équipe --</span>
                             <span class="dropdown-arrow text-xs text-gray-500 transition-transform duration-200" id="select-groupe-formateur-arrow">▼</span>
                         </button>
-                        <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute left-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
+                        <div id="select-groupe-formateur-menu" class="custom-dropdown-menu hidden absolute right-0 mt-2 w-full rounded-xl border border-slate-700 bg-gray-900/95 backdrop-blur-md shadow-2xl p-1.5 max-h-60 overflow-y-auto z-50 transition-all font-sans"></div>
                     </div>
                 </div>
             </div>
@@ -136,7 +136,7 @@
         </div>
     </div>
 
-    <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onclick="fermerModalFeedback()">
+    <div id="modal-feedback" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onclick="fermerModalFeedback()">
         <div class="bg-gray-900 border border-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[80vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center font-sans">
                 <h3 id="modal-feedback-titre" class="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">💬 Feedback</h3>
@@ -356,16 +356,20 @@
 
                     let optionsHtml = '';
                     groupesSession.forEach((grp) => {
-                        const listeMembres = membresParNomGroupe[grp.nom] || [];
-                        const htmlTooltip = listeMembres.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        const listeMembresFull = membresParNomGroupe[grp.nom] || [];
+                        // Formatage compact demandé : Prénom N.
+                        const listeFormattee = listeMembresFull.map(m => formaterPrenomInitiale(m)).join(', ');
+                        const labelComplet = listeFormattee ? `${grp.nom} (${listeFormattee})` : grp.nom;
+                        
+                        const htmlTooltip = listeMembresFull.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
                         
                         optionsHtml += `
                             <div class="group relative w-full">
-                                <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${grp.nom.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
-                                    ${grp.nom}
+                                <button type="button" onclick="selectOption('select-groupe-formateur', '${grp.nom.replace(/'/g, "\\'")}', '${labelComplet.replace(/'/g, "\\'")}')" class="w-full text-left block px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors cursor-pointer font-sans">
+                                    ${labelComplet}
                                 </button>
-                                <div class="absolute left-full top-0 ml-2 hidden group-hover:block z-[60] w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans">
-                                    <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
+                                <div class="absolute left-full top-0 ml-2 hidden group-hover:block z-[60] w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
                                     ${htmlTooltip || '<div class="italic text-slate-500">Aucun membre</div>'}
                                 </div>
                             </div>
@@ -381,8 +385,11 @@
                         if (grpTrouve) groupeActif = grpTrouve;
                     }
 
+                    const premierGroupeMembres = (membresParNomGroupe[groupeActif.nom] || []).map(formaterPrenomInitiale).join(', ');
+                    const premierLabelComplet = premierGroupeMembres ? `${groupeActif.nom} (${premierGroupeMembres})` : groupeActif.nom;
+
                     document.getElementById('select-groupe-formateur').value = groupeActif.nom;
-                    document.getElementById('select-groupe-formateur-label').innerText = groupeActif.nom;
+                    document.getElementById('select-groupe-formateur-label').innerText = premierLabelComplet;
                 }
 
                 const { data: critsProf } = await db.from('criteres').select('*').eq('session_id', idSessionDashboard).order('id');
@@ -493,26 +500,60 @@
                     let typeLabel = e.estProf ? ' FORMATEUR' : (estAutoEval ? ' AUTO' : ' PAIRS');
                     let styleLabel = e.estProf ? 'bg-purple-900/30 text-purple-400 border-purple-800/50' : (estAutoEval ? 'bg-blue-900/30 text-blue-400 border-blue-800/50' : 'bg-gray-800 text-gray-300 border-gray-700');
                     
-                    let nomAffiche = e.groupe_votant;
+                    /* APPLICATION DU SYSTÈME MOUSEOVER INTÉGRAL SUR LES GRILLES */
+                    let nomAfficheHtml = '';
                     if (e.estProf) {
-                        nomAffiche = e.groupe_votant;
+                        nomAfficheHtml = `<div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${e.groupe_votant}</div>`;
                     } else if (e.groupe_votant === e.sujet) {
                         const membres = membresParNomGroupe[e.groupe_votant] || [];
-                        if (membres.length > 0) nomAffiche += ` <span class="text-gray-500 font-normal text-xs tracking-normal">(${membres.map(formaterPrenomInitiale).join(', ')})</span>`;
+                        const htmlTooltipMembres = membres.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        nomAfficheHtml = `
+                            <div class="group relative inline-block cursor-help select-none mt-1.5">
+                                <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
+                                <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                    <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
+                                    ${htmlTooltipMembres || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                </div>
+                            </div>
+                        `;
                     } else {
-                        const membres = membresParNomGroupe[e.sujet] || [];
-                        let strMembres = membres.length > 0 ? ` <span class="text-gray-500 font-normal text-xs tracking-normal">(${membres.map(formaterPrenomInitiale).join(', ')})</span>` : '';
-                        nomAffiche = `Pour : ${e.sujet}${strMembres}`;
+                        const membresSujet = membresParNomGroupe[e.sujet] || [];
+                        const htmlTooltipSujet = membresSujet.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+                        const membresVotant = membresParNomGroupe[e.groupe_votant] || [];
+                        const htmlTooltipVotant = membresVotant.map(m => `<div class="py-0.5">• ${m}</div>`).join('');
+
+                        nomAfficheHtml = `
+                            <div class="flex flex-col gap-1 mt-1.5">
+                                <div class="group relative inline-block cursor-help select-none">
+                                    <span class="text-xs text-gray-500 font-medium">De : </span>
+                                    <span class="font-bold text-gray-300 text-xs border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.groupe_votant}</span>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                        <div class="font-bold text-white mb-1">👥 Membres (Votant) :</div>
+                                        ${htmlTooltipVotant || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                    </div>
+                                </div>
+                                <div class="group relative inline-block cursor-help select-none">
+                                    <span class="text-xs text-gray-500 font-medium">Pour : </span>
+                                    <span class="font-bold text-gray-200 text-sm border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${e.sujet}</span>
+                                    <div class="absolute bottom-full left-0 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
+                                        <div class="font-bold text-white mb-1">👥 Membres (Sujet) :</div>
+                                        ${htmlTooltipSujet || '<div class="italic text-slate-500">Aucun membre</div>'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
                     }
 
                     let htmlBlockFeedback = "";
                     if (e.feedback && e.feedback.trim() !== "") {
                         const currentFeedbackIndex = listeFeedbacksCartesCourantes.length;
-                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: nomAffiche.replace(/<[^>]*>?/gm, ''), id: e.id });
+                        /* Résolution du bug de clic : On passe un intitulé pur sans code HTML */
+                        let auteurTextModal = e.estProf ? e.groupe_votant : (estAutoEval ? `${e.groupe_votant} (Auto-Évaluation)` : `Équipe ${e.groupe_votant} pour ${e.sujet}`);
+                        listeFeedbacksCartesCourantes.push({ texte: e.feedback, auteur: auteurTextModal, id: e.id });
 
                         htmlBlockFeedback = `
                             <div class="group relative inline-block">
-                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm">
+                                <button onclick="ouvrirModalFeedback(${currentFeedbackIndex})" class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 px-2 py-1 rounded-md cursor-pointer transition-all active:scale-95 shadow-sm font-sans">
                                     💬 Lire le feedback
                                 </button>
                             </div>
@@ -541,10 +582,10 @@
 
                     conteneur.innerHTML += `
                         <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 flex flex-col shadow-inner hover:border-gray-700 transition-colors">
-                            <div class="flex justify-between items-start border-b border-gray-800 pb-3 mb-2">
+                            <div class="flex justify-between items-start border-b border-gray-900 pb-3 mb-2">
                                 <div>
                                     <span class="text-[9px] font-bold px-2 py-0.5 rounded border ${styleLabel}">${typeLabel}</span>
-                                    <div class="font-bold text-gray-200 text-sm mt-1.5 leading-tight">${nomAffiche}</div>
+                                    ${nomAfficheHtml}
                                 </div>
                                 <div class="text-right shrink-0 pl-2">
                                     <div class="text-xl font-black font-mono tracking-tighter ${e.note >= 10 ? 'text-white' : 'text-red-400'}">${e.note.toFixed(2)}</div>
@@ -663,7 +704,7 @@
                             <div class="group relative inline-block cursor-help select-none">
                                 <span class="border-b border-dotted border-slate-600 hover:text-white transition-colors pb-0.5">${item.nomGroupe}</span>
                                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-56 bg-indigo-950/95 border border-indigo-800/80 text-indigo-200 text-xs rounded-xl p-3 shadow-2xl pointer-events-none normal-case font-normal leading-relaxed font-sans text-left">
-                                    <div class="font-bold text-white mb-1">👥 Membres de l'équipe :</div>
+                                    <div class="font-bold text-white mb-1">👥 Noms complets :</div>
                                     ${htmlTooltipMembres || '<div class="italic text-slate-500">Aucun membre</div>'}
                                 </div>
                             </div>
@@ -697,6 +738,22 @@
                     </tr>
                 `;
             });
+        }
+
+        function basculerBonusIndividuel(prenomApprenant) {
+            if(cacheBonusIndividuels[prenomApprenant] === true) { delete cacheBonusIndividuels[prenomApprenant]; } 
+            else { cacheBonusIndividuels[prenomApprenant] = true; if(cacheMalusIndividuels[prenomApprenant]) delete cacheMalusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            calculerEtAfficherTout();
+        }
+
+        function basculerMalusIndividuel(prenomApprenant) {
+            if(cacheMalusIndividuels[prenomApprenant] === true) { delete cacheMalusIndividuels[prenomApprenant]; } 
+            else { cacheMalusIndividuels[prenomApprenant] = true; if(cacheBonusIndividuels[prenomApprenant]) delete cacheBonusIndividuels[prenomApprenant]; }
+            localStorage.setItem(`malus_invest_${idSessionDashboard}`, JSON.stringify(cacheMalusIndividuels));
+            localStorage.setItem(`bonus_invest_${idSessionDashboard}`, JSON.stringify(cacheBonusIndividuels));
+            calculerEtAfficherTout();
         }
 
         function ouvrirRapportApprenant(prenomComplet) {
