@@ -11,6 +11,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- EN-TÊTE CONSOLE SÉCURISÉ -->
         <div class="bg-[#101828] p-5 sm:p-6 rounded-2xl border border-slate-800 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-md backdrop-blur-md relative z-50">
             <div>
                 <div class="flex items-center gap-2">
@@ -38,6 +39,7 @@
             </div>
         </div>
 
+        <!-- ZONE DE GESTION DES COMPTES (RP & ADMIN) -->
         <div id="zone-comptes-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-indigo-500/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -84,6 +86,7 @@
             </div>
         </div>
 
+        <!-- BLOC ANNUAIRE RESTRUCTURÉ -->
         <div id="zone-annuaire-master" class="hidden bg-[#101828] p-6 rounded-2xl border border-[#fe9a00]/20 space-y-6 shadow-xl transition-all relative z-40">
             <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
                 <div>
@@ -94,6 +97,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ORGANISMES -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏢 1. Périmètre Organismes</div>
@@ -105,6 +109,7 @@
                     <div id="annuaire-liste-organismes" class="mt-4 flex-1 flex flex-wrap gap-2 content-start overflow-y-auto max-h-36 border-t border-slate-800/60 pt-3"></div>
                 </div>
 
+                <!-- FORMATIONS -->
                 <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-800/80 flex flex-col justify-between min-h-[240px]">
                     <div class="space-y-3">
                         <div class="text-[11px] font-bold uppercase text-slate-400">🏫 2. Formations & Classes Rattachées</div>
@@ -677,7 +682,6 @@
             } catch(e) { await UIModal.alert("Erreur base de données : " + e.message, "error"); }
         }
 
-        /* MODIFICATION POUR ACCUEILLIR LES ORGANISMES EN PASTILLES HORIZONTALES */
         function afficherListeOrganismes(data) {
             const conteneur = document.getElementById('annuaire-liste-organismes');
             if(data && data.length > 0) {
@@ -693,7 +697,6 @@
             } else { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm">Aucun organisme enregistré.</p>`; }
         }
 
-        /* MODIFICATION POUR ACCUEILLIR LES FORMATIONS EN PASTILLES HORIZONTALES */
         function afficherListeFormations(orgId) {
             const conteneur = document.getElementById('annuaire-liste-formations');
             if(!orgId) { conteneur.innerHTML = `<p class="text-slate-600 italic text-sm col-span-full">Sélectionnez un organisme pour voir ses formations.</p>`; return; }
@@ -721,14 +724,14 @@
 
                 if(data && data.length > 0) {
                     conteneur.innerHTML = data.map(a => `
-                        <div class="flex justify-between items-center bg-[#030712] p-3 rounded-xl border border-slate-900 text-sm font-sans hover:border-slate-800 transition-all shadow-sm">
+                        <div class="flex justify-between items-center bg-[#030712] p-2.5 rounded-xl border border-slate-900 hover:border-slate-800 transition-all shadow-sm">
                             <div class="truncate pr-2">
-                                <span class="font-bold text-slate-200 block truncate">${a.prenom} ${a.nom}</span>
-                                <span class="text-[10px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
+                                <span class="text-xs font-medium text-slate-300 block truncate">${a.prenom} ${a.nom}</span>
+                                <span class="text-[9px] text-slate-500 block truncate mt-0.5">${a.email || 'Pas d\'email'}</span>
                             </div>
-                            <div class="flex gap-1 shrink-0 bg-[#101828]/50 p-1 rounded-lg border border-slate-800/40">
-                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-sm cursor-pointer">✏️</button>
-                                <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-sm cursor-pointer">🗑️</button>
+                            <div class="flex gap-1 shrink-0 ml-1 border-l border-slate-800/80 pl-1.5">
+                                <button onclick="entrerModifApprenant(${a.id}, '${a.prenom.replace(/'/g, "\\'")}', '${a.nom.replace(/'/g, "\\'")}', '${(a.email || '').replace(/'/g, "\\'")}')" class="text-amber-400 hover:text-white p-1 text-[11px] cursor-pointer">✏️</button>
+                                <button onclick="supprimerApprenantMaster(${a.id}, '${a.prenom.replace(/'/g, "\\'")}')" class="text-red-500 hover:text-white p-1 text-[11px] cursor-pointer">🗑️</button>
                             </div>
                         </div>
                     `).join('');
@@ -1035,16 +1038,15 @@
                     const nomEchappe = nomValide.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
                     const badgeType = s.type === 'ecrit' 
-                        ? `<span class="bg-indigo-950 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-1.5 py-0.5 rounded ml-2 font-sans">✍️ Écrit</span>`
-                        : `<span class="bg-amber-950 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-1.5 py-0.5 rounded ml-2 font-sans">🗣️ Oral</span>`;
+                        ? `<span class="bg-indigo-950/60 text-indigo-400 text-[10px] font-bold border border-indigo-800/40 px-2.5 py-1 rounded-lg font-sans">✍️ Écrit</span>`
+                        : `<span class="bg-amber-950/60 text-amber-400 text-[10px] font-bold border border-amber-800/40 px-2.5 py-1 rounded-lg font-sans">🗣️ Oral</span>`;
 
                     let dateSess = s.date_session;
                     if(dateSess) { const [y, m, d] = dateSess.split('-'); dateSess = `${d}/${m}/${y}`; }
                     else { dateSess = "--/--/----"; }
 
-                    const tagDate = `<span class="text-slate-400 font-sans font-medium text-[11px] ml-2 bg-[#030712]/80 px-2 py-0.5 rounded border border-slate-800/80">📅 ${dateSess}</span>`;
+                    const tagDate = `<span class="text-slate-300 font-sans font-medium text-[11px] bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800">📅 ${dateSess}</span>`;
 
-                    /* MODIFICATION : POLICE SANS-SERIF UNIFORME, FONT-MEDIUM ET ARRONDIS PRO */
                     const countApprenants = s.apprenants ? s.apprenants.length : 0;
                     const countCriteres = s.criteres ? s.criteres.length : 0;
                     const stringEvaluateurs = s.evaluateurs && s.evaluateurs.length > 0 ? s.evaluateurs.map(e => e.nom.split(' ')[0]).join(', ') : 'Aucun';
@@ -1052,6 +1054,8 @@
 
                     const tagsStatsInfos = `
                         <div class="text-[11px] text-slate-400 font-sans font-medium mt-2 flex items-center flex-wrap gap-x-2 gap-y-1.5">
+                            ${badgeType}
+                            ${tagDate}
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">👥 ${countApprenants} apprenant(s)</span>
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">📋 ${countCriteres} critère(s)</span>
                             <span class="bg-[#030712]/60 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300 truncate max-w-[160px]" title="${stringFullEvaluateurs}">👩‍🏫 ${stringEvaluateurs}</span>
@@ -1063,7 +1067,7 @@
                         liensVotesHtml = `
                             <div class="group relative inline-block">
                                 <a href="vote.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all text-sm">🗳️</a>
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien vote apprenants</div>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[100] bg-[#030712] border border-slate-800 text-slate-200 text-[10px] font-bold rounded-lg px-2 py-1 shadow-xl pointer-events-none whitespace-nowrap font-sans">Lien évaluations apprenants</div>
                             </div>
                             <div class="group relative inline-block">
                                 <a href="vote_formateur.html?session_id=${s.id}" target="_blank" class="flex items-center justify-center h-9 w-9 rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-all text-sm">👩‍🏫</a>
@@ -1106,7 +1110,7 @@
                         htmlBlocClasse += `
                             <div class="bg-[#101828] p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 transition-all hover:border-[#3b82f6]/40 hover:bg-[#101828]/80">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate flex items-center flex-wrap gap-1 font-sans">${nomValide} ${badgeType} ${tagDate}</div>
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate font-sans">${nomValide}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/40 p-1.5 rounded-xl border border-slate-800/60 w-fit self-start sm:self-center">
@@ -1133,7 +1137,7 @@
                         htmlBlocClasse += `
                             <div class="bg-[#030712]/50 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 opacity-60 transition-all hover:opacity-95">
                                 <div class="truncate max-w-[250px] sm:max-w-xs md:max-w-md">
-                                    <div class="font-medium text-slate-400 text-base flex items-center flex-wrap gap-1 font-sans">🗃️ ${nomValide} ${badgeType} ${tagDate}</div>
+                                    <div class="font-bold text-slate-100 text-base tracking-tight truncate font-sans">🗃️ ${nomValide}</div>
                                     ${tagsStatsInfos}
                                 </div>
                                 <div class="flex items-center gap-1.5 bg-[#030712]/20 p-1.5 rounded-xl border border-slate-900 w-fit self-start sm:self-center">
@@ -1442,134 +1446,6 @@
                 await chargerSessions();
                 await UIModal.alert("Session supprimée avec succès.", "success");
             } catch(e) { await UIModal.alert("Erreur de suppression : " + e.message, "error"); }
-        }
-
-        async function ouveirModifOrganismeMaster() { /* Conservé pour cohérence globale */ }
-        async function creerOuModifierOrganismeMaster() {
-            try {
-                const input = document.getElementById('annuaire-nom-organisme'); const nom = input.value.trim(); 
-                if (!nom) return await UIModal.alert("Saisissez un nom d'organisme.", "warning", "Saisie requise");
-                
-                if (idOrgEnCoursModif) {
-                    const { error } = await db.from('organismes').update({ nom: nom }).eq('id', idOrgEnCoursModif);
-                    if (error) throw error;
-                    idOrgEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-org').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('organismes').insert([{ nom: nom }]);
-                    if (error) throw error;
-                    input.value = "";
-                }
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme enregistré.", "success");
-            } catch(e) { await UIModal.alert("Erreur organisme : " + e.message, "error"); }
-        }
-
-        async function supprimerOrganismeMaster(id, nom) {
-            try {
-                if (!(await UIModal.confirm(`Suppression définitive de l'organisme <b>${nom}</b> ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('organismes').delete().eq('id', id);
-                if (error) throw error;
-                const { data: orgs } = await db.from('organismes').select('*').order('nom');
-                globalOrganismes = orgs || [];
-                renderDropdownsOrganismes();
-                afficherListeOrganismes(globalOrganismes);
-                await UIModal.alert("Organisme supprimé.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifOrganisme(id, nom) {
-            idOrgEnCoursModif = id; document.getElementById('annuaire-nom-organisme').value = nom;
-            const btn = document.getElementById('btn-annuaire-org'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierFormationMaster() {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                const input = document.getElementById('annuaire-nom-formation'); const nom = input.value.trim();
-                if (!orgId) return await UIModal.alert("Sélectionnez d'abord un organisme.", "warning");
-                if (!nom) return await UIModal.alert("Saisissez un nom pour la formation.", "warning");
-                
-                if (idFormEnCoursModif) {
-                    const { error } = await db.from('formations').update({ nom: nom }).eq('id', idFormEnCoursModif);
-                    if(error) throw error;
-                    idFormEnCoursModif = null; input.value = "";
-                    document.getElementById('btn-annuaire-form').innerText = "Enregistrer";
-                } else { 
-                    const { error } = await db.from('formations').insert([{ nom: nom, organisme_id: orgId }]);
-                    if(error) throw error;
-                    input.value = "";
-                }
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Formation mise à jour.", "success");
-            } catch(e) { await UIModal.alert("Erreur formation : " + e.message, "error"); }
-        }
-
-        async function supprimerFormationMaster(id, nom) {
-            try {
-                const orgId = document.getElementById('annuaire-select-org-pour-formation').value;
-                if (!(await UIModal.confirm(`Supprimer la classe <b>${nom}</b> ?`, "Confirmation", "error"))) return;
-                const { error } = await db.from('formations').delete().eq('id', id);
-                if (error) throw error;
-                const { data: forms } = await db.from('formations').select('*').order('nom');
-                globalFormations = forms || [];
-                afficherListeFormations(orgId);
-                await UIModal.alert("Classe supprimée.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifFormation(id, nom) {
-            idFormEnCoursModif = id; document.getElementById('annuaire-nom-formation').value = nom;
-            const btn = document.getElementById('btn-annuaire-form'); btn.innerText = "💾 Sauver";
-        }
-
-        async function creerOuModifierApprenantMaster() {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                const p = document.getElementById('annuaire-prenom-app'); const n = document.getElementById('annuaire-nom-app'); const e = document.getElementById('annuaire-email-app');
-                if (!formId) return await UIModal.alert("Sélectionnez la classe.", "warning");
-                if (!p.value || !n.value) return await UIModal.alert("Le prénom et le nom sont requis.", "warning");
-                
-                if (idAppEnCoursModif) {
-                    const { error } = await db.from('apprenants_master').update({ prenom: p.value, nom: n.value, email: e.value || null }).eq('id', idAppEnCoursModif);
-                    if (error) throw error;
-                    const nomCompletInstancie = `${p.value.trim()} ${n.value.trim()}`;
-                    await db.from('apprenants').update({ email: e.value.trim() || null }).eq('prenom', nomCompletInstancie);
-
-                    idAppEnCoursModif = null; p.value = ""; n.value = ""; e.value = "";
-                    document.getElementById('btn-annuaire-app').innerText = "Enregistrer";
-                } else {
-                    const { error } = await db.from('apprenants_master').insert([{ prenom: p.value.trim(), nom: n.value.trim(), email: e.value.trim() || null, formation_id: formId }]);
-                    if (error) throw error;
-                    p.value = ""; n.value = ""; e.value = "";
-                }
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Fiche apprenant enregistrée !", "success");
-            } catch(err) { await UIModal.alert("Erreur apprenant : " + err.message, "error"); }
-        }
-
-        async function supprimerApprenantMaster(id) {
-            try {
-                const formId = document.getElementById('annuaire-select-form-pour-app').value;
-                if (!(await UIModal.confirm(`Retirer cet apprenant ?`, "Suppression", "error"))) return;
-                const { error } = await db.from('apprenants_master').delete().eq('id', id);
-                if (error) throw error;
-                await afficherListeApprenantsMaster(formId);
-                await UIModal.alert("Apprenant retiré.", "success");
-            } catch(e) { await UIModal.alert("Erreur suppression : " + e.message, "error"); }
-        }
-
-        function entrerModifApprenant(id, prenom, nom, email) {
-            idAppEnCoursModif = id;
-            document.getElementById('annuaire-prenom-app').value = prenom;
-            document.getElementById('annuaire-nom-app').value = nom;
-            document.getElementById('annuaire-email-app').value = email;
-            document.getElementById('btn-annuaire-app').innerText = "💾 Sauver";
         }
 
         window.onload = initAdmin;
