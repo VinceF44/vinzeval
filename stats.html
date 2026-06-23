@@ -8,21 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* SCROLLBARS PERSONNALISÉES ÉLÉGANTES SANS BARRES BLANCHES */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569; 
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         @media print {
             .print-hide { display: none !important; }
@@ -40,11 +29,11 @@
             <div class="space-y-1">
                 <span class="bg-indigo-950/50 text-indigo-400 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border border-indigo-800/50">📈 Centre de Pilotage Global</span>
                 <h1 class="text-xl sm:text-2xl font-extrabold text-white mt-1 tracking-tight">Statistiques & Évolution</h1>
-                <p class="text-xs text-gray-400 font-medium">Analyse transversale de toutes les sessions, organismes et apprenants.</p>
+                <p class="text-xs text-gray-400 font-medium">Analyse transversale de vos sessions, organismes et apprenants.</p>
             </div>
             <div class="flex items-center gap-3 shrink-0 print-hide">
                 <button onclick="window.location.href='admin.html'" class="h-10 px-4 bg-[#030712] hover:bg-slate-800 text-white text-sm font-bold rounded-xl border border-slate-700 transition-all cursor-pointer shadow-sm flex items-center justify-center tracking-wide font-sans shrink-0 active:scale-95">
-                    ⚙️ Retour Admin
+                    ⚙️ Retour à mon espace
                 </button>
             </div>
         </div>
@@ -170,16 +159,47 @@
             try {
                 db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                const [resSessions, resEvals, resApps, resEvls] = await Promise.all([
-                    db.from('sessions').select('id, nom, date_session, formations(nom, organismes(nom))'),
-                    db.from('evaluations').select('session_id, groupe_votant, sujet, note, feedback'),
-                    db.from('apprenants').select('session_id, prenom, groupe_id'),
-                    db.from('evaluateurs').select('session_id, nom')
+                // CONTROLE SECURITE AUTHENTIFICATION
+                const { data: { session } } = await db.auth.getSession();
+                if (!session) { window.location.href = "login.html"; return; }
+                
+                const userId = session.user.id;
+                const { data: profil } = await db.from('profils').select('*').eq('id', userId).single();
+                if(!profil) { window.location.href = "login.html"; return; }
+                
+                const userRole = profil.role;
+
+                // Construction de la requête selon le rôle (Cloisonnement des données)
+                let requeteSessions = db.from('sessions').select('id, nom, date_session, proprietaire_id, formations(nom, organismes(nom))');
+                
+                if (userRole === 'formateur') {
+                    requeteSessions = requeteSessions.eq('proprietaire_id', userId);
+                } else if (userRole === 'rp') {
+                    const { data: formateurs } = await db.from('profils').select('id').eq('createur_id', userId);
+                    const listIds = [userId, ...(formateurs ? formateurs.map(f => f.id) : [])];
+                    requeteSessions = requeteSessions.in('proprietaire_id', listIds);
+                }
+
+                // Exécution des requêtes
+                const resSessions = await requeteSessions;
+                if (resSessions.error) throw resSessions.error;
+                dbSessions = resSessions.data || [];
+
+                // Si pas de session trouvée pour cet utilisateur, on arrête là sans faire planter la page
+                if (dbSessions.length === 0) {
+                    peuplerFiltres();
+                    appliquerFiltres();
+                    return;
+                }
+
+                const sessionIds = dbSessions.map(s => s.id);
+
+                const [resEvals, resApps, resEvls] = await Promise.all([
+                    db.from('evaluations').select('session_id, groupe_votant, sujet, note, feedback').in('session_id', sessionIds),
+                    db.from('apprenants').select('session_id, prenom, groupe_id').in('session_id', sessionIds),
+                    db.from('evaluateurs').select('session_id, nom').in('session_id', sessionIds)
                 ]);
 
-                if (resSessions.error) throw resSessions.error;
-
-                dbSessions = resSessions.data || [];
                 dbEvals = resEvals.data || [];
                 dbApprenants = resApps.data || [];
                 dbEvaluateurs = resEvls.data || [];
@@ -330,7 +350,7 @@
 
             const occurrences = dbApprenants.filter(a => a.prenom.trim().toLowerCase().includes(query));
             if (occurrences.length === 0) {
-                alert("Aucun apprenant trouvé pour cette recherche.");
+                alert("Aucun apprenant trouvé pour cette recherche dans vos sessions.");
                 document.getElementById('resultat-dossier').classList.add('hidden');
                 return;
             }
